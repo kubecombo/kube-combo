@@ -1,0 +1,12 @@
+apiVersion: vpn-gw.kubecombo.com/v1
+kind: VpnGw
+metadata:
+  labels:
+    app.kubernetes.io/name: vpngw
+    app.kubernetes.io/instance: vpngw-sample
+    app.kubernetes.io/part-of: kube-combo
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kube-combo
+  name: vpngw-sample
+spec:
+  # TODO(user): Add fields here

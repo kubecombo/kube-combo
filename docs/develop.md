@@ -1,23 +1,40 @@
 # 1. code init
 
+init project
+
 ``` bash
+# --plugins=go/v4-alpha  mac arm supported
 
-operator-sdk init --domain kube-combo.com --repo github.com/kubecombo/kube-combo --plugins=go/v4-alpha
+kube-combo operator-sdk init --plugins go/v4-alpha --domain kubecombo.com --owner "kubecombo" --repo github.com/kubecombo/kube-combo
 
-# we'll use a domain of kube-combo.com
-# so all API groups will be <group>.kube-combo.com
+Writing kustomize manifests for you to edit...
+Writing scaffold for you to edit...
+Get controller runtime:
+$ go get sigs.k8s.io/controller-runtime@v0.14.1
+Update dependencies:
+$ go mod tidy
+Next: define a resource with:
+$ operator-sdk create api
 
-# --plugins=go/v4-alpha  mac arm 芯片需要指定
+```
 
-# 该步骤后可创建 api
+create api
+
+``` bash
+# we use a domain of kubecombo.com
+# so all named API groups will be <group name>.kube-combo.com
+
 # operator-sdk create api
 operator-sdk create api --group vpn-gw --version v1 --kind VpnGw --resource --controller
 operator-sdk create api --group vpn-gw --version v1 --kind IpsecConn --resource --controller
 
+# 更新依赖
+go mod tidy
 
-#  make generate   生成controller 相关的 informer clientset 等代码
- 
-## 下一步就是编写crd
+# 生成 crd 客户端代码
+make generate
+
+## 下一步就是编写 crd
 ## 重新生成代码
 ## 编写 reconcile 逻辑
 
