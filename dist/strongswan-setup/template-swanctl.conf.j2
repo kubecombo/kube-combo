@@ -1,0 +1,26 @@
+connections {
+{% for conn in connections %}
+    net-net-{{ conn.name }} {
+        local {
+            auth = {{ conn.auth }}
+            certs = tls.crt
+        }
+        remote {
+            auth = {{ conn.auth }}
+            id = "CN={{ conn.remoteCN }}"
+        }
+        remote_addrs = {{ conn.remoteCN }}
+        children {
+            net-net {
+                local_ts = {{ conn.localPrivateCidrs }}
+                remote_ts = {{ conn.remotePrivateCidrs }}
+                dpd_action = restart
+                start_action = trap
+            }
+        }
+        version = {{ conn.ikeVersion }}
+        proposals = {{ conn.proposals }}
+    }
+{% endfor %}
+}
+

@@ -1,0 +1,16 @@
+connections:
+  - name: moon-sun
+    localCN: moon-0.vpn.gw.com
+    localPublicIp: 192.168.7.11
+    localPrivateCidrs: 10.1.0.0/24
+    remoteCN: sun-0.vpn.gw.com
+    remotePublicIp: 192.168.7.22
+    remotePrivateCidrs: 10.2.0.0/24
+  - name: moon-mars
+    localCN: moon-0.vpn.gw.com
+    localPublicIp: 192.168.7.11
+    localPrivateCidrs: 10.1.0.0/24
+    remoteCN: mars-0.vpn.gw.com
+    remotePublicIp: 192.168.7.33
+    remotePrivateCidrs: 10.3.0.0/24
+

@@ -1,0 +1,16 @@
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install python3 hostname vim tree iproute2 inetutils-ping arping ncat iptables tcpdump ipset curl openssl easy-rsa openvpn dnsutils net-tools -y && \
+        rm -rf /var/lib/apt/lists/* && \
+        rm -rf /etc/localtime
+
+# Configure tun
+RUN mkdir -p /dev/net && \
+     mknod /dev/net/tun c 10 200 
+
+RUN mkdir -p /etc/openvpn/setup /etc/openvpn/certs/pki/private /etc/openvpn/certs/pki/issued
+COPY dist/openvpn-setup /etc/openvpn/setup/
+RUN chmod +x /etc/openvpn/setup/*.sh

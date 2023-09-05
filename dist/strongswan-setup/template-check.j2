@@ -1,0 +1,18 @@
+#!/bin/bash
+set -eux
+
+{% for conn in connections %}
+# --- check connection {{ conn.name }} remote public ip ---
+ping -n -c 1 {{ conn.remotePublicIp }} || true
+{% endfor %}
+
+/usr/sbin/swanctl --load-all
+
+swanctl --list-conns
+# after ping remote private cidr ip
+# this --list-sas will show the ESTABLISHED 
+/usr/sbin/swanctl --list-sas
+/usr/sbin/swanctl --stats
+
+ip xfrm state
+ip xfrm policy

@@ -1,0 +1,9 @@
+
+# --- STRONGSWAN_CONTENT_START ---
+{% for conn in connections %}
+# --- connection {{ conn.name }} ---
+127.0.2.1 {{ conn.localCN }}
+{{ conn.localPublicIp }} {{ conn.localCN }}
+{{ conn.remotePublicIp }} {{ conn.remoteCN }}
+{% endfor %}
+# --- STRONGSWAN_CONTENT_END ---
