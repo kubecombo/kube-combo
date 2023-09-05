@@ -43,6 +43,16 @@ make manifests
 
 ```
 
+init webhook
+
+```bash
+# operator-sdk create webhook
+
+operator-sdk create webhook --group vpn-gw --version v1 --kind VpnGw --defaulting --programmatic-validation
+operator-sdk create webhook --group vpn-gw --version v1 --kind IpsecConn --defaulting --programmatic-validation
+
+```
+
 ## 1. build push
 
 Docker

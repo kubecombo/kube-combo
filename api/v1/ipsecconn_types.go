@@ -28,13 +28,6 @@ type IpsecConnSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-}
-
-// IpsecConnStatus defines the observed state of IpsecConn
-type IpsecConnStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// reference to: https://docs.strongswan.org/docs/5.9/swanctl/swanctlConf.html#_connections
 	VpnGw string `json:"vpnGw"`
 	// Authentication to perform locally.
@@ -62,6 +55,12 @@ type IpsecConnStatus struct {
 	RemotePublicIp     string `json:"remotePublicIp"`
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`
 }
+
+// // IpsecConnStatus defines the observed state of IpsecConn
+// type IpsecConnStatus struct {
+// 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+// 	// Important: Run "make" to regenerate code after modifying this file
+// }
 
 //+kubebuilder:object:root=true
 // //+kubebuilder:subresource:status

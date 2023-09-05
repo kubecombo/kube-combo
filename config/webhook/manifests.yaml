@@ -1,0 +1,94 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-vpn-gw-kubecombo-com-v1-ipsecconn
+  failurePolicy: Fail
+  name: mipsecconn.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ipsecconns
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-vpn-gw-kubecombo-com-v1-vpngw
+  failurePolicy: Fail
+  name: mvpngw.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - vpngws
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-vpn-gw-kubecombo-com-v1-ipsecconn
+  failurePolicy: Fail
+  name: vipsecconn.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ipsecconns
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-vpn-gw-kubecombo-com-v1-vpngw
+  failurePolicy: Fail
+  name: vvpngw.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - vpngws
+  sideEffects: None
