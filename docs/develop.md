@@ -27,6 +27,8 @@ create api
 # operator-sdk create api
 operator-sdk create api --group vpn-gw --version v1 --kind VpnGw --resource --controller
 operator-sdk create api --group vpn-gw --version v1 --kind IpsecConn --resource --controller
+operator-sdk create api --group vpn-gw --version v1 --kind KeepAlived --resource --controller
+
 
 # 更新依赖
 go mod tidy
@@ -50,6 +52,8 @@ init webhook
 
 operator-sdk create webhook --group vpn-gw --version v1 --kind VpnGw --defaulting --programmatic-validation
 operator-sdk create webhook --group vpn-gw --version v1 --kind IpsecConn --defaulting --programmatic-validation
+operator-sdk create webhook --group vpn-gw --version v1 --kind KeepAlived --defaulting --programmatic-validation
+
 
 ```
 

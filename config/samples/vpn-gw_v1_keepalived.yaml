@@ -1,0 +1,12 @@
+apiVersion: vpn-gw.kubecombo.com/v1
+kind: KeepAlived
+metadata:
+  labels:
+    app.kubernetes.io/name: keepalived
+    app.kubernetes.io/instance: keepalived-sample
+    app.kubernetes.io/part-of: kube-combo
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kube-combo
+  name: keepalived-sample
+spec:
+  # TODO(user): Add fields here

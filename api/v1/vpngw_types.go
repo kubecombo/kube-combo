@@ -97,6 +97,14 @@ type VpnGwSpec struct {
 
 	// ipsec vpn server image, use Dockerfile.strongswan
 	IpsecVpnImage string `json:"ipsecVpnImage"`
+
+	// keepalived maintains the ha ip address alive
+	// keepalived server need replica 2 at least
+	// keepalived represents the keepalived crd name
+	Keepalived string `json:"keepalived"`
+
+	// keepalived server image, use Dockerfile.keepalived
+	KeepalivedImage string `json:"keepalivedImage"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
