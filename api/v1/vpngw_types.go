@@ -32,21 +32,33 @@ type VpnGwSpec struct {
 	// cpu, memory request
 	// cpu, memory limit
 	// 1C 1G at least
-	Cpu    string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
+	Cpu string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
 	Memory string `json:"memory"`
 
 	// 1Mbps bandwidth at least
+
+	// +kubebuilder:validation:Required
 	QoSBandwidth string `json:"qosBandwidth"`
 
 	// vpn gw private vpc subnet static ip
+
+	// +kubebuilder:validation:Required
 	Ip string `json:"ip"`
 
 	// pod subnet
 	// pod runs the vpn gw server in the specified subnet
 	// user can access all pods in this subnet via vpn gw server
+
+	// +kubebuilder:validation:Required
 	Subnet string `json:"subnet"`
 
 	// statefulset replicas
+
+	// +kubebuilder:validation:Required
 	Replicas int32 `json:"replicas"`
 
 	// vpn gw pod node selector
@@ -59,6 +71,8 @@ type VpnGwSpec struct {
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
 	// vpn gw enable ssl vpn
+
+	// +kubebuilder:validation:Required
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
@@ -85,6 +99,8 @@ type VpnGwSpec struct {
 	// OvpnSvcCidr string `json:"ovpnSslVpnSvcCidr"`
 
 	// vpn gw enable ipsec vpn
+
+	// +kubebuilder:validation:Required
 	EnableIpsecVpn bool `json:"enableIpsecVpn"`
 
 	// ipsec use strongswan server
@@ -101,10 +117,9 @@ type VpnGwSpec struct {
 	// keepalived maintains the ha ip address alive
 	// keepalived server need replica 2 at least
 	// keepalived represents the keepalived crd name
-	Keepalived string `json:"keepalived"`
 
-	// keepalived server image, use Dockerfile.keepalived
-	KeepalivedImage string `json:"keepalivedImage"`
+	// +kubebuilder:validation:Required
+	Keepalived string `json:"keepalived"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw

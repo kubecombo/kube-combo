@@ -117,12 +117,6 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn, namespacedName string) error {
-	if ipsecConn.Spec.VpnGw == "" {
-		err := fmt.Errorf("ipsecConn vpn gw is required")
-		r.Log.Error(err, "should set vpn gw")
-		return err
-	}
-
 	if ipsecConn.Spec.IkeVersion != "0" && ipsecConn.Spec.IkeVersion != "1" && ipsecConn.Spec.IkeVersion != "2" {
 		err := fmt.Errorf("ipsec connection spec ike version is invalid, ike version spec: %s", ipsecConn.Spec.IkeVersion)
 		r.Log.Error(err, "ignore invalid ipsec connection")
@@ -131,24 +125,6 @@ func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecCo
 	if ipsecConn.Spec.Auth != "psk" && ipsecConn.Spec.Auth != "pubkey" {
 		err := fmt.Errorf("ipsec connection spec auth is invalid, auth spec: %s", ipsecConn.Spec.Auth)
 		r.Log.Error(err, "ignore invalid ipsec connection")
-	}
-
-	if ipsecConn.Spec.RemotePublicIp == "" {
-		err := fmt.Errorf("ipsecConn remote public ip is required")
-		r.Log.Error(err, "should set remote public ip")
-		return err
-	}
-
-	if ipsecConn.Spec.RemotePrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn remote private cidrs is required")
-		r.Log.Error(err, "should set remote private cidrs")
-		return err
-	}
-
-	if ipsecConn.Spec.LocalPrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn local private cidrs is required")
-		r.Log.Error(err, "should set local private cidrs")
-		return err
 	}
 
 	return nil

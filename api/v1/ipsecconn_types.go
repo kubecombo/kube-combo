@@ -29,13 +29,21 @@ type IpsecConnSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// reference to: https://docs.strongswan.org/docs/5.9/swanctl/swanctlConf.html#_connections
+
+	// +kubebuilder:validation:Required
 	VpnGw string `json:"vpnGw"`
+
 	// Authentication to perform locally.
 	// pubkey uses public key authentication based on a private key associated with a usable certificate. psk uses pre-shared key authentication.
 	// The IKEv1 specific xauth is used for XAuth or Hybrid authentication while the IKEv2 specific eap keyword defines EAP authentication.
+
+	// +kubebuilder:validation:Required
 	Auth string `json:"auth"`
 	// 0 accepts both IKEv1 and IKEv2, 1 uses IKEv1 aka ISAKMP, 2 uses IKEv2
+
+	// +kubebuilder:validation:Required
 	IkeVersion string `json:"ikeVersion"`
+
 	// A proposal is a set of algorithms.
 	// For non-AEAD algorithms this includes IKE an encryption algorithm, an integrity algorithm, a pseudo random function (PRF) and a Diffie-Hellman key exchange group.
 	// For AEAD algorithms, instead of encryption and integrity algorithms a combined algorithm is used.
@@ -43,16 +51,32 @@ type IpsecConnSpec struct {
 	// For IKEv1 only one algorithm per kind is allowed per proposal, more algorithms get implicitly stripped. Use multiple proposals to offer different algorithm combinations with IKEv1.
 	//  Algorithm keywords get separated using dashes. Multiple proposals may be separated by commas.
 	// The special value default adds a default proposal of supported algorithms considered safe and is usually a good choice for interoperability. [default]
+
+	// +kubebuilder:validation:Required
 	Proposals string `json:"proposals"`
+
 	// CN is defined in x509 certificate
+
+	// +kubebuilder:validation:Required
 	LocalCN string `json:"localCN"`
+
 	// current public ipsec vpn gw ip
-	LocalPublicIp     string `json:"localPublicIp"`
+
+	// +kubebuilder:validation:Required
+	LocalPublicIp string `json:"localPublicIp"`
+
+	// +kubebuilder:validation:Required
 	LocalPrivateCidrs string `json:"localPrivateCidrs"`
 
+	// +kubebuilder:validation:Required
 	RemoteCN string `json:"remoteCN"`
+
 	// remote public ipsec vpn gw ip
-	RemotePublicIp     string `json:"remotePublicIp"`
+
+	// +kubebuilder:validation:Required
+	RemotePublicIp string `json:"remotePublicIp"`
+
+	// +kubebuilder:validation:Required
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`
 }
 
