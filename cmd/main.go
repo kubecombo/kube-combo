@@ -119,6 +119,7 @@ func main() {
 	if err = (&controller.KeepAlivedReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("keepalived"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KeepAlived")
 		os.Exit(1)

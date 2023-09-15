@@ -44,6 +44,10 @@ type KeepAlivedSpec struct {
 	Image string `json:"image"`
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=vpc1-subnet1
+	Subnet string `json:"subnet"`
+
+	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=192.168.0.1
 	Vip string `json:"vip"`
 
@@ -53,10 +57,6 @@ type KeepAlivedSpec struct {
 	// +kubebuilder:validation:Optional
 	// +mapType=granular
 	VerbatimConfig map[string]string `json:"verbatimConfig,omitempty"`
-
-	// +kubebuilder:validation:Optional
-	// +listType=set
-	BlacklistRouterIDs []int `json:"blacklistRouterIDs,omitempty"`
 
 	// +optional
 	UnicastEnabled bool `json:"unicastEnabled,omitempty"`
@@ -73,8 +73,9 @@ type KeepAlivedStatus struct {
 	// +listMapKey=type
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 
-	// +mapType=granular
-	RouterIDs map[string]int `json:"routerIDs,omitempty"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=0
+	RouterID int `json:"routerID"`
 }
 
 func (m *KeepAlived) GetConditions() []metav1.Condition {
