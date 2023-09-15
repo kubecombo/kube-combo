@@ -37,3 +37,13 @@ Q1. 我想知道多个 VRRP 路由器是否会用多播广告淹没网络并导�
 
 目前暂不使用任何身份验证
 从安全角度来看，PASS 身份验证毫无用处，IPSEC-AH 是唯一的安全身份验证类型
+
+### 实现
+
+keepalived 由于 VRRP 的缘故，在一个（vpc）子网中存在一个 id 限额。需要保证在一个子网内不能存在冲突的 id。
+为了避免冲突，该 id 不支持指定，基于名字 hash 到 id 值（1-255）来维护。
+由于 keepalived 和 子网有对应关系，而（vpc）子网是租户隔离的资源，所以为了便于维护，keepalived 有一个 subnet spec 属性。
+所以 keepalived 设计上也是租户隔离的资源，即 namespaced 资源。
+
+实现上简单参考了下 [keepalive-operator](https://wangzheng422.github.io/docker_env/ocp4/4.7/4.7.keepalived.operator.html),
+它是面向集群的，但是我们想实现一个面向租户隔离的（namespaced）子网的 keepalived。

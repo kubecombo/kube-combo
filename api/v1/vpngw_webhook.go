@@ -139,6 +139,12 @@ func (r *VpnGw) ValidateDelete() error {
 func (r *VpnGw) validateVpnGw() error {
 	var allErrs field.ErrorList
 
+	if r.Spec.Keepalived == "" {
+		err := fmt.Errorf("vpn gw keepalived is required")
+		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
+		allErrs = append(allErrs, e)
+	}
+
 	if r.Spec.Cpu == "" || r.Spec.Memory == "" {
 		err := fmt.Errorf("vpn gw cpu and memory is required")
 		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.Cpu, err.Error())
@@ -154,6 +160,12 @@ func (r *VpnGw) validateVpnGw() error {
 	if r.Spec.Subnet == "" {
 		err := fmt.Errorf("vpn gw subnet is required")
 		e := field.Invalid(field.NewPath("spec").Child("subnet"), r.Spec.Subnet, err.Error())
+		allErrs = append(allErrs, e)
+	}
+
+	if r.Spec.Ip == "" {
+		err := fmt.Errorf("vpn gw ip is required")
+		e := field.Invalid(field.NewPath("spec").Child("ip"), r.Spec.Ip, err.Error())
 		allErrs = append(allErrs, e)
 	}
 

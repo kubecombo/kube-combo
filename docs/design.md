@@ -21,8 +21,3 @@ ipsec connection 表示 ipsec site-to-site 之间的连接，单独抽象为一�
 ## 3. keepalived
 
 keepalived 表示一个维护 vip 的 keepalived 服务，单独抽象为一个 crd，在 vpn gw 中基于一个 spec 属性来引用
-
-keepalived 由于 VRRP 的缘故，在一个（vpc）子网中存在一个 id 限额。需要保证在一个子网内不能存在冲突的 id。
-为了避免冲突，该 id 不支持指定，基于名字 hash 到 id 值（1-255）来维护。
-由于 keepalived 和 子网有对应关系，而（vpc）子网是租户隔离的资源，所以为了便于维护，keepalived 有一个 subnet spec 属性。
-所以 keepalived 设计上也是租户隔离的资源，即 namespaced 资源。

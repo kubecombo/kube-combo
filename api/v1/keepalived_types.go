@@ -50,16 +50,6 @@ type KeepAlivedSpec struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=192.168.0.1
 	Vip string `json:"vip"`
-
-	// +optional
-	PasswordAuth PasswordAuth `json:"passwordAuth,omitempty"`
-
-	// +kubebuilder:validation:Optional
-	// +mapType=granular
-	VerbatimConfig map[string]string `json:"verbatimConfig,omitempty"`
-
-	// +optional
-	UnicastEnabled bool `json:"unicastEnabled,omitempty"`
 }
 
 // KeepAlivedStatus defines the observed state of KeepAlived

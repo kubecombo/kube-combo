@@ -34,7 +34,6 @@ import (
 	"github.com/go-logr/logr"
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
 	"github.com/scylladb/go-set/iset"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -110,23 +109,10 @@ func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *KeepAlivedReconciler) validateKeepAlived(ctx context.Context, ka *vpngwv1.KeepAlived, namespacedName string) error {
-	// Check if VRRP authentication is needed and if so extract credentials
-	if ka.Spec.PasswordAuth.SecretRef.Name != "" {
-		secret := &corev1.Secret{}
-		err := r.Get(ctx, types.NamespacedName{Namespace: ka.GetNamespace(), Name: ka.Spec.PasswordAuth.SecretRef.Name}, secret)
-		if err != nil {
-			// Requeue and log error
-			err = fmt.Errorf("could not find secret %s in namespace %s", ka.Spec.PasswordAuth.SecretRef.Name, ka.GetNamespace())
-			r.Log.Error(err, "could not find password auth secret", "keepalived", ka)
-			return err
-		}
-		_, ok := secret.Data[ka.Spec.PasswordAuth.SecretKey]
-		if !ok {
-			// Requeue and log error
-			err = fmt.Errorf("could not find key %s in secret %s in namespace %s", ka.Spec.PasswordAuth.SecretKey, ka.Spec.PasswordAuth.SecretRef.Name, ka.GetNamespace())
-			r.Log.Error(err, "could not find referenced key in password auth secret", "keepalived", ka)
-			return err
-		}
+	if ka.Spec.Subnet == "" {
+		err := fmt.Errorf("subnet is required for keepalived %s", namespacedName)
+		r.Log.Error(err, "subnet is required")
+		return err
 	}
 	return nil
 }

@@ -92,6 +92,14 @@ const (
 	IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
 )
 
+// keepalived
+const (
+	KeepalivedVipKey          = "KEEPALIVED_VIP"
+	keepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	KeepalivedStartUpCMD      = "/etc/keepalived/setup/configure.sh"
+	KeepAlivedServer          = "keepalived"
+)
+
 // VpnGwReconciler reconciles a VpnGw object
 type VpnGwReconciler struct {
 	client.Client
@@ -177,6 +185,12 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
+	if gw.Spec.Keepalived == "" {
+		err := fmt.Errorf("vpn gw keepalived is required")
+		r.Log.Error(err, "should set keepalived")
+		return err
+	}
+
 	if gw.Spec.Cpu == "" || gw.Spec.Memory == "" {
 		err := fmt.Errorf("vpn gw cpu and memory is required")
 		r.Log.Error(err, "should set cpu and memory")
@@ -365,7 +379,7 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 	return changed
 }
 
-func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
+func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
 	namespacedName := fmt.Sprintf("%s/%s", gw.Namespace, gw.Name)
 	r.Log.Info("start statefulSetForVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end statefulSetForVpnGw", "vpn gw", namespacedName)
@@ -390,6 +404,40 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, oldSts *appsv1.
 
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
+
+	// keepalived
+	kaContainer := corev1.Container{
+		Name:  KeepAlivedServer,
+		Image: ka.Spec.Image,
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+		},
+		Command: []string{KeepalivedStartUpCMD},
+		Env: []corev1.EnvVar{
+			{
+				Name:  KeepalivedVipKey,
+				Value: ka.Spec.Vip,
+			},
+			{
+				Name:  keepalivedVirtualRouterID,
+				Value: strconv.Itoa(ka.Status.RouterID),
+			},
+		},
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		SecurityContext: &corev1.SecurityContext{
+			Privileged:               &privileged,
+			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+		},
+	}
+	containers = append(containers, kaContainer)
+
 	if gw.Spec.EnableSslVpn {
 		sslContainer := corev1.Container{
 			Name:  SslVpnServer,
@@ -617,6 +665,20 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		return SyncStateErrorNoRetry, err
 	}
 
+	ka := &vpngwv1.KeepAlived{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      gw.Spec.Keepalived,
+			Namespace: gw.Namespace,
+		},
+	}
+	// fetch keepalived
+	ka, err = r.getValidKeepalived(ctx, ka)
+	if err != nil {
+		err = fmt.Errorf("failed to get valid keepalived: %v", err)
+		r.Log.Error(err, "failed to get valid keepalived")
+		return SyncStateError, err
+	}
+
 	// create or update statefulset
 	needToCreate := false
 	oldSts := &appsv1.StatefulSet{}
@@ -631,7 +693,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 	newGw := gw.DeepCopy()
 	if needToCreate {
-		newSts := r.statefulSetForVpnGw(gw, nil)
+		newSts := r.statefulSetForVpnGw(gw, ka, nil)
 		err = r.Create(context.Background(), newSts)
 		if err != nil {
 			r.Log.Error(err, "failed to create the new statefulset")
@@ -640,7 +702,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		time.Sleep(5 * time.Second)
 	} else if r.isChanged(newGw, nil) {
 		// update statefulset
-		newSts := r.statefulSetForVpnGw(gw, oldSts.DeepCopy())
+		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
 		err = r.Update(context.Background(), newSts)
 		if err != nil {
 			r.Log.Error(err, "failed to update the statefulset")
@@ -750,4 +812,35 @@ func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.V
 		return nil, err
 	}
 	return &res.Items, nil
+}
+
+func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *vpngwv1.KeepAlived) (*vpngwv1.KeepAlived, error) {
+	var res vpngwv1.KeepAlived
+	name := types.NamespacedName{
+		Name:      ka.Name,
+		Namespace: ka.Namespace,
+	}
+
+	err := r.Get(ctx, name, &res)
+	if err != nil {
+		err := fmt.Errorf("failed to get keepalived %s: %w", name.String(), err)
+		r.Log.Error(err, "failed to get keepalived")
+		return nil, err
+	}
+	if res.Spec.Image != "" {
+		err := fmt.Errorf("keepalived image is required")
+		r.Log.Error(err, "keepalived image is required")
+		return nil, err
+	}
+	if res.Spec.Vip == "" {
+		err := fmt.Errorf("keepalived vip is required")
+		r.Log.Error(err, "keepalived vip is required")
+		return nil, err
+	}
+	if res.Status.RouterID == 0 {
+		err := fmt.Errorf("keepalived router should not be 0")
+		r.Log.Error(err, "keepalived router should not be 0")
+		return nil, err
+	}
+	return &res, nil
 }

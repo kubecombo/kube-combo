@@ -1,0 +1,12 @@
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install python3 hostname vim tree iproute2 inetutils-ping arping ncat iptables tcpdump ipset curl openssl easy-rsa dnsutils net-tools keepalived -y && \
+        rm -rf /var/lib/apt/lists/* && \
+        rm -rf /etc/localtime
+
+RUN mkdir -p /etc/keepalived/setup
+COPY dist/keepalived-setup /etc/keepalived/setup/
+RUN chmod +x /etc/keepalived/setup/*.sh
