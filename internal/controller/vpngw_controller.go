@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
@@ -130,24 +131,15 @@ type VpnGwReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *VpnGwReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	_ = log.FromContext(ctx)
+
 	// TODO(user): your logic here
 	// delete vpn gw itself, its owned statefulset will be deleted automatically
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start reconcile", "vpn gw", namespacedName)
 	defer r.Log.Info("end reconcile", "vpn gw", namespacedName)
 	updates.Inc()
-
-	// fetch vpn gw
-	gw, err := r.getVpnGw(ctx, req.NamespacedName)
-	if err != nil {
-		r.Log.Error(err, "failed to get vpn gw")
-		return ctrl.Result{}, err
-	}
-	if gw == nil {
-		return ctrl.Result{}, nil
-	}
-
-	res, err := r.handleAddOrUpdateVpnGw(req, gw)
+	res, err := r.handleAddOrUpdateVpnGw(ctx, req)
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
@@ -601,11 +593,22 @@ func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	}
 }
 
-func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.VpnGw) (SyncState, error) {
+func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create vpn gw statefulset
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start handleAddOrUpdateVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end handleAddOrUpdateVpnGw", "vpn gw", namespacedName)
+
+	// fetch vpn gw
+	gw, err := r.getVpnGw(ctx, req.NamespacedName)
+	if err != nil {
+		err = fmt.Errorf("failed to get vpn gw: %v", err)
+		r.Log.Error(err, "failed to get vpn gw")
+		return SyncStateErrorNoRetry, err
+	}
+	if gw == nil {
+		return SyncStateErrorNoRetry, nil
+	}
 
 	// validate vpn gw spec
 	if err := r.validateVpnGw(gw, namespacedName); err != nil {
@@ -617,7 +620,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 	// create or update statefulset
 	needToCreate := false
 	oldSts := &appsv1.StatefulSet{}
-	err := r.Get(context.Background(), req.NamespacedName, oldSts)
+	err = r.Get(context.Background(), req.NamespacedName, oldSts)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
@@ -655,7 +658,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 		}
 		// format ipsec connections
 		connections := ""
-		for _, v := range res {
+		for _, v := range *res {
 			if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
 				err := fmt.Errorf("ipsec connection spec vpn gw is invalid, spec vpn gw: %s", v.Spec.VpnGw)
 				r.Log.Error(err, "ignore invalid ipsec connection")
@@ -707,7 +710,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 				time.Sleep(2 * time.Second)
 				return SyncStateError, err
 			}
-			for _, conn := range res {
+			for _, conn := range *res {
 				conns = append(conns, conn.Name)
 			}
 		}
@@ -730,17 +733,21 @@ func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedNam
 		return nil, nil
 	}
 	if err != nil {
+		err = fmt.Errorf("failed to get vpn gw: %v", err)
+		r.Log.Error(err, "failed to get vpn gw")
 		return nil, err
 	}
 	return &res, nil
 }
 
 // returns all ipsec connections who has labels about the vpn gw
-func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.VpnGw) ([]vpngwv1.IpsecConn, error) {
+func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.VpnGw) (*[]vpngwv1.IpsecConn, error) {
 	var res vpngwv1.IpsecConnList
 	err := r.List(ctx, &res, client.MatchingLabels{VpnGwLabel: gw.Name})
 	if err != nil {
+		err = fmt.Errorf("failed to list vpn gw ipsec connections: %v", err)
+		r.Log.Error(err, "failed to list vpn gw ipsec connections")
 		return nil, err
 	}
-	return res.Items, nil
+	return &res.Items, nil
 }
