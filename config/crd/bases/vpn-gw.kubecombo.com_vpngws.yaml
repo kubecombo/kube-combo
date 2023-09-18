@@ -889,20 +889,16 @@ spec:
                     type: object
                 type: object
               cpu:
-                description: cpu, memory request cpu, memory limit 1C 1G at least
                 type: string
               dhSecret:
                 description: ssl vpn dh secret name, the secret should in the same
                   namespace as the vpn gw
                 type: string
               enableIpsecVpn:
-                description: vpn gw enable ipsec vpn
                 type: boolean
               enableSslVpn:
-                description: vpn gw enable ssl vpn
                 type: boolean
               ip:
-                description: vpn gw private vpc subnet static ip
                 type: string
               ipsecConnections:
                 description: ipsec vpn local and remote connections, inlude remote
@@ -917,6 +913,8 @@ spec:
                 type: string
               ipsecVpnImage:
                 description: ipsec vpn server image, use Dockerfile.strongswan
+                type: string
+              keepalived:
                 type: string
               memory:
                 type: string
@@ -933,10 +931,8 @@ spec:
                 description: ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
                 type: string
               qosBandwidth:
-                description: 1Mbps bandwidth at least
                 type: string
               replicas:
-                description: statefulset replicas
                 format: int32
                 type: integer
               selector:
@@ -952,8 +948,6 @@ spec:
                 description: ssl vpn server image, use Dockerfile.openvpn
                 type: string
               subnet:
-                description: pod subnet pod runs the vpn gw server in the specified
-                  subnet user can access all pods in this subnet via vpn gw server
                 type: string
               tolerations:
                 description: vpn gw pod tolerations
@@ -1001,6 +995,7 @@ spec:
             - enableSslVpn
             - ip
             - ipsecVpnImage
+            - keepalived
             - memory
             - ovpnCipher
             - ovpnPort

@@ -37,6 +37,12 @@ SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/openvpn
 IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/strongswan
 KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}/keepalived
 
+# dependencies
+KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.12.1
+CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.12.1
+CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.12.1
+
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
@@ -58,7 +64,7 @@ OPERATOR_SDK_VERSION ?= v1.31.0
 
 # Image URL to use all building/pushing image targets
 # IMG ?= controller:latest
-IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
+IMG ?= $(IMAGE_TAG_BASE)/controller:v$(VERSION)
 
 BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
@@ -327,3 +333,34 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+# Kind install
+KIND_CLUSTER_NAME ?= kube-ovn
+define docker_ensure_image_exists
+	if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep "^$(1)$$" >/dev/null; then \
+		docker pull "$(1)"; \
+	fi
+endef
+
+define kind_load_image
+	@if [ "x$(3)" = "x1" ]; then \
+		$(call docker_ensure_image_exists,$(2)); \
+	fi
+	kind load docker-image --name $(1) $(2)
+endef
+
+.PHONY: kind-load-image
+kind-load-image:
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CAINJECTOR))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CONTROLLER))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_WEBHOOK))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
+
+.PHONY: kind-reload
+kind-reload: 
+	kubectl delete po -n kube-combo-system -l control-plane=controller-manager

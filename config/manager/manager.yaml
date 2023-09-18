@@ -70,7 +70,8 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: controller:latest
+        # image: controller:latest
+        image: kubecombo.com/kube-combo/controller:v0.0.1
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

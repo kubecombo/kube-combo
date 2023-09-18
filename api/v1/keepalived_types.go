@@ -40,15 +40,12 @@ type KeepAlivedSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=kubecombo.io/keepalived:latest
 	Image string `json:"image"`
 
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=vpc1-subnet1
 	Subnet string `json:"subnet"`
 
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=192.168.0.1
 	Vip string `json:"vip"`
 }
 
@@ -64,7 +61,6 @@ type KeepAlivedStatus struct {
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=0
 	RouterID int `json:"routerID"`
 }
 

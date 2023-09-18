@@ -31,6 +31,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-vpn-gw-kubecombo-com-v1-keepalived
+  failurePolicy: Fail
+  name: mkeepalived.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - keepaliveds
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-vpn-gw-kubecombo-com-v1-vpngw
   failurePolicy: Fail
   name: mvpngw.kb.io
@@ -71,6 +91,26 @@ webhooks:
     - UPDATE
     resources:
     - ipsecconns
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-vpn-gw-kubecombo-com-v1-keepalived
+  failurePolicy: Fail
+  name: vkeepalived.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - keepaliveds
   sideEffects: None
 - admissionReviewVersions:
   - v1
