@@ -12,3 +12,25 @@ Kube-Combo 是一款基于 Pod 来提供各种各样网元能力的编排系统�
 ## 良好的可运维性
 
 Kube-Combo 支持一键安装，帮助用户迅速搭建生产就绪的网络应用。同时内置的丰富的监控指标和 Grafana 面板，可帮助用户建立完善的监控体系。
+
+## 1. Devlop
+
+### build
+
+```bash
+make docker-build-base
+make docker-build-ipsec-vpn
+make docker-build-keepalived
+make docker-build-openvpn
+
+```
+
+### run
+
+``` bash
+
+# load image
+
+# kind-install
+
+```

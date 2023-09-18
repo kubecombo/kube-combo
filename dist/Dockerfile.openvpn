@@ -1,11 +1,9 @@
-FROM ubuntu:22.04
+FROM kubecombo.com/kube-combo/base:v0.0.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install python3 hostname vim tree iproute2 inetutils-ping arping ncat iptables tcpdump ipset curl openssl easy-rsa openvpn dnsutils net-tools -y && \
-        rm -rf /var/lib/apt/lists/* && \
-        rm -rf /etc/localtime
+    apt-get install openvpn -y && \
+        rm -rf /var/lib/apt/lists/*
 
 # Configure tun
 RUN mkdir -p /dev/net && \

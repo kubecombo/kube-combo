@@ -29,11 +29,13 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # kubecombo.com/kube-combo-bundle:$VERSION and kubecombo.com/kube-combo-catalog:$VERSION.
-# IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
-IMAGE_TAG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo
-SSL_VPN_IMG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/openvpn
-IPSEC_VPN_IMG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/strongswan
-KEEPALIVED_IMG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/keepalived
+IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
+# IMAGE_TAG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo
+
+BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}/base
+SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/openvpn
+IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/strongswan
+KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}/keepalived
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -57,6 +59,8 @@ OPERATOR_SDK_VERSION ?= v1.31.0
 # Image URL to use all building/pushing image targets
 # IMG ?= controller:latest
 IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
+
+BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
@@ -141,9 +145,17 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+.PHONY: docker-build-base
+docker-build-base:
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+
+.PHONY: docker-push-base
+docker-push-base:
+	docker push ${BASE_IMG}
+
 .PHONY: docker-build-ssl-vpn
 docker-build-ssl-vpn:
-	docker buildx build --load --platform linux/amd64 -f Dockerfile.openvpn -t ${SSL_VPN_IMG} .
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
 
 .PHONY: docker-push-ssl-vpn
 docker-push-ssl-vpn:
@@ -151,7 +163,7 @@ docker-push-ssl-vpn:
 
 .PHONY: docker-build-ipsec-vpn
 docker-build-ipsec-vpn:
-	docker buildx build --load --platform linux/amd64 -f Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
 
 .PHONY: docker-push-ipsec-vpn
 docker-push-ipsec-vpn:
@@ -159,7 +171,7 @@ docker-push-ipsec-vpn:
 
 .PHONY: docker-build-keepalived
 docker-build-keepalived:
-	docker buildx build --load --platform linux/amd64 -f Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
 
 .PHONY: docker-push-keepalived
 docker-push-keepalived:
