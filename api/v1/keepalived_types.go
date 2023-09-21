@@ -17,36 +17,24 @@ limitations under the License.
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// PasswordAuth references a Kubernetes secret to extract the password for VRRP authentication
-type PasswordAuth struct {
-	// +required
-	SecretRef corev1.LocalObjectReference `json:"secretRef"`
-
-	// +optional
-	// +kubebuilder:default:=password
-	SecretKey string `json:"secretKey"`
-}
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // KeepAlivedSpec defines the desired state of KeepAlived
 type KeepAlivedSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// +kubebuilder:validation:Required
 	Image string `json:"image"`
 
 	// +kubebuilder:validation:Required
 	Subnet string `json:"subnet"`
 
-	// +kubebuilder:validation:Required
-	Vip string `json:"vip"`
+	// +kubebuilder:validation:Optional
+	VipV4 string `json:"vipV4"`
+	// +kubebuilder:validation:Optional
+	VipV6 string `json:"vipV6"`
 }
 
 // KeepAlivedStatus defines the observed state of KeepAlived

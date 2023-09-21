@@ -1,0 +1,8 @@
+---
+kind: Vip
+apiVersion: kubeovn.io/v1
+metadata:
+  name: keepalived
+spec:
+  subnet: vpc1-subnet1
+  type: ""

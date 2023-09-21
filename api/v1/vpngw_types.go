@@ -29,13 +29,6 @@ type VpnGwSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// keepalived maintains the ha ip address alive
-	// keepalived server need replica 2 at least
-	// keepalived represents the keepalived crd name
-
-	// +kubebuilder:validation:Required
-	Keepalived string `json:"keepalived"`
-
 	// cpu, memory request
 	// cpu, memory limit
 	// 1C 1G at least
@@ -52,16 +45,6 @@ type VpnGwSpec struct {
 	QoSBandwidth string `json:"qosBandwidth"`
 
 	// vpn gw private vpc subnet static ip
-
-	// +kubebuilder:validation:Required
-	Ip string `json:"ip"`
-
-	// pod subnet
-	// pod runs the vpn gw server in the specified subnet
-	// user can access all pods in this subnet via vpn gw server
-
-	// +kubebuilder:validation:Required
-	Subnet string `json:"subnet"`
 
 	// statefulset replicas
 
@@ -120,6 +103,13 @@ type VpnGwSpec struct {
 
 	// ipsec vpn server image, use Dockerfile.strongswan
 	IpsecVpnImage string `json:"ipsecVpnImage"`
+
+	// keepalived maintains the ha ip address alive
+	// keepalived server need replica 2 at least
+	// keepalived represents the keepalived crd name
+
+	// +kubebuilder:validation:Required
+	Keepalived string `json:"keepalived"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
@@ -130,8 +120,6 @@ type VpnGwStatus struct {
 	Cpu              string              `json:"cpu" patchStrategy:"merge"`
 	Memory           string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth     string              `json:"qosBandwidth" patchStrategy:"merge"`
-	Ip               string              `json:"ip" patchStrategy:"merge"`
-	Subnet           string              `json:"subnet" patchStrategy:"merge"`
 	Replicas         int32               `json:"replicas" patchStrategy:"merge"`
 	Selector         []string            `json:"selector,omitempty" patchStrategy:"merge"`
 	Tolerations      []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
@@ -148,6 +136,7 @@ type VpnGwStatus struct {
 	IpsecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
 	IpsecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
 	IpsecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
+	Keepalived       string              `json:"keepalived" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

@@ -39,12 +39,13 @@ spec:
                 type: string
               subnet:
                 type: string
-              vip:
+              vipV4:
+                type: string
+              vipV6:
                 type: string
             required:
             - image
             - subnet
-            - vip
             type: object
           status:
             description: KeepAlivedStatus defines the observed state of KeepAlived

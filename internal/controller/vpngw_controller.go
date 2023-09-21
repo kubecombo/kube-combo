@@ -184,6 +184,30 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedName string) error {
+	if ka.Spec.Image == "" {
+		err := fmt.Errorf("keepalived image is required")
+		r.Log.Error(err, "should set keepalived image")
+		return err
+	}
+	if ka.Spec.Subnet == "" {
+		err := fmt.Errorf("keepalived subnet is required")
+		r.Log.Error(err, "should set keepalived subnet")
+		return err
+	}
+	if ka.Spec.VipV4 == "" && ka.Spec.VipV6 == "" {
+		err := fmt.Errorf("keepalived vip v4 or v6 ip is required")
+		r.Log.Error(err, "should set keepalived vip")
+		return err
+	}
+	if ka.Status.RouterID == 0 {
+		err := fmt.Errorf("keepalived router should not be 0")
+		r.Log.Error(err, "keepalived router should not be 0")
+		return err
+	}
+	return nil
+}
+
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
 	if gw.Spec.Keepalived == "" {
 		err := fmt.Errorf("vpn gw keepalived is required")
@@ -203,34 +227,17 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 		return err
 	}
 
-	if gw.Spec.Subnet == "" {
-		err := fmt.Errorf("vpn gw subnet is required")
-		r.Log.Error(err, "should set subnet")
-		return err
-	}
-	if gw.Status.Subnet != "" && gw.Spec.Subnet != gw.Status.Subnet {
-		err := fmt.Errorf("vpn gw subnet not support change")
-		r.Log.Error(err, "vpn gw should not change subnet")
-		return err
-	}
-
-	if gw.Spec.Ip == "" {
-		r.Log.Info("vpn gw pod ip random allocate", "name", namespacedName)
-	} else {
-		r.Log.Info("vpn gw pod ip set by user", "name", namespacedName, "ip", gw.Spec.Ip)
-	}
-
 	if gw.Spec.Replicas != 1 {
 		err := fmt.Errorf("vpn gw replicas should only be 1 for now, ha mode will be supported in the future")
 		r.Log.Error(err, "should set reasonable replicas")
 		return err
 	}
 
-	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
-		err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
-		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
-		return err
-	}
+	// if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
+	// 	err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
+	// 	r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
+	// 	return err
+	// }
 
 	if gw.Spec.EnableSslVpn {
 		if gw.Spec.SslSecret == "" {
@@ -302,8 +309,8 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 
 func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string) bool {
 	changed := false
-	if gw.Status.Subnet == "" && gw.Spec.Subnet != "" {
-		gw.Status.Subnet = gw.Spec.Subnet
+	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
+		gw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
 	}
 
@@ -317,10 +324,6 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 	}
 	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
 		gw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
-		changed = true
-	}
-	if gw.Status.Ip != gw.Spec.Ip {
-		gw.Status.Ip = gw.Spec.Ip
 		changed = true
 	}
 	if gw.Status.Replicas != gw.Spec.Replicas {
@@ -393,8 +396,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		newPodAnnotations = oldSts.Annotations
 	}
 	podAnnotations := map[string]string{
-		KubeovnLogicalSwitchAnnotation: gw.Spec.Subnet,
-		KubeovnIpAddressAnnotation:     gw.Spec.Ip,
+		KubeovnLogicalSwitchAnnotation: ka.Spec.Subnet,
 		KubeovnIngressRateAnnotation:   gw.Spec.QoSBandwidth,
 		KubeovnEgressRateAnnotation:    gw.Spec.QoSBandwidth,
 	}
@@ -423,7 +425,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		Env: []corev1.EnvVar{
 			{
 				Name:  KeepalivedVipKey,
-				Value: ka.Spec.Vip,
+				Value: ka.Spec.VipV4,
 			},
 			{
 				Name:  keepalivedVirtualRouterID,
@@ -657,8 +659,6 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	if gw == nil {
 		return SyncStateErrorNoRetry, nil
 	}
-
-	// validate vpn gw spec
 	if err := r.validateVpnGw(gw, namespacedName); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
 		// invalid spec no retry
@@ -671,12 +671,17 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			Namespace: gw.Namespace,
 		},
 	}
-	// fetch keepalived
+
 	ka, err = r.getValidKeepalived(ctx, ka)
 	if err != nil {
-		err = fmt.Errorf("failed to get valid keepalived: %v", err)
-		r.Log.Error(err, "failed to get valid keepalived")
+		err = fmt.Errorf("failed to get keepalived: %v", err)
+		r.Log.Error(err, "failed to get keepalived")
 		return SyncStateError, err
+	}
+	if err := r.validateKeepalived(ka, namespacedName); err != nil {
+		r.Log.Error(err, "failed to validate keepalived")
+		// invalid spec no retry
+		return SyncStateErrorNoRetry, err
 	}
 
 	// create or update statefulset
@@ -827,20 +832,6 @@ func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *vpngwv1.Ke
 		r.Log.Error(err, "failed to get keepalived")
 		return nil, err
 	}
-	if res.Spec.Image != "" {
-		err := fmt.Errorf("keepalived image is required")
-		r.Log.Error(err, "keepalived image is required")
-		return nil, err
-	}
-	if res.Spec.Vip == "" {
-		err := fmt.Errorf("keepalived vip is required")
-		r.Log.Error(err, "keepalived vip is required")
-		return nil, err
-	}
-	if res.Status.RouterID == 0 {
-		err := fmt.Errorf("keepalived router should not be 0")
-		r.Log.Error(err, "keepalived router should not be 0")
-		return nil, err
-	}
+
 	return &res, nil
 }

@@ -363,4 +363,5 @@ kind-load-image:
 
 .PHONY: kind-reload
 kind-reload: 
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
 	kubectl delete po -n kube-combo-system -l control-plane=controller-manager
