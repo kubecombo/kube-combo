@@ -1,0 +1,4 @@
+
+
+kubectl delete -f 01-vip.yaml -f 02-keepalived.yaml -f 03-gw.yaml
+

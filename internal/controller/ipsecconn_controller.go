@@ -74,11 +74,11 @@ func (r *IpsecConnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle ipsecConn")
+		r.Log.Error(err, "failed to handle ipsecConn, will retry")
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle ipsecConn")
+		r.Log.Error(err, "failed to handle ipsecConn, will not retry")
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, nil
@@ -141,7 +141,7 @@ func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(ctx context.Conte
 	if ipsecConn == nil {
 		// ipsecConn is deleted
 		// onwner reference will trigger vpn gw update ipsec connections
-		return SyncStateErrorNoRetry, nil
+		return SyncStateSuccess, nil
 	}
 
 	// validate ipsecConn spec

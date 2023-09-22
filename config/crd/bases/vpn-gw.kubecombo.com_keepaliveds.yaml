@@ -15,7 +15,23 @@ spec:
     singular: keepalived
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.vipV4
+      name: VipV4
+      type: string
+    - jsonPath: .spec.vipV6
+      name: VipV6
+      type: string
+    - jsonPath: .spec.subnet
+      name: Subnet
+      type: string
+    - jsonPath: .status.routerID
+      name: RouterID
+      type: string
+    - jsonPath: .spec.image
+      name: Image
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         description: KeepAlived is the Schema for the keepaliveds API
@@ -129,5 +145,4 @@ spec:
         type: object
     served: true
     storage: true
-    subresources:
-      status: {}
+    subresources: {}

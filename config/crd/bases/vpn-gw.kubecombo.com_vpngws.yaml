@@ -895,8 +895,10 @@ spec:
                   namespace as the vpn gw
                 type: string
               enableIpsecVpn:
+                default: false
                 type: boolean
               enableSslVpn:
+                default: false
                 type: boolean
               ipsecConnections:
                 description: ipsec vpn local and remote connections, inlude remote
@@ -913,15 +915,20 @@ spec:
                 description: ipsec vpn server image, use Dockerfile.strongswan
                 type: string
               keepalived:
+                description: keepalived maintains the ha ip address alive keepalived
+                  server need replica 2 at least keepalived represents the keepalived
+                  crd name
                 type: string
               memory:
                 type: string
               ovpnCipher:
                 type: string
               ovpnPort:
+                default: 1194
                 description: ovpn ssl vpn port, default 1194 for udp, 443 for tcp
                 type: integer
               ovpnProto:
+                default: udp
                 description: ssl vpn use openvpn server all ssl vpn spec start with
                   ovpn ovpn ssl vpn proto, udp or tcp, udp probably is better
                 type: string
@@ -929,8 +936,10 @@ spec:
                 description: ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
                 type: string
               qosBandwidth:
+                description: 1Mbps bandwidth at least
                 type: string
               replicas:
+                default: 2
                 format: int32
                 type: integer
               selector:

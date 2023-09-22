@@ -76,11 +76,11 @@ func (r *KeepAlivedReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle keepalived")
+		r.Log.Error(err, "failed to handle keepalived, will retry")
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle keepalived")
+		r.Log.Error(err, "failed to handle keepalived, will not retry")
 		return ctrl.Result{}, nil
 	}
 
@@ -132,12 +132,16 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 	// fetch ka
 	ka, err := r.getKeepAlived(ctx, req.NamespacedName)
 	if err != nil {
-		err := fmt.Errorf("failed to get keepalived %s: %w", namespacedName, err)
 		r.Log.Error(err, "failed to get keepalived")
 		return SyncStateError, err
 	}
 	if ka == nil {
-		return SyncStateErrorNoRetry, nil
+		// ka is deleted
+		return SyncStateSuccess, nil
+	}
+	if ka.Status.RouterID != 0 {
+		// ka is already handled
+		return SyncStateSuccess, nil
 	}
 
 	// validate keepalived spec
@@ -149,7 +153,7 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 
 	if err = r.setRouterID(ctx, ka); err != nil {
 		err := fmt.Errorf("failed to set router id for keepalived %s: %w", namespacedName, err)
-		r.Log.Error(err, "keepalived", ka)
+		r.Log.Error(err, "keepalived")
 		return SyncStateErrorNoRetry, nil
 	}
 
@@ -162,16 +166,14 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 		r.Log.Error(err, "failed to update the keepalived")
 		return SyncStateError, err
 	}
-	return SyncStateSuccess, err
+	return SyncStateSuccess, nil
 }
 
 func (r *KeepAlivedReconciler) setRouterID(ctx context.Context, ka *vpngwv1.KeepAlived) error {
 	assignedIDs := []int{}
-	// fetch kas
-	kas, err := r.listKeepAlived(ctx, ka)
+	kas, err := r.listKeepAlived(ctx, ka.Namespace)
 	if err != nil {
-		err := fmt.Errorf("failed to get keepaliveds in ns %s: %w", ka.Namespace, err)
-		r.Log.Error(err, "failed to get keepaliveds")
+		r.Log.Error(err, "failed to list keepaliveds")
 		return err
 	}
 	for _, ka := range *kas {
@@ -181,15 +183,13 @@ func (r *KeepAlivedReconciler) setRouterID(ctx context.Context, ka *vpngwv1.Keep
 	}
 	id, err := findNextAvailableID(assignedIDs)
 	if err != nil {
-		err := fmt.Errorf("failed to find next available id for keepalived %s: %w", ka.Name, err)
 		r.Log.Error(err, "failed to find next available id")
 		return err
 	}
 	ka.Status.RouterID = id
-	err = r.Status().Update(ctx, ka)
+	err = r.Update(ctx, ka)
 	if err != nil {
-		err := fmt.Errorf("failed to update status for keepalived %s: %w", ka.Name, err)
-		r.Log.Error(err, "failed to update status")
+		r.Log.Error(err, "failed to update keepalived router id")
 		return err
 	}
 	return nil
@@ -226,13 +226,12 @@ func (r *KeepAlivedReconciler) getKeepAlived(ctx context.Context, name types.Nam
 	return &res, nil
 }
 
-func (r *KeepAlivedReconciler) listKeepAlived(ctx context.Context, ka *vpngwv1.KeepAlived) (*[]vpngwv1.KeepAlived, error) {
+func (r *KeepAlivedReconciler) listKeepAlived(ctx context.Context, ns string) (*[]vpngwv1.KeepAlived, error) {
 	kaList := &vpngwv1.KeepAlivedList{}
-	listOps := &client.ListOptions{Namespace: ka.Namespace}
-	labelSelector := client.MatchingLabels(labelsForKeepAlived(ka))
-	err := r.List(ctx, kaList, listOps, labelSelector)
+	listOps := &client.ListOptions{Namespace: ns}
+	err := r.List(ctx, kaList, listOps)
 	if err != nil {
-		err := fmt.Errorf("failed to list keepalived %s: %w", ka.Namespace, err)
+		err := fmt.Errorf("failed to list keepalived %s: %w", ns, err)
 		r.Log.Error(err, "failed to list keepalived")
 		return nil, err
 	}

@@ -25,16 +25,15 @@ import (
 
 // KeepAlivedSpec defines the desired state of KeepAlived
 type KeepAlivedSpec struct {
-	// +kubebuilder:validation:Required
-	Image string `json:"image"`
-
-	// +kubebuilder:validation:Required
-	Subnet string `json:"subnet"`
-
 	// +kubebuilder:validation:Optional
 	VipV4 string `json:"vipV4"`
 	// +kubebuilder:validation:Optional
 	VipV6 string `json:"vipV6"`
+	// +kubebuilder:validation:Required
+	Subnet string `json:"subnet"`
+
+	// +kubebuilder:validation:Required
+	Image string `json:"image"`
 }
 
 // KeepAlivedStatus defines the observed state of KeepAlived
@@ -48,7 +47,6 @@ type KeepAlivedStatus struct {
 	// +listMapKey=type
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 
-	// +kubebuilder:validation:Required
 	RouterID int `json:"routerID"`
 }
 
@@ -61,7 +59,13 @@ func (m *KeepAlived) SetConditions(conditions []metav1.Condition) {
 }
 
 //+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// // +kubebuilder:subresource:status
+//+kubebuilder:storageversion
+//+kubebuilder:printcolumn:name="VipV4",type=string,JSONPath=`.spec.vipV4`
+//+kubebuilder:printcolumn:name="VipV6",type=string,JSONPath=`.spec.vipV6`
+//+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
+//+kubebuilder:printcolumn:name="RouterID",type=string,JSONPath=`.status.routerID`
+//+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 
 // KeepAlived is the Schema for the keepaliveds API
 type KeepAlived struct {

@@ -40,7 +40,6 @@ type VpnGwSpec struct {
 	Memory string `json:"memory"`
 
 	// 1Mbps bandwidth at least
-
 	// +kubebuilder:validation:Required
 	QoSBandwidth string `json:"qosBandwidth"`
 
@@ -49,6 +48,7 @@ type VpnGwSpec struct {
 	// statefulset replicas
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=2
 	Replicas int32 `json:"replicas"`
 
 	// vpn gw pod node selector
@@ -63,6 +63,7 @@ type VpnGwSpec struct {
 	// vpn gw enable ssl vpn
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
@@ -75,8 +76,10 @@ type VpnGwSpec struct {
 	// ssl vpn use openvpn server
 	// all ssl vpn spec start with ovpn
 	// ovpn ssl vpn proto, udp or tcp, udp probably is better
+	// +kubebuilder:default:=udp
 	OvpnProto string `json:"ovpnProto"`
 	// ovpn ssl vpn port, default 1194 for udp, 443 for tcp
+	// +kubebuilder:default:=1194
 	OvpnPort int `json:"ovpnPort"`
 
 	// ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
@@ -91,6 +94,7 @@ type VpnGwSpec struct {
 	// vpn gw enable ipsec vpn
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
 	EnableIpsecVpn bool `json:"enableIpsecVpn"`
 
 	// ipsec use strongswan server
@@ -107,7 +111,6 @@ type VpnGwSpec struct {
 	// keepalived maintains the ha ip address alive
 	// keepalived server need replica 2 at least
 	// keepalived represents the keepalived crd name
-
 	// +kubebuilder:validation:Required
 	Keepalived string `json:"keepalived"`
 }

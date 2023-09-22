@@ -88,8 +88,8 @@ const (
 
 	IpsecProto = "UDP"
 
-	IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
-	IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
+	// IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
+	// IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
 )
 
 // keepalived
@@ -151,11 +151,11 @@ func (r *VpnGwReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle vpn gw")
+		r.Log.Error(err, "failed to handle vpn gw, will retry")
 		return ctrl.Result{RequeueAfter: 3 * time.Second}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle vpn gw")
+		r.Log.Error(err, "failed to handle vpn gw, will not retry")
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, nil
@@ -198,11 +198,6 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedN
 	if ka.Spec.VipV4 == "" && ka.Spec.VipV6 == "" {
 		err := fmt.Errorf("keepalived vip v4 or v6 ip is required")
 		r.Log.Error(err, "should set keepalived vip")
-		return err
-	}
-	if ka.Status.RouterID == 0 {
-		err := fmt.Errorf("keepalived router should not be 0")
-		r.Log.Error(err, "keepalived router should not be 0")
 		return err
 	}
 	return nil
@@ -657,7 +652,8 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		return SyncStateErrorNoRetry, err
 	}
 	if gw == nil {
-		return SyncStateErrorNoRetry, nil
+		// vpn gw deleted
+		return SyncStateSuccess, nil
 	}
 	if err := r.validateVpnGw(gw, namespacedName); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
