@@ -96,7 +96,7 @@ const (
 const (
 	KeepalivedVipKey          = "KEEPALIVED_VIP"
 	keepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
-	KeepalivedStartUpCMD      = "/etc/keepalived/setup/configure.sh"
+	KeepalivedStartUpCMD      = "/configure.sh"
 	KeepAlivedServer          = "keepalived"
 )
 
@@ -219,12 +219,6 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 	if gw.Spec.QoSBandwidth == "" || gw.Spec.QoSBandwidth == "0" {
 		err := fmt.Errorf("vpn gw qos bandwidth is required")
 		r.Log.Error(err, "should set qos bandwidth")
-		return err
-	}
-
-	if gw.Spec.Replicas != 1 {
-		err := fmt.Errorf("vpn gw replicas should only be 1 for now, ha mode will be supported in the future")
-		r.Log.Error(err, "should set reasonable replicas")
 		return err
 	}
 

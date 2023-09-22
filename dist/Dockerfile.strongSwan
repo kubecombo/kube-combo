@@ -5,8 +5,5 @@ RUN apt-get update && \
     apt-get install charon-systemd -y && \
         rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --no-cache-dir j2cli[yaml] && \
-    rm -rf /root/.cache/pip
-
 COPY dist/strongswan-setup /
 RUN chmod +x *.sh

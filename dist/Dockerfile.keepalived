@@ -4,6 +4,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install keepalived -y && \
         rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /etc/keepalived/setup
-COPY dist/keepalived-setup /etc/keepalived/setup/
-RUN chmod +x /etc/keepalived/setup/*.sh
+        
+RUN mkdir -p /etc/keepalived.d
+COPY dist/keepalived-setup /
+RUN chmod +x /configure.sh

@@ -67,8 +67,10 @@ make docker-build docker-push
 # make docker-build 
 # make docker-push
 
-# build openvpn image
+# build keepalived
+make docker-build-keepalived docker-push-keepalived 
 
+# build openvpn image
 make docker-build-ssl-vpn docker-push-ssl-vpn
 
 # build ipsec image

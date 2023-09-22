@@ -158,12 +158,6 @@ func (r *VpnGw) validateVpnGw() error {
 		allErrs = append(allErrs, e)
 	}
 
-	if r.Spec.Replicas != 1 {
-		err := fmt.Errorf("vpn gw replicas should only be 1 for now, ha mode will be supported in the future")
-		e := field.Invalid(field.NewPath("spec").Child("replicas"), r.Spec.Replicas, err.Error())
-		allErrs = append(allErrs, e)
-	}
-
 	if !r.Spec.EnableSslVpn && !r.Spec.EnableIpsecVpn {
 		err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
 		e := field.Invalid(field.NewPath("spec").Child("enableSslVpn"), r.Spec.EnableSslVpn, err.Error())
