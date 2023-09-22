@@ -67,31 +67,20 @@ func (r *IpsecConnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start reconcile", "ipsecConn", namespacedName)
 	defer r.Log.Info("end reconcile", "ipsecConn", namespacedName)
-	updates.Inc()
-	// fetch ipsecConn
-	ipsecConn, err := r.getIpsecConnection(ctx, req.NamespacedName)
-	if err != nil {
-		r.Log.Error(err, "failed to get ipsecConn")
-		return ctrl.Result{}, err
-	}
-	if ipsecConn == nil {
-		// ipsecConn is deleted
-		// onwner reference will trigger vpn gw update ipsec connections
-		return ctrl.Result{}, nil
-	}
+
 	// update vpn gw spec
-	res, err := r.handleAddOrUpdateIpsecConnection(req, ipsecConn)
+	updates.Inc()
+	res, err := r.handleAddOrUpdateIpsecConnection(ctx, req)
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle ipsecConn")
+		r.Log.Error(err, "failed to handle ipsecConn, will retry")
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle ipsecConn")
+		r.Log.Error(err, "failed to handle ipsecConn, will not retry")
 		return ctrl.Result{}, nil
 	}
-
 	return ctrl.Result{}, nil
 }
 
@@ -117,12 +106,6 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn, namespacedName string) error {
-	if ipsecConn.Spec.VpnGw == "" {
-		err := fmt.Errorf("ipsecConn vpn gw is required")
-		r.Log.Error(err, "should set vpn gw")
-		return err
-	}
-
 	if ipsecConn.Spec.IkeVersion != "0" && ipsecConn.Spec.IkeVersion != "1" && ipsecConn.Spec.IkeVersion != "2" {
 		err := fmt.Errorf("ipsec connection spec ike version is invalid, ike version spec: %s", ipsecConn.Spec.IkeVersion)
 		r.Log.Error(err, "ignore invalid ipsec connection")
@@ -131,24 +114,6 @@ func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecCo
 	if ipsecConn.Spec.Auth != "psk" && ipsecConn.Spec.Auth != "pubkey" {
 		err := fmt.Errorf("ipsec connection spec auth is invalid, auth spec: %s", ipsecConn.Spec.Auth)
 		r.Log.Error(err, "ignore invalid ipsec connection")
-	}
-
-	if ipsecConn.Spec.RemotePublicIp == "" {
-		err := fmt.Errorf("ipsecConn remote public ip is required")
-		r.Log.Error(err, "should set remote public ip")
-		return err
-	}
-
-	if ipsecConn.Spec.RemotePrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn remote private cidrs is required")
-		r.Log.Error(err, "should set remote private cidrs")
-		return err
-	}
-
-	if ipsecConn.Spec.LocalPrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn local private cidrs is required")
-		r.Log.Error(err, "should set local private cidrs")
-		return err
 	}
 
 	return nil
@@ -160,11 +125,24 @@ func labelsForIpsecConnection(conn *vpngwv1.IpsecConn) map[string]string {
 	}
 }
 
-func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(req ctrl.Request, ipsecConn *vpngwv1.IpsecConn) (SyncState, error) {
+func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create ipsecConn statefulset
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start handleAddOrUpdateIpsecConnection", "ipsecConn", namespacedName)
 	defer r.Log.Info("end handleAddOrUpdateIpsecConnection", "ipsecConn", namespacedName)
+
+	// fetch ipsecConn
+	ipsecConn, err := r.getIpsecConnection(ctx, req.NamespacedName)
+	if err != nil {
+		err := fmt.Errorf("failed to get ipsecConn: %w", err)
+		r.Log.Error(err, "failed to get ipsecConn")
+		return SyncStateError, err
+	}
+	if ipsecConn == nil {
+		// ipsecConn is deleted
+		// onwner reference will trigger vpn gw update ipsec connections
+		return SyncStateSuccess, nil
+	}
 
 	// validate ipsecConn spec
 	if err := r.validateIpsecConnection(ipsecConn, namespacedName); err != nil {
@@ -177,7 +155,7 @@ func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(req ctrl.Request,
 	newConn := ipsecConn.DeepCopy()
 	labels := labelsForIpsecConnection(newConn)
 	newConn.SetLabels(labels)
-	err := r.Patch(context.Background(), newConn, client.MergeFrom(ipsecConn))
+	err = r.Patch(context.Background(), newConn, client.MergeFrom(ipsecConn))
 	if err != nil {
 		r.Log.Error(err, "failed to update the ipsecConn")
 		return SyncStateError, err
@@ -192,6 +170,8 @@ func (r *IpsecConnReconciler) getIpsecConnection(ctx context.Context, name types
 		return nil, nil
 	}
 	if err != nil {
+		err := fmt.Errorf("failed to get ipsecConn %s: %w", name.String(), err)
+		r.Log.Error(err, "failed to get ipsecConn")
 		return nil, err
 	}
 	return &res, nil

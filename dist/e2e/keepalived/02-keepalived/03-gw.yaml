@@ -1,0 +1,31 @@
+
+---
+kind: VpnGw
+apiVersion: vpn-gw.kubecombo.com/v1
+metadata:
+  name: keepalived01
+  namespace: ns1
+spec:
+  cpu: "1"
+  memory: "1024M"
+  qosBandwidth: "20"
+  replicas: 2
+  selector:
+  tolerations:
+  affinity:
+  enableSslVpn: false
+  sslSecret: "" 
+  dhSecret: ""
+  ovpnCipher: ""
+  ovpnProto: ""
+  ovpnPort: 
+  ovpnSubnetCidr: ""
+  sslVpnImage: ""
+  enableIpsecVpn: false
+  ipsecSecret: ""
+  ipsecConnections: 
+  ipsecVpnImage: ""
+  keepalived: "vpc1-subnet1-keepalived-01"
+
+# 该模版仅用于验证 keepalived crd 被 vpn gw 引用，可以提供一个高可用的 vip
+#

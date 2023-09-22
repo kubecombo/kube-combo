@@ -1,0 +1,16 @@
+
+---
+kind: KeepAlived
+apiVersion: vpn-gw.kubecombo.com/v1
+metadata:
+  name: vpc1-subnet1-keepalived-01
+  namespace: ns1
+spec:
+  image: kubecombo.com/kube-combo/keepalived:v0.0.1 
+  subnet: vpc1-subnet1
+  vipV4: 10.1.0.2 
+  vipV6: 
+
+# vip is the ip address of vip
+# todo:// support duastack 
+

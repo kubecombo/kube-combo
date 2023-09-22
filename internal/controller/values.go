@@ -15,7 +15,7 @@ const (
 	// services.
 	SyncStateReprocessAll
 	// The update caused a non transient error, the k8s client should
-	// just report and giveup.
+	// just report and give up.
 	SyncStateErrorNoRetry
 )
 

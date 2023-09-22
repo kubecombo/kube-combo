@@ -1,0 +1,31 @@
+# permissions for end users to edit keepaliveds.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: keepalived-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kube-combo
+    app.kubernetes.io/part-of: kube-combo
+    app.kubernetes.io/managed-by: kustomize
+  name: keepalived-editor-role
+rules:
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - keepaliveds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - keepaliveds/status
+  verbs:
+  - get

@@ -30,6 +30,18 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # kubecombo.com/kube-combo-bundle:$VERSION and kubecombo.com/kube-combo-catalog:$VERSION.
 IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
+# IMAGE_TAG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo
+
+BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}/base
+SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/openvpn
+IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/strongswan
+KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}/keepalived
+
+# dependencies
+KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.12.1
+CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.12.1
+CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.12.1
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -51,7 +63,14 @@ endif
 OPERATOR_SDK_VERSION ?= v1.31.0
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+# IMG ?= controller:latest
+IMG ?= $(IMAGE_TAG_BASE)/controller:v$(VERSION)
+
+BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
+SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
+IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
+KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.0
 
@@ -124,11 +143,45 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
-	docker build -t ${IMG} .
+	# docker build -t ${IMG} .
+	docker buildx build --load --platform linux/amd64 -t ${IMG} .
+
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
+
+.PHONY: docker-build-base
+docker-build-base:
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+
+.PHONY: docker-push-base
+docker-push-base:
+	docker push ${BASE_IMG}
+
+.PHONY: docker-build-ssl-vpn
+docker-build-ssl-vpn:
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
+
+.PHONY: docker-push-ssl-vpn
+docker-push-ssl-vpn:
+	docker push ${SSL_VPN_IMG}
+
+.PHONY: docker-build-ipsec-vpn
+docker-build-ipsec-vpn:
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
+
+.PHONY: docker-push-ipsec-vpn
+docker-push-ipsec-vpn:
+	docker push ${IPSEC_VPN_IMG}
+
+.PHONY: docker-build-keepalived
+docker-build-keepalived:
+	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
+
+.PHONY: docker-push-keepalived
+docker-push-keepalived:
+	docker push ${KEEPALIVED_IMG}
 
 # PLATFORMS defines the target platforms for  the manager image be build to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
@@ -233,7 +286,8 @@ bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metada
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+	# docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+	docker buildx build --load --platform linux/amd64 -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.
@@ -279,3 +333,35 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+# Kind install
+KIND_CLUSTER_NAME ?= kube-ovn
+define docker_ensure_image_exists
+	if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep "^$(1)$$" >/dev/null; then \
+		docker pull "$(1)"; \
+	fi
+endef
+
+define kind_load_image
+	@if [ "x$(3)" = "x1" ]; then \
+		$(call docker_ensure_image_exists,$(2)); \
+	fi
+	kind load docker-image --name $(1) $(2)
+endef
+
+.PHONY: kind-load-image
+kind-load-image:
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CAINJECTOR))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CONTROLLER))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_WEBHOOK))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
+
+.PHONY: kind-reload
+kind-reload: 
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
+	kubectl delete po -n kube-combo-system -l control-plane=controller-manager

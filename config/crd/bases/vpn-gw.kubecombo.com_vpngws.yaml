@@ -889,21 +889,17 @@ spec:
                     type: object
                 type: object
               cpu:
-                description: cpu, memory request cpu, memory limit 1C 1G at least
                 type: string
               dhSecret:
                 description: ssl vpn dh secret name, the secret should in the same
                   namespace as the vpn gw
                 type: string
               enableIpsecVpn:
-                description: vpn gw enable ipsec vpn
+                default: false
                 type: boolean
               enableSslVpn:
-                description: vpn gw enable ssl vpn
+                default: false
                 type: boolean
-              ip:
-                description: vpn gw private vpc subnet static ip
-                type: string
               ipsecConnections:
                 description: ipsec vpn local and remote connections, inlude remote
                   ip and subnet
@@ -918,14 +914,21 @@ spec:
               ipsecVpnImage:
                 description: ipsec vpn server image, use Dockerfile.strongswan
                 type: string
+              keepalived:
+                description: keepalived maintains the ha ip address alive keepalived
+                  server need replica 2 at least keepalived represents the keepalived
+                  crd name
+                type: string
               memory:
                 type: string
               ovpnCipher:
                 type: string
               ovpnPort:
+                default: 1194
                 description: ovpn ssl vpn port, default 1194 for udp, 443 for tcp
                 type: integer
               ovpnProto:
+                default: udp
                 description: ssl vpn use openvpn server all ssl vpn spec start with
                   ovpn ovpn ssl vpn proto, udp or tcp, udp probably is better
                 type: string
@@ -936,7 +939,7 @@ spec:
                 description: 1Mbps bandwidth at least
                 type: string
               replicas:
-                description: statefulset replicas
+                default: 2
                 format: int32
                 type: integer
               selector:
@@ -950,10 +953,6 @@ spec:
                 type: string
               sslVpnImage:
                 description: ssl vpn server image, use Dockerfile.openvpn
-                type: string
-              subnet:
-                description: pod subnet pod runs the vpn gw server in the specified
-                  subnet user can access all pods in this subnet via vpn gw server
                 type: string
               tolerations:
                 description: vpn gw pod tolerations
@@ -999,8 +998,8 @@ spec:
             - cpu
             - enableIpsecVpn
             - enableSslVpn
-            - ip
             - ipsecVpnImage
+            - keepalived
             - memory
             - ovpnCipher
             - ovpnPort
@@ -1009,7 +1008,6 @@ spec:
             - qosBandwidth
             - replicas
             - sslVpnImage
-            - subnet
             type: object
           status:
             description: VpnGwStatus defines the observed state of VpnGw
@@ -1920,8 +1918,6 @@ spec:
                 type: boolean
               enableSslVpn:
                 type: boolean
-              ip:
-                type: string
               ipsecConnections:
                 items:
                   type: string
@@ -1929,6 +1925,8 @@ spec:
               ipsecSecret:
                 type: string
               ipsecVpnImage:
+                type: string
+              keepalived:
                 type: string
               memory:
                 type: string
@@ -1952,8 +1950,6 @@ spec:
               sslSecret:
                 type: string
               sslVpnImage:
-                type: string
-              subnet:
                 type: string
               tolerations:
                 items:
@@ -1999,9 +1995,9 @@ spec:
             - dhSecret
             - enableIpsecVpn
             - enableSslVpn
-            - ip
             - ipsecSecret
             - ipsecVpnImage
+            - keepalived
             - memory
             - ovpnCipher
             - ovpnPort
@@ -2011,7 +2007,6 @@ spec:
             - replicas
             - sslSecret
             - sslVpnImage
-            - subnet
             type: object
         type: object
     served: true

@@ -1,0 +1,21 @@
+# 启用特性门
+## 注意该 certmanager 模版已经过修改已启用特性门
+
+
+k edit deployment -n cert-manager   cert-manager
+
+k edit deployment -n cert-manager   cert-manager-webhook
+
+This feature is only enabled by adding it to the --feature-gates flag on the cert-manager controller and webhook components:
+
+
+
+      - args:
+        - --v=2
+        - --feature-gates=AdditionalCertificateOutputFormats=true
+
+# ref https://cert-manager.io/docs/usage/certificate/#additional-certificate-output-formats
+
+# .p12 是 pkcs12， 目前可选为 pkcs1 pkcs8， pkcs12 支持的方式前pkcs1|8 不通，strongswan的测试用例跑的都是 pkcs1，所以目前认为pkcs12 加密文件不是必要的
+
+

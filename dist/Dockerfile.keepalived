@@ -2,8 +2,9 @@ FROM kubecombo.com/kube-combo/base:v0.0.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install charon-systemd -y && \
+    apt-get install keepalived -y && \
         rm -rf /var/lib/apt/lists/*
-
-COPY dist/strongswan-setup /
-RUN chmod +x *.sh
+        
+RUN mkdir -p /etc/keepalived.d
+COPY dist/keepalived-setup /
+RUN chmod +x /configure.sh

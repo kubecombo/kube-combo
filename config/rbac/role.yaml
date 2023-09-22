@@ -112,6 +112,32 @@ rules:
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - keepaliveds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - keepaliveds/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - keepaliveds/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
   - vpngws
   verbs:
   - create

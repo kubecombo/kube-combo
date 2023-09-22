@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
@@ -87,8 +88,16 @@ const (
 
 	IpsecProto = "UDP"
 
-	IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
-	IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
+	// IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
+	// IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
+)
+
+// keepalived
+const (
+	KeepalivedVipKey          = "KEEPALIVED_VIP"
+	keepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	KeepalivedStartUpCMD      = "/configure.sh"
+	KeepAlivedServer          = "keepalived"
 )
 
 // VpnGwReconciler reconciles a VpnGw object
@@ -130,32 +139,23 @@ type VpnGwReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *VpnGwReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	_ = log.FromContext(ctx)
+
 	// TODO(user): your logic here
 	// delete vpn gw itself, its owned statefulset will be deleted automatically
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start reconcile", "vpn gw", namespacedName)
 	defer r.Log.Info("end reconcile", "vpn gw", namespacedName)
 	updates.Inc()
-
-	// fetch vpn gw
-	gw, err := r.getVpnGw(ctx, req.NamespacedName)
-	if err != nil {
-		r.Log.Error(err, "failed to get vpn gw")
-		return ctrl.Result{}, err
-	}
-	if gw == nil {
-		return ctrl.Result{}, nil
-	}
-
-	res, err := r.handleAddOrUpdateVpnGw(req, gw)
+	res, err := r.handleAddOrUpdateVpnGw(ctx, req)
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle vpn gw")
+		r.Log.Error(err, "failed to handle vpn gw, will retry")
 		return ctrl.Result{RequeueAfter: 3 * time.Second}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle vpn gw")
+		r.Log.Error(err, "failed to handle vpn gw, will not retry")
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, nil
@@ -184,7 +184,32 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedName string) error {
+	if ka.Spec.Image == "" {
+		err := fmt.Errorf("keepalived image is required")
+		r.Log.Error(err, "should set keepalived image")
+		return err
+	}
+	if ka.Spec.Subnet == "" {
+		err := fmt.Errorf("keepalived subnet is required")
+		r.Log.Error(err, "should set keepalived subnet")
+		return err
+	}
+	if ka.Spec.VipV4 == "" && ka.Spec.VipV6 == "" {
+		err := fmt.Errorf("keepalived vip v4 or v6 ip is required")
+		r.Log.Error(err, "should set keepalived vip")
+		return err
+	}
+	return nil
+}
+
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
+	if gw.Spec.Keepalived == "" {
+		err := fmt.Errorf("vpn gw keepalived is required")
+		r.Log.Error(err, "should set keepalived")
+		return err
+	}
+
 	if gw.Spec.Cpu == "" || gw.Spec.Memory == "" {
 		err := fmt.Errorf("vpn gw cpu and memory is required")
 		r.Log.Error(err, "should set cpu and memory")
@@ -197,34 +222,11 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 		return err
 	}
 
-	if gw.Spec.Subnet == "" {
-		err := fmt.Errorf("vpn gw subnet is required")
-		r.Log.Error(err, "should set subnet")
-		return err
-	}
-	if gw.Status.Subnet != "" && gw.Spec.Subnet != gw.Status.Subnet {
-		err := fmt.Errorf("vpn gw subnet not support change")
-		r.Log.Error(err, "vpn gw should not change subnet")
-		return err
-	}
-
-	if gw.Spec.Ip == "" {
-		r.Log.Info("vpn gw pod ip random allocate", "name", namespacedName)
-	} else {
-		r.Log.Info("vpn gw pod ip set by user", "name", namespacedName, "ip", gw.Spec.Ip)
-	}
-
-	if gw.Spec.Replicas != 1 {
-		err := fmt.Errorf("vpn gw replicas should only be 1 for now, ha mode will be supported in the future")
-		r.Log.Error(err, "should set reasonable replicas")
-		return err
-	}
-
-	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
-		err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
-		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
-		return err
-	}
+	// if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
+	// 	err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
+	// 	r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
+	// 	return err
+	// }
 
 	if gw.Spec.EnableSslVpn {
 		if gw.Spec.SslSecret == "" {
@@ -296,8 +298,8 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 
 func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string) bool {
 	changed := false
-	if gw.Status.Subnet == "" && gw.Spec.Subnet != "" {
-		gw.Status.Subnet = gw.Spec.Subnet
+	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
+		gw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
 	}
 
@@ -311,10 +313,6 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 	}
 	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
 		gw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
-		changed = true
-	}
-	if gw.Status.Ip != gw.Spec.Ip {
-		gw.Status.Ip = gw.Spec.Ip
 		changed = true
 	}
 	if gw.Status.Replicas != gw.Spec.Replicas {
@@ -373,7 +371,7 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 	return changed
 }
 
-func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
+func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
 	namespacedName := fmt.Sprintf("%s/%s", gw.Namespace, gw.Name)
 	r.Log.Info("start statefulSetForVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end statefulSetForVpnGw", "vpn gw", namespacedName)
@@ -387,8 +385,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, oldSts *appsv1.
 		newPodAnnotations = oldSts.Annotations
 	}
 	podAnnotations := map[string]string{
-		KubeovnLogicalSwitchAnnotation: gw.Spec.Subnet,
-		KubeovnIpAddressAnnotation:     gw.Spec.Ip,
+		KubeovnLogicalSwitchAnnotation: ka.Spec.Subnet,
 		KubeovnIngressRateAnnotation:   gw.Spec.QoSBandwidth,
 		KubeovnEgressRateAnnotation:    gw.Spec.QoSBandwidth,
 	}
@@ -398,6 +395,40 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, oldSts *appsv1.
 
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
+
+	// keepalived
+	kaContainer := corev1.Container{
+		Name:  KeepAlivedServer,
+		Image: ka.Spec.Image,
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+		},
+		Command: []string{KeepalivedStartUpCMD},
+		Env: []corev1.EnvVar{
+			{
+				Name:  KeepalivedVipKey,
+				Value: ka.Spec.VipV4,
+			},
+			{
+				Name:  keepalivedVirtualRouterID,
+				Value: strconv.Itoa(ka.Status.RouterID),
+			},
+		},
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		SecurityContext: &corev1.SecurityContext{
+			Privileged:               &privileged,
+			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+		},
+	}
+	containers = append(containers, kaContainer)
+
 	if gw.Spec.EnableSslVpn {
 		sslContainer := corev1.Container{
 			Name:  SslVpnServer,
@@ -601,15 +632,44 @@ func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	}
 }
 
-func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.VpnGw) (SyncState, error) {
+func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create vpn gw statefulset
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start handleAddOrUpdateVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end handleAddOrUpdateVpnGw", "vpn gw", namespacedName)
 
-	// validate vpn gw spec
+	// fetch vpn gw
+	gw, err := r.getVpnGw(ctx, req.NamespacedName)
+	if err != nil {
+		err = fmt.Errorf("failed to get vpn gw: %v", err)
+		r.Log.Error(err, "failed to get vpn gw")
+		return SyncStateErrorNoRetry, err
+	}
+	if gw == nil {
+		// vpn gw deleted
+		return SyncStateSuccess, nil
+	}
 	if err := r.validateVpnGw(gw, namespacedName); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
+		// invalid spec no retry
+		return SyncStateErrorNoRetry, err
+	}
+
+	ka := &vpngwv1.KeepAlived{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      gw.Spec.Keepalived,
+			Namespace: gw.Namespace,
+		},
+	}
+
+	ka, err = r.getValidKeepalived(ctx, ka)
+	if err != nil {
+		err = fmt.Errorf("failed to get keepalived: %v", err)
+		r.Log.Error(err, "failed to get keepalived")
+		return SyncStateError, err
+	}
+	if err := r.validateKeepalived(ka, namespacedName); err != nil {
+		r.Log.Error(err, "failed to validate keepalived")
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err
 	}
@@ -617,7 +677,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 	// create or update statefulset
 	needToCreate := false
 	oldSts := &appsv1.StatefulSet{}
-	err := r.Get(context.Background(), req.NamespacedName, oldSts)
+	err = r.Get(context.Background(), req.NamespacedName, oldSts)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
@@ -628,7 +688,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 	}
 	newGw := gw.DeepCopy()
 	if needToCreate {
-		newSts := r.statefulSetForVpnGw(gw, nil)
+		newSts := r.statefulSetForVpnGw(gw, ka, nil)
 		err = r.Create(context.Background(), newSts)
 		if err != nil {
 			r.Log.Error(err, "failed to create the new statefulset")
@@ -637,7 +697,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 		time.Sleep(5 * time.Second)
 	} else if r.isChanged(newGw, nil) {
 		// update statefulset
-		newSts := r.statefulSetForVpnGw(gw, oldSts.DeepCopy())
+		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
 		err = r.Update(context.Background(), newSts)
 		if err != nil {
 			r.Log.Error(err, "failed to update the statefulset")
@@ -655,7 +715,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 		}
 		// format ipsec connections
 		connections := ""
-		for _, v := range res {
+		for _, v := range *res {
 			if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
 				err := fmt.Errorf("ipsec connection spec vpn gw is invalid, spec vpn gw: %s", v.Spec.VpnGw)
 				r.Log.Error(err, "ignore invalid ipsec connection")
@@ -707,7 +767,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(req ctrl.Request, gw *vpngwv1.V
 				time.Sleep(2 * time.Second)
 				return SyncStateError, err
 			}
-			for _, conn := range res {
+			for _, conn := range *res {
 				conns = append(conns, conn.Name)
 			}
 		}
@@ -730,17 +790,38 @@ func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedNam
 		return nil, nil
 	}
 	if err != nil {
+		err = fmt.Errorf("failed to get vpn gw: %v", err)
+		r.Log.Error(err, "failed to get vpn gw")
 		return nil, err
 	}
 	return &res, nil
 }
 
 // returns all ipsec connections who has labels about the vpn gw
-func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.VpnGw) ([]vpngwv1.IpsecConn, error) {
+func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.VpnGw) (*[]vpngwv1.IpsecConn, error) {
 	var res vpngwv1.IpsecConnList
 	err := r.List(ctx, &res, client.MatchingLabels{VpnGwLabel: gw.Name})
 	if err != nil {
+		err = fmt.Errorf("failed to list vpn gw ipsec connections: %v", err)
+		r.Log.Error(err, "failed to list vpn gw ipsec connections")
 		return nil, err
 	}
-	return res.Items, nil
+	return &res.Items, nil
+}
+
+func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *vpngwv1.KeepAlived) (*vpngwv1.KeepAlived, error) {
+	var res vpngwv1.KeepAlived
+	name := types.NamespacedName{
+		Name:      ka.Name,
+		Namespace: ka.Namespace,
+	}
+
+	err := r.Get(ctx, name, &res)
+	if err != nil {
+		err := fmt.Errorf("failed to get keepalived %s: %w", name.String(), err)
+		r.Log.Error(err, "failed to get keepalived")
+		return nil, err
+	}
+
+	return &res, nil
 }

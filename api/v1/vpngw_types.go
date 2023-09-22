@@ -32,21 +32,23 @@ type VpnGwSpec struct {
 	// cpu, memory request
 	// cpu, memory limit
 	// 1C 1G at least
-	Cpu    string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
+	Cpu string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
 	Memory string `json:"memory"`
 
 	// 1Mbps bandwidth at least
+	// +kubebuilder:validation:Required
 	QoSBandwidth string `json:"qosBandwidth"`
 
 	// vpn gw private vpc subnet static ip
-	Ip string `json:"ip"`
-
-	// pod subnet
-	// pod runs the vpn gw server in the specified subnet
-	// user can access all pods in this subnet via vpn gw server
-	Subnet string `json:"subnet"`
 
 	// statefulset replicas
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=2
 	Replicas int32 `json:"replicas"`
 
 	// vpn gw pod node selector
@@ -59,6 +61,9 @@ type VpnGwSpec struct {
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
 	// vpn gw enable ssl vpn
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
@@ -71,8 +76,10 @@ type VpnGwSpec struct {
 	// ssl vpn use openvpn server
 	// all ssl vpn spec start with ovpn
 	// ovpn ssl vpn proto, udp or tcp, udp probably is better
+	// +kubebuilder:default:=udp
 	OvpnProto string `json:"ovpnProto"`
 	// ovpn ssl vpn port, default 1194 for udp, 443 for tcp
+	// +kubebuilder:default:=1194
 	OvpnPort int `json:"ovpnPort"`
 
 	// ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
@@ -85,6 +92,9 @@ type VpnGwSpec struct {
 	// OvpnSvcCidr string `json:"ovpnSslVpnSvcCidr"`
 
 	// vpn gw enable ipsec vpn
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
 	EnableIpsecVpn bool `json:"enableIpsecVpn"`
 
 	// ipsec use strongswan server
@@ -97,6 +107,12 @@ type VpnGwSpec struct {
 
 	// ipsec vpn server image, use Dockerfile.strongswan
 	IpsecVpnImage string `json:"ipsecVpnImage"`
+
+	// keepalived maintains the ha ip address alive
+	// keepalived server need replica 2 at least
+	// keepalived represents the keepalived crd name
+	// +kubebuilder:validation:Required
+	Keepalived string `json:"keepalived"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
@@ -107,8 +123,6 @@ type VpnGwStatus struct {
 	Cpu              string              `json:"cpu" patchStrategy:"merge"`
 	Memory           string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth     string              `json:"qosBandwidth" patchStrategy:"merge"`
-	Ip               string              `json:"ip" patchStrategy:"merge"`
-	Subnet           string              `json:"subnet" patchStrategy:"merge"`
 	Replicas         int32               `json:"replicas" patchStrategy:"merge"`
 	Selector         []string            `json:"selector,omitempty" patchStrategy:"merge"`
 	Tolerations      []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
@@ -125,6 +139,7 @@ type VpnGwStatus struct {
 	IpsecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
 	IpsecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
 	IpsecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
+	Keepalived       string              `json:"keepalived" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

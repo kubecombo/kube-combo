@@ -53,6 +53,8 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var enableWebhooks bool
+	flag.BoolVar(&enableWebhooks, "enable-webhooks", os.Getenv("ENABLE_WEBHOOKS") == "true", "Enable webhooks")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -94,6 +96,8 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+
+	// controllers
 	if err = (&controller.VpnGwReconciler{
 		Client:     mgr.GetClient(),
 		KubeClient: kubeClient,
@@ -104,6 +108,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "VpnGw")
 		os.Exit(1)
 	}
+
 	if err = (&controller.IpsecConnReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -112,14 +117,36 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "IpsecConn")
 		os.Exit(1)
 	}
-	if err = (&vpngwv1.VpnGw{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "VpnGw")
+
+	if err = (&controller.KeepAlivedReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("keepalived"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KeepAlived")
 		os.Exit(1)
 	}
-	if err = (&vpngwv1.IpsecConn{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "IpsecConn")
-		os.Exit(1)
+
+	if enableWebhooks {
+		setupLog.Info("enabling webhooks")
+		if err = (&vpngwv1.VpnGw{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "VpnGw")
+			os.Exit(1)
+		}
+
+		if err = (&vpngwv1.IpsecConn{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "IpsecConn")
+			os.Exit(1)
+		}
+
+		if err = (&vpngwv1.KeepAlived{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KeepAlived")
+			os.Exit(1)
+		}
+	} else {
+		setupLog.Info("webhooks disabled")
 	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
