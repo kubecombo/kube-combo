@@ -70,10 +70,9 @@ kubectl get events -w -n operators
 kubectl operator list
 kubectl operator uninstall cert-manager -n cert-manager
 
-# 目前 基于operator 安装的版本普遍较旧，差了一个大版本，可能要跟下 operator 的维护策略
-# 目前认为最好是基于 kubectl apply 安装最新的
+# 目前认为最好是基于 kubectl apply 安装最新的 v1.13.2
 
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.1/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
 kubectl get pods -n cert-manager
 kubectl get crd | grep cert-manager.io
 

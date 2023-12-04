@@ -18,6 +18,12 @@ Kube-Combo 支持一键安装，帮助用户迅速搭建生产就绪的网络应
 ### 1.1 build
 
 ```bash
+
+make manifests
+
+```
+
+```bash
 # 构建 kube-combo controller
 
 make docker-build
@@ -28,55 +34,5 @@ make docker-build-base
 make docker-build-keepalived
 make docker-build-ipsec-vpn
 make docker-build-ssl-vpn
-
-```
-
-### 1.2 run
-
-注意事项：
-
-- kind 测试环境上尚未支持启用 webhook
-
-#### 1.2.1 基于 kube-ovn cni
-
-``` bash
-# 切换到你的 kube-ovn 分支，执行
-
-make release
-make kind-init; make kind-install
-
-```
-
-### 1.2.1 安装 cert-manager
-
-```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.1/cert-manager.yaml
-kubectl get pods -n cert-manager
-kubectl get crd | grep cert-manager.io
-
-```
-
-```bash
-# 准备 kustomize 工具
-
-cp /snap/bin/kustomize /root/feat/kube-combo/bin/kustomize
-
-```
-
-``` bash
-# 切换到 kube-combo 分支，执行
-
-# load image
-make kind-load-image
-
-# install kubecombo crd
-make install
-
-# install kubecombo controller
-make deploy
-
-
-# refesh kubecombo controller image and restart
-make kind-reload
 
 ```

@@ -1,4 +1,4 @@
-FROM kubecombo.com/kube-combo/base:v0.0.1
+FROM icoy/kube-combo-base:v0.0.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \

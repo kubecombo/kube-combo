@@ -29,19 +29,19 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # kubecombo.com/kube-combo-bundle:$VERSION and kubecombo.com/kube-combo-catalog:$VERSION.
-IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
-# IMAGE_TAG_BASE ?= registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo
+# IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
+IMAGE_TAG_BASE ?= icoy/kube-combo
 
-BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}/base
-SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/openvpn
-IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}/strongswan
-KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}/keepalived
+BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}-base
+SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
+IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
+KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # dependencies
-KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
-CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.12.1
-CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.12.1
-CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.12.1
+KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
+CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.13.2
+CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.13.2
+CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.13.2
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -64,7 +64,7 @@ OPERATOR_SDK_VERSION ?= v1.31.0
 
 # Image URL to use all building/pushing image targets
 # IMG ?= controller:latest
-IMG ?= $(IMAGE_TAG_BASE)/controller:v$(VERSION)
+IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
 
 BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
@@ -183,6 +183,14 @@ docker-build-keepalived:
 docker-push-keepalived:
 	docker push ${KEEPALIVED_IMG}
 
+.PHONY: docker-push-all
+docker-push-all:
+	docker push ${BASE_IMG} && \
+	docker push ${IMG} && \
+	docker push ${SSL_VPN_IMG} && \
+	docker push ${IPSEC_VPN_IMG} && \
+	docker push ${KEEPALIVED_IMG}
+
 # PLATFORMS defines the target platforms for  the manager image be build to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
 # - able to use docker buildx . More info: https://docs.docker.com/build/buildx/
@@ -236,7 +244,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v4.5.7
+KUSTOMIZE_VERSION ?= v5.2.1
 CONTROLLER_TOOLS_VERSION ?= v0.11.1
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
@@ -247,7 +255,7 @@ $(KUSTOMIZE): $(LOCALBIN)
 		echo "$(LOCALBIN)/kustomize version is not expected $(KUSTOMIZE_VERSION). Removing it before installing."; \
 		rm -rf $(LOCALBIN)/kustomize; \
 	fi
-	test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
+	# test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
@@ -364,4 +372,4 @@ kind-load-image:
 .PHONY: kind-reload
 kind-reload: 
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
-	kubectl delete po -n kube-combo-system -l control-plane=controller-manager
+	kubectl delete po -n kube-system -l control-plane=controller-manager
