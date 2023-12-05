@@ -1,11 +1,29 @@
 #!/bin/bash
 set -eux
+
+echo "make sure /etc/openvpn/certmanager has ca.crt, tls.crt, tls.key"
+tree /etc/openvpn/
+
+CERT_MANAGER_CERTS="/etc/openvpn/certmanager"
 EASY_RSA_LOC="/etc/openvpn/certs"
+
+cp "${CERT_MANAGER_CERTS}/ca.crt" $EASY_RSA_LOC
+cp "${CERT_MANAGER_CERTS}/tls.crt" $EASY_RSA_LOC
+cp "${CERT_MANAGER_CERTS}/tls.key" $EASY_RSA_LOC
+
+echo "make sure /etc/openvpn/certs has ca.crt, tls.crt, tls.key"
+tree $EASY_RSA_LOC
 
 # pod mount secret to /etc/openvpn/certs, but not that fast
 # after pod start, the secret maybe is not mounted yet
 
 while [ ! -f /etc/openvpn/certs/tls.key ]
+do
+    sleep 2
+    echo "waiting for /etc/openvpn/certs/tls.key ............"
+done
+
+while [ ! -f /etc/openvpn/certs/ca.crt ]
 do
     sleep 2
     echo "waiting for /etc/openvpn/certs/tls.key ............"

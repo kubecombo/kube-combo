@@ -8,6 +8,12 @@ RUN apt-get update && \
 RUN mkdir -p /dev/net && \
      mknod /dev/net/tun c 10 200 
 
-RUN mkdir -p /etc/openvpn/setup /etc/openvpn/certs/pki/private /etc/openvpn/certs/pki/issued
+RUN mkdir -p /etc/openvpn/setup && \
+    mkdir -p /etc/openvpn/certs && \
+    mkdir -p /etc/openvpn/certs/pki && \
+    mkdir -p /etc/openvpn/certs/pki/private && \
+    mkdir -p /etc/openvpn/certs/pki/issued && \
+    chmod -R 777 /etc/openvpn/
+
 COPY dist/openvpn-setup /etc/openvpn/setup/
 RUN chmod +x /etc/openvpn/setup/*.sh
