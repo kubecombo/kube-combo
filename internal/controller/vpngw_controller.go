@@ -381,7 +381,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	volumes := []corev1.Volume{}
 
 	// keepalived
-	kaContainer := corev1.Container{
+	keepalivedContainer := corev1.Container{
 		Name:  KeepAlivedServer,
 		Image: ka.Spec.Image,
 		Resources: corev1.ResourceRequirements{
@@ -411,7 +411,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		},
 	}
-	containers = append(containers, kaContainer)
 
 	if gw.Spec.EnableSslVpn {
 		sslVpnPort := SslVpnUdpPort
@@ -558,7 +557,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
-
+	containers = append(containers, keepalivedContainer)
 	newSts = &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      gw.Name,
