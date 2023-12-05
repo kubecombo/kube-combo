@@ -38,8 +38,8 @@ int="${intAndIP%-*}"
 ip="${intAndIP#*-}"
 cidr="$(ip addr show dev "$int" | awk -vip="$ip" '($2 ~ ip) {print $2}')"
 SSL_VPN_NETWORK="$(echo "${SSL_VPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $1 }')"
-SSL_VPN_subnet_mask="$(echo "${SSL_VPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $2 }')"
-SSL_VPN_SUBNET_MASK=$(cidr2mask "${SSL_VPN_subnet_mask}")
+ssk_vpn_subnet_mask="$(echo "${SSL_VPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $2 }')"
+SSL_VPN_SUBNET_MASK=$(cidr2mask "${ssk_vpn_subnet_mask}")
 NETWORK=$(cidr2net "${cidr}")
 NETMASK=$(cidr2mask "${cidr#*/}")
 echo "DEBUG .............."
