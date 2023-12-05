@@ -84,9 +84,9 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 		e := field.Invalid(field.NewPath("spec").Child("dhSecret"), r.Spec.DhSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
-	if oldVpnGw.Spec.SslSecret != "" && oldVpnGw.Spec.SslSecret != r.Spec.SslSecret {
+	if oldVpnGw.Spec.SslVpnSecret != "" && oldVpnGw.Spec.SslVpnSecret != r.Spec.SslVpnSecret {
 		err := fmt.Errorf("vpn gw ssl secret not support change")
-		e := field.Invalid(field.NewPath("spec").Child("sslSecret"), r.Spec.SslSecret, err.Error())
+		e := field.Invalid(field.NewPath("spec").Child("sslVpnSecret"), r.Spec.SslVpnSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.IpsecSecret != "" && oldVpnGw.Spec.IpsecSecret != r.Spec.IpsecSecret {
@@ -95,19 +95,14 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 		allErrs = append(allErrs, e)
 	}
 
-	if oldVpnGw.Spec.OvpnProto != "" && oldVpnGw.Spec.OvpnProto != r.Spec.OvpnProto {
-		err := fmt.Errorf("vpn gw ovpn proto not support change")
-		e := field.Invalid(field.NewPath("spec").Child("ovpnProto"), r.Spec.OvpnProto, err.Error())
+	if oldVpnGw.Spec.SslVpnProto != "" && oldVpnGw.Spec.SslVpnProto != r.Spec.SslVpnProto {
+		err := fmt.Errorf("vpn gw SslVpn proto not support change")
+		e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 		allErrs = append(allErrs, e)
 	}
-	if oldVpnGw.Spec.OvpnPort != 0 && oldVpnGw.Spec.OvpnPort != r.Spec.OvpnPort {
-		err := fmt.Errorf("vpn gw ovpn port not support change")
-		e := field.Invalid(field.NewPath("spec").Child("ovpnPort"), r.Spec.OvpnPort, err.Error())
-		allErrs = append(allErrs, e)
-	}
-	if oldVpnGw.Spec.OvpnSubnetCidr != "" && oldVpnGw.Spec.OvpnSubnetCidr != r.Spec.OvpnSubnetCidr {
-		err := fmt.Errorf("vpn gw ovpn subnet cidr not support change")
-		e := field.Invalid(field.NewPath("spec").Child("ovpnSubnetCidr"), r.Spec.OvpnSubnetCidr, err.Error())
+	if oldVpnGw.Spec.SslVpnSubnetCidr != "" && oldVpnGw.Spec.SslVpnSubnetCidr != r.Spec.SslVpnSubnetCidr {
+		err := fmt.Errorf("vpn gw SslVpn subnet cidr not support change")
+		e := field.Invalid(field.NewPath("spec").Child("SslVpnSubnetCidr"), r.Spec.SslVpnSubnetCidr, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.Keepalived != "" && oldVpnGw.Spec.Keepalived != r.Spec.Keepalived {
@@ -170,44 +165,29 @@ func (r *VpnGw) validateVpnGw() error {
 			e := field.Invalid(field.NewPath("spec").Child("dhSecret"), r.Spec.DhSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.SslSecret == "" {
+		if r.Spec.SslVpnSecret == "" {
 			err := fmt.Errorf("ssl vpn secret is required")
-			e := field.Invalid(field.NewPath("spec").Child("sslSecret"), r.Spec.SslSecret, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("sslVpnSecret"), r.Spec.SslVpnSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.OvpnCipher == "" {
+		if r.Spec.SslVpnCipher == "" {
 			err := fmt.Errorf("ssl vpn cipher is required")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnCipher"), r.Spec.OvpnCipher, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("SslVpnCipher"), r.Spec.SslVpnCipher, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.OvpnProto == "" {
+		if r.Spec.SslVpnProto == "" {
 			err := fmt.Errorf("ssl vpn proto is required")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnProto"), r.Spec.OvpnProto, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.OvpnPort != 1149 && r.Spec.OvpnPort != 443 {
-			err := fmt.Errorf("ssl vpn port is required")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnPort"), r.Spec.OvpnPort, err.Error())
-			allErrs = append(allErrs, e)
-		}
-		if r.Spec.OvpnSubnetCidr == "" {
+		if r.Spec.SslVpnSubnetCidr == "" {
 			err := fmt.Errorf("ssl vpn subnet cidr is required")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnSubnetCidr"), r.Spec.OvpnSubnetCidr, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("SslVpnSubnetCidr"), r.Spec.SslVpnSubnetCidr, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.OvpnProto != "udp" && r.Spec.OvpnProto != "tcp" {
+		if r.Spec.SslVpnProto != "udp" && r.Spec.SslVpnProto != "tcp" {
 			err := fmt.Errorf("ssl vpn proto should be udp or tcp")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnProto"), r.Spec.OvpnProto, err.Error())
-			allErrs = append(allErrs, e)
-		}
-		if r.Spec.OvpnProto == "udp" && r.Spec.OvpnPort != 1149 {
-			err := fmt.Errorf("ssl vpn port should be 1149 when proto is udp")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnPort"), r.Spec.OvpnPort, err.Error())
-			allErrs = append(allErrs, e)
-		}
-		if r.Spec.OvpnProto == "tcp" && r.Spec.OvpnPort != 443 {
-			err := fmt.Errorf("ssl vpn port should be 443 when proto is tcp")
-			e := field.Invalid(field.NewPath("spec").Child("ovpnPort"), r.Spec.OvpnPort, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnImage == "" {

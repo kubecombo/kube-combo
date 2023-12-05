@@ -8,7 +8,7 @@ client_key_name=$1
 EASY_RSA_LOC="/etc/openvpn/certs"
 cd $EASY_RSA_LOC
 /usr/share/easy-rsa/easyrsa build-client-full "${client_key_name}" nopass
-cat >${EASY_RSA_LOC}/pki/"${client_key_name}".ovpn <<EOF
+cat >${EASY_RSA_LOC}/pki/"${client_key_name}".OpenVpn <<EOF
 client
 nobind
 dev tun
@@ -29,4 +29,4 @@ $(cat ${EASY_RSA_LOC}/pki/issued/"${client_key_name}".crt)
 $(cat ${EASY_RSA_LOC}/pki/ca.crt)
 </ca>
 EOF
-cat pki/"${client_key_name}".ovpn
+cat pki/"${client_key_name}".OpenVpn

@@ -37,18 +37,18 @@ intAndIP="$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $5 "-" $7}')"
 int="${intAndIP%-*}"
 ip="${intAndIP#*-}"
 cidr="$(ip addr show dev "$int" | awk -vip="$ip" '($2 ~ ip) {print $2}')"
-OVPN_NETWORK="$(echo "${OVPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $1 }')"
-ovpn_subnet_mask="$(echo "${OVPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $2 }')"
-OVPN_SUBNET_MASK=$(cidr2mask "${ovpn_subnet_mask}")
+SSL_VPN_NETWORK="$(echo "${SSL_VPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $1 }')"
+SSL_VPN_subnet_mask="$(echo "${SSL_VPN_SUBNET_CIDR}" | tr "/" " " | awk '{ print $2 }')"
+SSL_VPN_SUBNET_MASK=$(cidr2mask "${SSL_VPN_subnet_mask}")
 NETWORK=$(cidr2net "${cidr}")
 NETMASK=$(cidr2mask "${cidr#*/}")
 echo "DEBUG .............."
-echo "OVPN_NETWORK ${OVPN_NETWORK} OVPN_SUBNET_MASK ${OVPN_SUBNET_MASK}"
-echo "OVPN_PROTO ${OVPN_PROTO} OVPN_PORT ${OVPN_PORT}"
-echo "OVPN_CIPHER ${OVPN_CIPHER}"
+echo "SSL_VPN_NETWORK ${SSL_VPN_NETWORK} SSL_VPN_SUBNET_MASK ${SSL_VPN_SUBNET_MASK}"
+echo "SSL_VPN_PROTO ${SSL_VPN_PROTO} SSL_VPN_PORT ${SSL_VPN_PORT}"
+echo "SSL_VPN_CIPHER ${SSL_VPN_CIPHER}"
 echo "NETWORK ${NETWORK} NETMASK ${NETMASK}"
 
-iptables -t nat -A POSTROUTING -s "${OVPN_NETWORK}/${OVPN_SUBNET_MASK}" -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s "${SSL_VPN_NETWORK}/${SSL_VPN_SUBNET_MASK}" -o eth0 -j MASQUERADE
 mkdir -p /dev/net
 if [ ! -c /dev/net/tun ]; then
     mknod /dev/net/tun c 10 200
@@ -61,19 +61,19 @@ for DOMAIN in $SEARCH; do
 done
 
 cp -f /etc/openvpn/setup/openvpn.conf /etc/openvpn/
-sed 's|OVPN_PROTO|'"${OVPN_PROTO}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|OVPN_PORT|'"${OVPN_PORT}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_PROTO|'"${SSL_VPN_PROTO}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_PORT|'"${SSL_VPN_PORT}"'|' -i /etc/openvpn/openvpn.conf
 
-sed 's|OVPN_NETWORK|'"${OVPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|OVPN_SUBNET_MASK|'"${OVPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|CIPHER|'"${OVPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
 
-# NETWORK is in OVPN_NETWORK, so leave it last to sed
+# NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
 sed 's|NETWORK|'"${NETWORK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|NETMASK|'"${NETMASK}"'|' -i /etc/openvpn/openvpn.conf
 
 # DNS
-sed 's|OVPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
 
 #
 echo "Running openvpn with config .............."

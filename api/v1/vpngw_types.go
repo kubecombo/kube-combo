@@ -67,29 +67,22 @@ type VpnGwSpec struct {
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
-	SslSecret string `json:"sslSecret,omitempty"`
+	SslVpnSecret string `json:"sslVpnSecret,omitempty"`
 
 	// ssl vpn dh secret name, the secret should in the same namespace as the vpn gw
-	DhSecret   string `json:"dhSecret,omitempty"`
-	OvpnCipher string `json:"ovpnCipher"`
+	DhSecret     string `json:"dhSecret,omitempty"`
+	SslVpnCipher string `json:"sslVpnCipher"`
 
 	// ssl vpn use openvpn server
-	// all ssl vpn spec start with ovpn
-	// ovpn ssl vpn proto, udp or tcp, udp probably is better
+	// ssl vpn proto, udp or tcp, udp probably is better
 	// +kubebuilder:default:=udp
-	OvpnProto string `json:"ovpnProto"`
-	// ovpn ssl vpn port, default 1194 for udp, 443 for tcp
-	// +kubebuilder:default:=1194
-	OvpnPort int `json:"ovpnPort"`
+	SslVpnProto string `json:"sslVpnProto"`
 
-	// ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
-	OvpnSubnetCidr string `json:"ovpnSubnetCidr"`
+	// SslVpn ssl vpn clinet server subnet cidr 10.240.0.0/16
+	SslVpnSubnetCidr string `json:"sslVpnSubnetCidr"`
 
 	// ssl vpn server image, use Dockerfile.openvpn
 	SslVpnImage string `json:"sslVpnImage"`
-
-	// pod svc cidr 10.96.0.0/20
-	// OvpnSvcCidr string `json:"ovpnSslVpnSvcCidr"`
 
 	// vpn gw enable ipsec vpn
 
@@ -128,13 +121,13 @@ type VpnGwStatus struct {
 	Tolerations      []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
 	Affinity         corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
 	EnableSslVpn     bool                `json:"enableSslVpn" patchStrategy:"merge"`
-	SslSecret        string              `json:"sslSecret"  patchStrategy:"merge"`
+	SslVpnSecret     string              `json:"sslVpnSecret"  patchStrategy:"merge"`
 	DhSecret         string              `json:"dhSecret"  patchStrategy:"merge"`
 	SslVpnImage      string              `json:"sslVpnImage" patchStrategy:"merge"`
-	OvpnCipher       string              `json:"ovpnCipher" patchStrategy:"merge"`
-	OvpnProto        string              `json:"ovpnProto" patchStrategy:"merge"`
-	OvpnPort         int                 `json:"ovpnPort" patchStrategy:"merge"`
-	OvpnSubnetCidr   string              `json:"ovpnSubnetCidr" patchStrategy:"merge"`
+	SslVpnCipher     string              `json:"sslVpnCipher" patchStrategy:"merge"`
+	SslVpnProto      string              `json:"sslVpnProto" patchStrategy:"merge"`
+	SslVpnPort       int32               `json:"sslVpnPort" patchStrategy:"merge"`
+	SslVpnSubnetCidr string              `json:"sslVpnSubnetCidr" patchStrategy:"merge"`
 	EnableIpsecVpn   bool                `json:"enableIpsecVpn" patchStrategy:"merge"`
 	IpsecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
 	IpsecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
