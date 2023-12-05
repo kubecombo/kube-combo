@@ -50,9 +50,9 @@ import (
 // ssl vpn openvpn
 const (
 	SslVpnServer     = "ssl"
-	SslVpnUdpPort    = 1149
+	SslVpnUdpPort    = 1194
 	SslVpnTcpPort    = 443
-	SslVpnSecretPath = "/etc/openvpn/certs"
+	SslVpnSecretPath = "/etc/openvpn/certmanager"
 	DhSecretPath     = "/etc/openvpn/dh"
 
 	SslVpnStartUpCMD = "/etc/openvpn/setup/configure.sh"
