@@ -142,14 +142,12 @@ type VpnGwStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
-//+kubebuilder:printcolumn:name="IP",type=string,JSONPath=`.spec.ip`
-//+kubebuilder:printcolumn:name="PublicIP",type=string,JSONPath=`.spec.publicIp`
-//+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
-//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.spec.cpu`
-//+kubebuilder:printcolumn:name="Mem",type=string,JSONPath=`.spec.memory`
-//+kubebuilder:printcolumn:name="QoS",type=string,JSONPath=`.spec.qoSBandwidth`
+//+kubebuilder:printcolumn:name="Keepalived",type=string,JSONPath=`.spec.keepalived`
 //+kubebuilder:printcolumn:name="EnableSsl",type=string,JSONPath=`.spec.enableSslVpn`
 //+kubebuilder:printcolumn:name="EnableIpsec",type=string,JSONPath=`.spec.enableIpsecVpn`
+//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.spec.cpu`
+//+kubebuilder:printcolumn:name="Mem",type=string,JSONPath=`.spec.memory`
+//+kubebuilder:printcolumn:name="QoS",type=string,JSONPath=`.spec.qosBandwidth`
 
 // VpnGw is the Schema for the vpngws API
 type VpnGw struct {
