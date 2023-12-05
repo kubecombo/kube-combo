@@ -16,14 +16,14 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.ip
-      name: IP
+    - jsonPath: .spec.keepalived
+      name: Keepalived
       type: string
-    - jsonPath: .spec.publicIp
-      name: PublicIP
+    - jsonPath: .spec.enableSslVpn
+      name: EnableSsl
       type: string
-    - jsonPath: .spec.subnet
-      name: Subnet
+    - jsonPath: .spec.enableIpsecVpn
+      name: EnableIpsec
       type: string
     - jsonPath: .spec.cpu
       name: Cpu
@@ -31,14 +31,8 @@ spec:
     - jsonPath: .spec.memory
       name: Mem
       type: string
-    - jsonPath: .spec.qoSBandwidth
+    - jsonPath: .spec.qosBandwidth
       name: QoS
-      type: string
-    - jsonPath: .spec.enableSslVpn
-      name: EnableSsl
-      type: string
-    - jsonPath: .spec.enableIpsecVpn
-      name: EnableIpsec
       type: string
     name: v1
     schema:
