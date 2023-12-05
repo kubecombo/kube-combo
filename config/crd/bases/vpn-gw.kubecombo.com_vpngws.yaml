@@ -921,20 +921,6 @@ spec:
                 type: string
               memory:
                 type: string
-              ovpnCipher:
-                type: string
-              ovpnPort:
-                default: 1194
-                description: ovpn ssl vpn port, default 1194 for udp, 443 for tcp
-                type: integer
-              ovpnProto:
-                default: udp
-                description: ssl vpn use openvpn server all ssl vpn spec start with
-                  ovpn ovpn ssl vpn proto, udp or tcp, udp probably is better
-                type: string
-              ovpnSubnetCidr:
-                description: ovpn ssl vpn clinet server subnet cidr 10.240.0.0/16
-                type: string
               qosBandwidth:
                 description: 1Mbps bandwidth at least
                 type: string
@@ -947,12 +933,22 @@ spec:
                 items:
                   type: string
                 type: array
-              sslSecret:
-                description: ssl vpn secret name, the secret should in the same namespace
-                  as the vpn gw
+              sslVpnCipher:
                 type: string
               sslVpnImage:
                 description: ssl vpn server image, use Dockerfile.openvpn
+                type: string
+              sslVpnProto:
+                default: udp
+                description: ssl vpn use openvpn server ssl vpn proto, udp or tcp,
+                  udp probably is better
+                type: string
+              sslVpnSecret:
+                description: ssl vpn secret name, the secret should in the same namespace
+                  as the vpn gw
+                type: string
+              sslVpnSubnetCidr:
+                description: SslVpn ssl vpn clinet server subnet cidr 10.240.0.0/16
                 type: string
               tolerations:
                 description: vpn gw pod tolerations
@@ -1001,13 +997,12 @@ spec:
             - ipsecVpnImage
             - keepalived
             - memory
-            - ovpnCipher
-            - ovpnPort
-            - ovpnProto
-            - ovpnSubnetCidr
             - qosBandwidth
             - replicas
+            - sslVpnCipher
             - sslVpnImage
+            - sslVpnProto
+            - sslVpnSubnetCidr
             type: object
           status:
             description: VpnGwStatus defines the observed state of VpnGw
@@ -1930,14 +1925,6 @@ spec:
                 type: string
               memory:
                 type: string
-              ovpnCipher:
-                type: string
-              ovpnPort:
-                type: integer
-              ovpnProto:
-                type: string
-              ovpnSubnetCidr:
-                type: string
               qosBandwidth:
                 type: string
               replicas:
@@ -1947,9 +1934,18 @@ spec:
                 items:
                   type: string
                 type: array
-              sslSecret:
+              sslVpnCipher:
                 type: string
               sslVpnImage:
+                type: string
+              sslVpnPort:
+                format: int32
+                type: integer
+              sslVpnProto:
+                type: string
+              sslVpnSecret:
+                type: string
+              sslVpnSubnetCidr:
                 type: string
               tolerations:
                 items:
@@ -1999,14 +1995,14 @@ spec:
             - ipsecVpnImage
             - keepalived
             - memory
-            - ovpnCipher
-            - ovpnPort
-            - ovpnProto
-            - ovpnSubnetCidr
             - qosBandwidth
             - replicas
-            - sslSecret
+            - sslVpnCipher
             - sslVpnImage
+            - sslVpnPort
+            - sslVpnProto
+            - sslVpnSecret
+            - sslVpnSubnetCidr
             type: object
         type: object
     served: true

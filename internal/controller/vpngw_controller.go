@@ -49,20 +49,21 @@ import (
 
 // ssl vpn openvpn
 const (
-	SslVpnServer = "ssl"
-
-	SslSecretPath = "/etc/ovpn/certs"
-	DhSecretPath  = "/etc/ovpn/dh"
+	SslVpnServer     = "ssl"
+	SslVpnUdpPort    = 1149
+	SslVpnTcpPort    = 443
+	SslVpnSecretPath = "/etc/openvpn/certs"
+	DhSecretPath     = "/etc/openvpn/dh"
 
 	SslVpnStartUpCMD = "/etc/openvpn/setup/configure.sh"
 
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
 	// vpn gw pod env
-	OvpnProtoKey      = "OVPN_PROTO"
-	OvpnPortKey       = "OVPN_PORT"
-	OvpnCipherKey     = "OVPN_CIPHER"
-	OvpnSubnetCidrKey = "OVPN_SUBNET_CIDR"
+	SslVpnProtoKey      = "SSL_VPN_PROTO"
+	SslVpnPortKey       = "SSL_VPN_PORT"
+	SslVpnCipherKey     = "SSL_VPN_CIPHER"
+	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
 )
 
 // ipsec vpn strongswan
@@ -204,6 +205,7 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedN
 }
 
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
+	r.Log.Info("xxxxxxx start validateVpnGw", "vpn gw", gw)
 	if gw.Spec.Keepalived == "" {
 		err := fmt.Errorf("vpn gw keepalived is required")
 		r.Log.Error(err, "should set keepalived")
@@ -222,14 +224,14 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 		return err
 	}
 
-	// if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
-	// 	err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
-	// 	r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
-	// 	return err
-	// }
+	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
+		err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
+		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn")
+		return err
+	}
 
 	if gw.Spec.EnableSslVpn {
-		if gw.Spec.SslSecret == "" {
+		if gw.Spec.SslVpnSecret == "" {
 			err := fmt.Errorf("ssl vpn secret is required")
 			r.Log.Error(err, "should set ssl vpn secret")
 			return err
@@ -239,27 +241,22 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 			r.Log.Error(err, "should set ssl vpn dh secret")
 			return err
 		}
-		if gw.Spec.OvpnCipher == "" {
+		if gw.Spec.SslVpnCipher == "" {
 			err := fmt.Errorf("ssl vpn cipher is required")
 			r.Log.Error(err, "should set cipher")
 			return err
 		}
-		if gw.Spec.OvpnProto == "" {
+		if gw.Spec.SslVpnProto == "" {
 			err := fmt.Errorf("ssl vpn proto is required")
 			r.Log.Error(err, "should set ssl vpn proto")
 			return err
 		}
-		if gw.Spec.OvpnPort != 1149 && gw.Spec.OvpnPort != 443 {
-			err := fmt.Errorf("ssl vpn port is required")
-			r.Log.Error(err, "should set vpn port, udp 1149, tcp 443")
-			return err
-		}
-		if gw.Spec.OvpnSubnetCidr == "" {
+		if gw.Spec.SslVpnSubnetCidr == "" {
 			err := fmt.Errorf("ssl vpn subnet cidr is required")
 			r.Log.Error(err, "should set ssl vpn client and server subnet")
 			return err
 		}
-		if gw.Spec.OvpnProto != "udp" && gw.Spec.OvpnProto != "tcp" {
+		if gw.Spec.SslVpnProto != "udp" && gw.Spec.SslVpnProto != "tcp" {
 			err := fmt.Errorf("ssl vpn proto should be udp or tcp")
 			r.Log.Error(err, "should set reasonable vpn proto")
 			return err
@@ -267,16 +264,6 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string
 		if gw.Spec.SslVpnImage == "" {
 			err := fmt.Errorf("ssl vpn image is required")
 			r.Log.Error(err, "should set ssl vpn image")
-			return err
-		}
-		if gw.Spec.OvpnProto == "udp" && gw.Spec.OvpnPort != 1149 {
-			err := fmt.Errorf("ssl vpn port should be 1149 when proto is udp")
-			r.Log.Error(err, "vpn gw spec port invalid")
-			return err
-		}
-		if gw.Spec.OvpnProto == "tcp" && gw.Spec.OvpnPort != 443 {
-			err := fmt.Errorf("ssl vpn port should be 443 when proto is tcp")
-			r.Log.Error(err, "vpn gw spec port invalid")
 			return err
 		}
 	}
@@ -322,17 +309,14 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 
 	if gw.Status.EnableSslVpn != gw.Spec.EnableSslVpn {
 		gw.Status.EnableSslVpn = gw.Spec.EnableSslVpn
-		if gw.Status.OvpnCipher != gw.Spec.OvpnCipher {
-			gw.Status.OvpnCipher = gw.Spec.OvpnCipher
+		if gw.Status.SslVpnCipher != gw.Spec.SslVpnCipher {
+			gw.Status.SslVpnCipher = gw.Spec.SslVpnCipher
 		}
-		if gw.Status.OvpnProto != gw.Spec.OvpnProto {
-			gw.Status.OvpnProto = gw.Spec.OvpnProto
+		if gw.Status.SslVpnProto != gw.Spec.SslVpnProto {
+			gw.Status.SslVpnProto = gw.Spec.SslVpnProto
 		}
-		if gw.Status.OvpnPort != gw.Spec.OvpnPort {
-			gw.Status.OvpnPort = gw.Spec.OvpnPort
-		}
-		if gw.Status.OvpnSubnetCidr != gw.Spec.OvpnSubnetCidr {
-			gw.Status.OvpnSubnetCidr = gw.Spec.OvpnSubnetCidr
+		if gw.Status.SslVpnSubnetCidr != gw.Spec.SslVpnSubnetCidr {
+			gw.Status.SslVpnSubnetCidr = gw.Spec.SslVpnSubnetCidr
 		}
 		if gw.Status.SslVpnImage != gw.Spec.SslVpnImage {
 			gw.Status.SslVpnImage = gw.Spec.SslVpnImage
@@ -430,14 +414,19 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	containers = append(containers, kaContainer)
 
 	if gw.Spec.EnableSslVpn {
+		sslVpnPort := SslVpnUdpPort
+		if gw.Spec.SslVpnProto == "tcp" {
+			sslVpnPort = SslVpnTcpPort
+		}
+
 		sslContainer := corev1.Container{
 			Name:  SslVpnServer,
 			Image: gw.Spec.SslVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
 				// mount x.509 secret
 				{
-					Name:      gw.Spec.SslSecret,
-					MountPath: SslSecretPath,
+					Name:      gw.Spec.SslVpnSecret,
+					MountPath: SslVpnSecretPath,
 					ReadOnly:  true,
 				},
 				// mount openssl dhparams secret
@@ -459,26 +448,26 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			},
 			Command: []string{SslVpnStartUpCMD},
 			Ports: []corev1.ContainerPort{{
-				ContainerPort: int32(gw.Spec.OvpnPort),
+				ContainerPort: int32(sslVpnPort),
 				Name:          SslVpnServer,
-				Protocol:      corev1.Protocol(strings.ToUpper(gw.Spec.OvpnProto)),
+				Protocol:      corev1.Protocol(strings.ToUpper(gw.Spec.SslVpnProto)),
 			}},
 			Env: []corev1.EnvVar{
 				{
-					Name:  OvpnProtoKey,
-					Value: gw.Spec.OvpnProto,
+					Name:  SslVpnProtoKey,
+					Value: gw.Spec.SslVpnProto,
 				},
 				{
-					Name:  OvpnPortKey,
-					Value: strconv.Itoa(gw.Spec.OvpnPort),
+					Name:  SslVpnPortKey,
+					Value: strconv.Itoa(sslVpnPort),
 				},
 				{
-					Name:  OvpnCipherKey,
-					Value: gw.Spec.OvpnCipher,
+					Name:  SslVpnCipherKey,
+					Value: gw.Spec.SslVpnCipher,
 				},
 				{
-					Name:  OvpnSubnetCidrKey,
-					Value: gw.Spec.OvpnSubnetCidr,
+					Name:  SslVpnSubnetCidrKey,
+					Value: gw.Spec.SslVpnSubnetCidr,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -488,11 +477,11 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			},
 		}
 		sslSecretVolume := corev1.Volume{
-			Name: gw.Spec.SslSecret,
+			Name: gw.Spec.SslVpnSecret,
 			// define secrect volume
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.SslSecret,
+					SecretName: gw.Spec.SslVpnSecret,
 					Optional:   &[]bool{true}[0],
 				},
 			},
@@ -620,7 +609,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	}
 
 	// set gw instance as the owner and controller
-	controllerutil.SetControllerReference(gw, newSts, r.Scheme)
+	if err := controllerutil.SetControllerReference(gw, newSts, r.Scheme); err != nil {
+		r.Log.Error(err, "failed to set vpn gw as the owner and controller")
+		return nil
+	}
 	return
 }
 

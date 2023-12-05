@@ -43,6 +43,9 @@ CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.13.2
 CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.13.2
 CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.13.2
 
+# netshoot
+NETSHOOT_IMG ?= docker.io/nicolaka/netshoot:latest
+
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
@@ -182,6 +185,9 @@ docker-build-keepalived:
 .PHONY: docker-push-keepalived
 docker-push-keepalived:
 	docker push ${KEEPALIVED_IMG}
+
+.PHONY: docker-build-all
+docker-build-all: docker-build docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived
 
 .PHONY: docker-push-all
 docker-push-all:
@@ -368,6 +374,7 @@ kind-load-image:
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(NETSHOOT_IMG))
 
 .PHONY: kind-reload
 kind-reload: 
