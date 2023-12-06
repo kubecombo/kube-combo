@@ -67,6 +67,8 @@ sed 's|SSL_VPN_PORT|'"${SSL_VPN_PORT}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i /etc/openvpn/openvpn.conf
+
 
 # NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
 sed 's|NETWORK|'"${NETWORK}"'|' -i /etc/openvpn/openvpn.conf

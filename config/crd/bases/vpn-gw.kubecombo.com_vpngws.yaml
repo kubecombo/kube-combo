@@ -927,6 +927,8 @@ spec:
                 items:
                   type: string
                 type: array
+              sslVpnAuth:
+                type: string
               sslVpnCipher:
                 type: string
               sslVpnImage:
@@ -993,6 +995,7 @@ spec:
             - memory
             - qosBandwidth
             - replicas
+            - sslVpnAuth
             - sslVpnCipher
             - sslVpnImage
             - sslVpnProto
@@ -1928,6 +1931,8 @@ spec:
                 items:
                   type: string
                 type: array
+              sslVpnAuth:
+                type: string
               sslVpnCipher:
                 type: string
               sslVpnImage:
@@ -1991,6 +1996,7 @@ spec:
             - memory
             - qosBandwidth
             - replicas
+            - sslVpnAuth
             - sslVpnCipher
             - sslVpnImage
             - sslVpnPort

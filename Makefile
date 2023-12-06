@@ -147,7 +147,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	# docker build -t ${IMG} .
-	docker buildx build --load --platform linux/amd64 -t ${IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 
 .PHONY: docker-push
@@ -156,7 +156,7 @@ docker-push: ## Push docker image with the manager.
 
 .PHONY: docker-build-base
 docker-build-base:
-	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-push-base
 docker-push-base:
@@ -164,7 +164,7 @@ docker-push-base:
 
 .PHONY: docker-build-ssl-vpn
 docker-build-ssl-vpn:
-	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
 
 .PHONY: docker-push-ssl-vpn
 docker-push-ssl-vpn:
@@ -172,7 +172,7 @@ docker-push-ssl-vpn:
 
 .PHONY: docker-build-ipsec-vpn
 docker-build-ipsec-vpn:
-	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
 
 .PHONY: docker-push-ipsec-vpn
 docker-push-ipsec-vpn:
@@ -180,7 +180,7 @@ docker-push-ipsec-vpn:
 
 .PHONY: docker-build-keepalived
 docker-build-keepalived:
-	docker buildx build --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
 
 .PHONY: docker-push-keepalived
 docker-push-keepalived:
@@ -363,20 +363,34 @@ define kind_load_image
 	kind load docker-image --name $(1) $(2)
 endef
 
+define crictl_pull_image
+	crictl pull $(1)
+endef
+
 .PHONY: kind-load-image
 kind-load-image:
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CAINJECTOR))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CONTROLLER))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_WEBHOOK))
+	#$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(NETSHOOT_IMG))
 
-.PHONY: kind-reload
-kind-reload: 
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
+.PHONY: crictl-pull-image
+crictl-pull-image:
+	#$(call crictl_pull_image,$(KUBE_RBAC_PROXY))
+	#$(call crictl_pull_image,$(BASE_IMG))
+	$(call crictl_pull_image,$(IMG))
+	$(call crictl_pull_image,$(SSL_VPN_IMG))
+	$(call crictl_pull_image,$(IPSEC_VPN_IMG))
+	$(call crictl_pull_image,$(KEEPALIVED_IMG))
+	$(call crictl_pull_image,$(NETSHOOT_IMG))
+
+.PHONY: crictl-reload
+crictl-reload: 
+	$(call kind_load_image,$(IMG))
 	kubectl delete po -n kube-system -l control-plane=controller-manager
