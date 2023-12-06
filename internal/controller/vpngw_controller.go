@@ -63,6 +63,7 @@ const (
 	SslVpnProtoKey      = "SSL_VPN_PROTO"
 	SslVpnPortKey       = "SSL_VPN_PORT"
 	SslVpnCipherKey     = "SSL_VPN_CIPHER"
+	SslVpnAuthKey       = "SSL_VPN_AUTH"
 	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
 )
 
@@ -463,6 +464,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				{
 					Name:  SslVpnCipherKey,
 					Value: gw.Spec.SslVpnCipher,
+				},
+				{
+					Name:  SslVpnAuthKey,
+					Value: gw.Spec.SslVpnAuth,
 				},
 				{
 					Name:  SslVpnSubnetCidrKey,

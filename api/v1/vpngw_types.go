@@ -72,6 +72,7 @@ type VpnGwSpec struct {
 	// ssl vpn dh secret name, the secret should in the same namespace as the vpn gw
 	DhSecret     string `json:"dhSecret,omitempty"`
 	SslVpnCipher string `json:"sslVpnCipher"`
+	SslVpnAuth   string `json:"sslVpnAuth"`
 
 	// ssl vpn use openvpn server
 	// ssl vpn proto, udp or tcp, udp probably is better
@@ -125,6 +126,7 @@ type VpnGwStatus struct {
 	DhSecret         string              `json:"dhSecret"  patchStrategy:"merge"`
 	SslVpnImage      string              `json:"sslVpnImage" patchStrategy:"merge"`
 	SslVpnCipher     string              `json:"sslVpnCipher" patchStrategy:"merge"`
+	SslVpnAuth       string              `json:"sslVpnAuth" patchStrategy:"merge"`
 	SslVpnProto      string              `json:"sslVpnProto" patchStrategy:"merge"`
 	SslVpnPort       int32               `json:"sslVpnPort" patchStrategy:"merge"`
 	SslVpnSubnetCidr string              `json:"sslVpnSubnetCidr" patchStrategy:"merge"`
