@@ -19,19 +19,19 @@ tree $EASY_RSA_LOC
 
 while [ ! -f /etc/openvpn/certs/tls.key ]
 do
-    sleep 2
+    sleep 1
     echo "waiting for /etc/openvpn/certs/tls.key ............"
 done
 
 while [ ! -f /etc/openvpn/certs/ca.crt ]
 do
-    sleep 2
+    sleep 1
     echo "waiting for /etc/openvpn/certs/tls.key ............"
 done
 
 while [ ! -f /etc/openvpn/dh/dh.pem ]
 do
-    sleep 2
+    sleep 1
     echo "waiting for /etc/openvpn/dh/dh.pem ............"
 done
 
