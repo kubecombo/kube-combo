@@ -473,6 +473,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					Name:  SslVpnSubnetCidrKey,
 					Value: gw.Spec.SslVpnSubnetCidr,
 				},
+				{
+					Name:  KeepalivedVipKey,
+					Value: ka.Spec.VipV4,
+				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			SecurityContext: &corev1.SecurityContext{
