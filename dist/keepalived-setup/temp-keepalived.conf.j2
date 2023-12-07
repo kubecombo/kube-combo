@@ -14,6 +14,6 @@ vrrp_instance vi {
         auth_pass kubecomb
     }
     virtual_ipaddress {
-        {{ KA_VIP }}
+        {{ KA_VIP }} dev eth0
     }
 }

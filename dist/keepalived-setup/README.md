@@ -41,7 +41,7 @@ Q1. 我想知道多个 VRRP 路由器是否会用多播广告淹没网络并导�
 ### 实现
 
 keepalived 由于 VRRP 的缘故，在一个（vpc）子网中存在一个 id 限额。需要保证在一个子网内不能存在冲突的 id。
-为了避免冲突，该 id 不支持指定，基于名字 hash 到 id 值（1-255）来维护。
+为了避免冲突，该 id 不支持指定，目前按照顺序从（1-255）来分配一个 id 值。
 由于 keepalived 和 子网有对应关系，而（vpc）子网是租户隔离的资源，所以为了便于维护，keepalived 有一个 subnet spec 属性。
 所以 keepalived 设计上也是租户隔离的资源，即 namespaced 资源。
 

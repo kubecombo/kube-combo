@@ -49,6 +49,9 @@ echo "SSL_VPN_CIPHER ${SSL_VPN_CIPHER}"
 echo "NETWORK ${NETWORK} NETMASK ${NETMASK}"
 
 iptables -t nat -A POSTROUTING -s "${SSL_VPN_NETWORK}/${SSL_VPN_SUBNET_MASK}" -o eth0 -j MASQUERADE
+## use keepalived vip not eth0 ip
+# iptables -t nat -A POSTROUTING -s "${SSL_VPN_NETWORK}/${SSL_VPN_SUBNET_MASK}" -o eth0 -j SNAT --to-source "${KEEPALIVED_VIP}"
+
 mkdir -p /dev/net
 if [ ! -c /dev/net/tun ]; then
     mknod /dev/net/tun c 10 200
@@ -68,6 +71,7 @@ sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|KEEPALIVED_VIP|'"${KEEPALIVED_VIP}"'|' -i /etc/openvpn/openvpn.conf
 
 
 # NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
