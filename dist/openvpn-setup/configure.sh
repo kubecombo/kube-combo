@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+#set -eux
 
 cidr2mask() {
    # Number of args to shift, 255..255, first non-255 byte, zeroes
@@ -80,6 +80,18 @@ sed 's|NETMASK|'"${NETMASK}"'|' -i /etc/openvpn/openvpn.conf
 
 # DNS
 sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
+
+# for loop check if eth0 has keepalived vip
+while true
+do
+  exists=$(ip addr show dev eth0 | grep "${KEEPALIVED_VIP}" || true)
+  if [ -n "${exists}" ]; then
+    echo "keepalived vip ${KEEPALIVED_VIP} is assigned to eth0"
+    break
+  fi
+  # echo "Waiting for keepalived vip ${KEEPALIVED_VIP} to be assigned to eth0"
+  sleep 0.5
+done
 
 #
 echo "Running openvpn with config .............."
