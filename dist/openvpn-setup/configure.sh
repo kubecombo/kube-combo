@@ -49,8 +49,6 @@ echo "SSL_VPN_CIPHER ${SSL_VPN_CIPHER}"
 echo "NETWORK ${NETWORK} NETMASK ${NETMASK}"
 
 iptables -t nat -A POSTROUTING -s "${SSL_VPN_NETWORK}/${SSL_VPN_SUBNET_MASK}" -o eth0 -j MASQUERADE
-## use keepalived vip not eth0 ip
-# iptables -t nat -A POSTROUTING -s "${SSL_VPN_NETWORK}/${SSL_VPN_SUBNET_MASK}" -o eth0 -j SNAT --to-source "${KEEPALIVED_VIP}"
 
 mkdir -p /dev/net
 if [ ! -c /dev/net/tun ]; then
@@ -71,7 +69,6 @@ sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
 sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|KEEPALIVED_VIP|'"${KEEPALIVED_VIP}"'|' -i /etc/openvpn/openvpn.conf
 
 
 # NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
@@ -80,18 +77,6 @@ sed 's|NETMASK|'"${NETMASK}"'|' -i /etc/openvpn/openvpn.conf
 
 # DNS
 sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
-
-# for loop check if eth0 has keepalived vip
-while true
-do
-  exists=$(ip addr show dev eth0 | grep "${KEEPALIVED_VIP}" || true)
-  if [ -n "${exists}" ]; then
-    echo "keepalived vip ${KEEPALIVED_VIP} is assigned to eth0"
-    break
-  fi
-  # echo "Waiting for keepalived vip ${KEEPALIVED_VIP} to be assigned to eth0"
-  sleep 0.5
-done
 
 #
 echo "Running openvpn with config .............."
