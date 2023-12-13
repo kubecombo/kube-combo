@@ -71,6 +71,10 @@ function refresh() {
     chmod +x $CHECK_SCRIPT
 
     # 4. reload strongswan connections
+    # show version
+    /usr/sbin/swanctl --help
+    
+    echo "load strongswan connections"
     /usr/sbin/swanctl --load-all
 }
 
