@@ -164,7 +164,7 @@ docker-push-base:
 
 .PHONY: docker-build-ssl-vpn
 docker-build-ssl-vpn:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn.2.5.5 -t ${SSL_VPN_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
 
 .PHONY: docker-push-ssl-vpn
 docker-push-ssl-vpn:
