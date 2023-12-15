@@ -71,12 +71,16 @@ func (r *IpsecConnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	// update vpn gw spec
 	updates.Inc()
 	res, err := r.handleAddOrUpdateIpsecConnection(ctx, req)
+	if err != nil {
+		r.Log.Error(err, "failed to handle ipsecConn")
+	}
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
 		r.Log.Error(err, "failed to handle ipsecConn, will retry")
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
+		// TODO:// use longer retry interval and limit the retry times
 		updateErrors.Inc()
 		r.Log.Error(err, "failed to handle ipsecConn, will not retry")
 		return ctrl.Result{}, nil

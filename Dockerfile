@@ -5,7 +5,7 @@ ARG TARGETARCH
 
 WORKDIR /workspace
 ENV GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,direct 
+    GOPROXY=https://goproxy.cn,direct
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -34,6 +34,6 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o ma
 FROM ubuntu:22.04
 WORKDIR /
 COPY --from=builder /workspace/manager .
-USER 65532:65532
+USER 9443:9443
 
 ENTRYPOINT ["/manager"]

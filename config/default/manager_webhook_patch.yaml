@@ -9,6 +9,7 @@ spec:
       containers:
       - name: manager
         ports:
+        # TODO:// put 9443 in values.yaml
         - containerPort: 9443
           name: webhook-server
           protocol: TCP

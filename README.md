@@ -18,6 +18,7 @@ Kube-Combo 支持一键安装，帮助用户迅速搭建生产就绪的网络应
 ### 1.1 build
 
 ```bash
+# 生成部署模版文件
 
 make manifests
 

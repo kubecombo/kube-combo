@@ -21,14 +21,14 @@ var (
 		Namespace: "default",
 		Subsystem: "kube_combo",
 		Name:      "config_loaded_bool",
-		Help:      "1 if the kube-combo configuration was successfully loaded at least once.",
+		Help:      "if the kube-combo configuration was successfully loaded at least once.",
 	})
 
 	configStale = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: "default",
 		Subsystem: "kube_combo",
 		Name:      "config_stale_bool",
-		Help:      "1 if running on a stale configuration, because the latest config failed to load.",
+		Help:      "if running on a stale configuration, because the latest config failed to load.",
 	})
 )
 
