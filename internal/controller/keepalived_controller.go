@@ -73,6 +73,9 @@ func (r *KeepAlivedReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	updates.Inc()
 	// update ka
 	res, err := r.handleAddOrUpdateKeepAlived(ctx, req)
+	if err != nil {
+		r.Log.Error(err, "failed to handle keepalived")
+	}
 	switch res {
 	case SyncStateError:
 		updateErrors.Inc()
@@ -195,17 +198,13 @@ func (r *KeepAlivedReconciler) setRouterID(ctx context.Context, ka *vpngwv1.Keep
 	return nil
 }
 
-func findNextAvailableID(ids []int) (int, error) {
-	if len(ids) == 0 {
+func findNextAvailableID(usedIDs []int) (int, error) {
+	if len(usedIDs) == 0 {
 		return 1, nil
 	}
-	usedSet := iset.New(ids...)
+	usedSet := iset.New(usedIDs...)
 	for i := 1; i <= 255; i++ {
-		used := false
-		if usedSet.Has(i) {
-			used = true
-		}
-		if !used {
+		if !usedSet.Has(i) {
 			return i, nil
 		}
 	}

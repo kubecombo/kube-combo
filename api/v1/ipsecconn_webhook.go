@@ -69,6 +69,7 @@ func (r *IpsecConn) ValidateCreate() error {
 
 	// TODO(user): fill in your validation logic upon object creation.
 	if err := r.validateIpsecConn(); err != nil {
+		ipsecconnlog.Error(err, "validate ipsec conn failed")
 		return err
 	}
 	return nil
@@ -81,6 +82,7 @@ func (r *IpsecConn) ValidateUpdate(old runtime.Object) error {
 	// TODO(user): fill in your validation logic upon object update.
 	ipsecconnlog.Info("validate update", "name", r.Name)
 	if err := r.validateIpsecConn(); err != nil {
+		ipsecconnlog.Error(err, "validate ipsec conn failed")
 		return err
 	}
 	oldIpsecConn, _ := old.(*IpsecConn)
@@ -106,6 +108,8 @@ func (r *IpsecConn) ValidateDelete() error {
 
 func (r *IpsecConn) validateIpsecConn() error {
 	var allErrs field.ErrorList
+
+	// TODO:// use a func to format and append the error
 
 	if r.Spec.VpnGw == "" {
 		err := fmt.Errorf("ipsecConn vpn gw is required")

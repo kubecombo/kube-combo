@@ -122,6 +122,7 @@ var _ = BeforeSuite(func() {
 	Eventually(func() error {
 		conn, err := tls.DialWithDialer(dialer, "tcp", addrPort, &tls.Config{InsecureSkipVerify: true})
 		if err != nil {
+			logf.Log.Error(err, "failed to dial webhook server")
 			return err
 		}
 		conn.Close()

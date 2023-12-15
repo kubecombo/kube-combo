@@ -59,6 +59,7 @@ func (r *VpnGw) ValidateCreate() error {
 
 	// TODO(user): fill in your validation logic upon object creation.
 	if err := r.validateVpnGw(); err != nil {
+		vpngwlog.Error(err, "validate vpn gw failed")
 		return err
 	}
 	return nil
@@ -70,6 +71,7 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 
 	// TODO(user): fill in your validation logic upon object update.
 	if err := r.validateVpnGw(); err != nil {
+		vpngwlog.Error(err, "validate vpn gw failed")
 		return err
 	}
 	oldVpnGw, _ := old.(*VpnGw)
@@ -136,10 +138,12 @@ func (r *VpnGw) validateVpnGw() error {
 	}
 
 	if r.Spec.Cpu == "" || r.Spec.Memory == "" {
-		err := fmt.Errorf("vpn gw cpu and memory is required")
+		err := fmt.Errorf("vpn gw cpu and memory is required, 1C 1Gi at least")
 		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.Cpu, err.Error())
 		allErrs = append(allErrs, e)
 	}
+
+	// TODO:// maker sure the cpu and memory 1c1g at least
 
 	if r.Spec.QoSBandwidth == "" || r.Spec.QoSBandwidth == "0" {
 		err := fmt.Errorf("vpn gw qos bandwidth is required")

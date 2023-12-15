@@ -59,6 +59,9 @@ func ExecuteWithOptions(client kubernetes.Interface, cfg *rest.Config, options E
 
 	var stdout, stderr bytes.Buffer
 	err := execute("POST", req.URL(), cfg, options.Stdin, &stdout, &stderr, false)
+	if err != nil {
+		klog.Errorf("execute error: %v", err)
+	}
 	if options.PreserveWhitespace {
 		return stdout.String(), stderr.String(), err
 	}

@@ -206,7 +206,7 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedN
 }
 
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
-	r.Log.Info("xxxxxxx start validateVpnGw", "vpn gw", gw)
+	r.Log.V(3).Info("start validateVpnGw", "vpn gw", gw)
 	if gw.Spec.Keepalived == "" {
 		err := fmt.Errorf("vpn gw keepalived is required")
 		r.Log.Error(err, "should set keepalived")
@@ -414,6 +414,12 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	}
 
 	if gw.Spec.EnableSslVpn {
+		// config ssl vpn openvpn pod：
+		// port, proto, cipher, auth, subnet
+		// volume: x.509 secret, dhparams secret
+		// env: proto, port, cipher, auth, subnet
+		// command: openvpn --config /etc/openvpn/server.conf
+
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = SslVpnTcpPort
@@ -509,6 +515,11 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		containers = append(containers, sslContainer)
 	}
 	if gw.Spec.EnableIpsecVpn {
+		// config ipsec vpn strongswan pod:
+		// port, proto
+		// volume: x.509 secret
+		// env: proto, port
+		// command: ipsec start
 		ipsecContainer := corev1.Container{
 			Name:  IpsecVpnServer,
 			Image: gw.Spec.IpsecVpnImage,
