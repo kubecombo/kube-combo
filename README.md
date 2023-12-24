@@ -1,8 +1,10 @@
 # Kube-Combo
 
-![Kube-Combo](/docs/images/kubecombo.png)
+![Kube-Combo](./docs/images/kubecombo.png)
 
 Kube-Combo 是一款基于 Pod 来提供各种各样网元能力的编排系统，提供丰富的功能以及良好的可运维性。
+
+![design](./docs/images/design.png)
 
 ## 丰富的功能
 
