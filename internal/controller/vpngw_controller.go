@@ -183,6 +183,7 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&vpngwv1.IpsecConn{}).
+		Owns(&vpngwv1.KeepAlived{}).
 		Complete(r)
 }
 
