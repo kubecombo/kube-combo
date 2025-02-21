@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.0.1
+VERSION ?= 0.0.2
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -132,6 +132,11 @@ test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
 
 ##@ Build
+
+.PHONY: docker-pull-base
+docker-pull-base:
+	docker pull golang:1.19
+	docker pull ubuntu:22.04
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
@@ -391,5 +396,5 @@ crictl-pull-image:
 	$(call crictl_pull_image,$(NETSHOOT_IMG))
 
 .PHONY: crictl-reload
-crictl-reload: 
+crictl-reload:
 	kubectl delete po -n kube-system -l control-plane=controller-manager

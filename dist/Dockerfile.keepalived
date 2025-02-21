@@ -1,10 +1,10 @@
-FROM icoy/kube-combo-base:v0.0.1
+FROM icoy/kube-combo-base:v0.0.2
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install keepalived -y && \
-        rm -rf /var/lib/apt/lists/*
-        
+    rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /etc/keepalived.d
 COPY dist/keepalived-setup /
 RUN chmod +x /configure.sh

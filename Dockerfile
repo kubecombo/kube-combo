@@ -1,11 +1,13 @@
 # Build the manager binary
-FROM golang:1.19 as builder
+FROM golang:1.19 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /workspace
-ENV GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,direct
+
+# use cn proxy
+#ENV GO111MODULE=on
+#ENV GOPROXY=https://goproxy.cn,direct
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod

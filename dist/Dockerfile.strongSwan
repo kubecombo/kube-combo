@@ -1,9 +1,9 @@
-FROM icoy/kube-combo-base:v0.0.1
+FROM icoy/kube-combo-base:v0.0.2
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install charon-systemd -y && \
-        rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 
 COPY dist/strongswan-setup /
 RUN chmod +x *.sh

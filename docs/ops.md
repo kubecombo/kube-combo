@@ -37,7 +37,7 @@ chmod +x install.sh
 
 # 运行 operator
 
-operator-sdk run bundle registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo-bundle:v0.0.1
+operator-sdk run bundle registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo-bundle:v0.0.2
 
 # 检查 operator 已安装
 
@@ -57,11 +57,11 @@ operator-sdk cleanup vpn-gw
 ``` bash
 operator-sdk olm install
 
-# 功能上 operator-sdk == kubectl operator 
+# 功能上 operator-sdk == kubectl operator
 
 kubectl krew install operator
 kubectl create ns cert-manager
-kubectl operator install cert-manager -n cert-manager --channel candidate --approval Automatic --create-operator-group 
+kubectl operator install cert-manager -n cert-manager --channel candidate --approval Automatic --create-operator-group
 
 # kubectl operator install cert-manager -n operators --channel stable --approval Automatic
 
