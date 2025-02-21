@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: icoy/kube-combo-controller
-  newTag: v0.0.1
+  newTag: v0.0.2

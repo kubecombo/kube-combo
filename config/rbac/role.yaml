@@ -2,45 +2,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: manager-role
 rules:
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets/finalizers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets/scale
-  verbs:
-  - get
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - ""
   resources:
@@ -84,60 +47,46 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/scale
+  verbs:
+  - get
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - vpn-gw.kubecombo.com
   resources:
   - ipsecconns
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - ipsecconns/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - ipsecconns/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
   - keepaliveds
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - keepaliveds/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - keepaliveds/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
   - vpngws
   verbs:
   - create
@@ -150,12 +99,16 @@ rules:
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - ipsecconns/finalizers
+  - keepaliveds/finalizers
   - vpngws/finalizers
   verbs:
   - update
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - ipsecconns/status
+  - keepaliveds/status
   - vpngws/status
   verbs:
   - get
