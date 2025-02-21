@@ -35,6 +35,16 @@ make manifests
 
 ```bash
 
+make docker-pull-base
 make docker-build-all
+
+```
+
+## 2. deploy
+
+```bash
+
+make docker-pull-all
+
 
 ```

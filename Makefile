@@ -39,9 +39,9 @@ KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # dependencies
 KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
-CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.13.2
-CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.13.2
-CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.13.2
+CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.17.0
+CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.17.0
+CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.17.0
 
 # netshoot
 NETSHOOT_IMG ?= docker.io/nicolaka/netshoot:latest
@@ -194,6 +194,14 @@ docker-push-keepalived:
 .PHONY: docker-build-all
 docker-build-all: docker-build docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived
 
+.PHONY: docker-pull-all
+docker-pull-all:
+	docker pull ${BASE_IMG} && \
+	docker pull ${IMG} && \
+	docker pull ${SSL_VPN_IMG} && \
+	docker pull ${IPSEC_VPN_IMG} && \
+	docker pull ${KEEPALIVED_IMG}
+
 .PHONY: docker-push-all
 docker-push-all:
 	docker push ${BASE_IMG} && \
@@ -255,7 +263,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v5.2.1
+KUSTOMIZE_VERSION ?= v5.3.0
 CONTROLLER_TOOLS_VERSION ?= v0.17.2
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
@@ -375,9 +383,6 @@ endef
 .PHONY: kind-load-image
 kind-load-image:
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CAINJECTOR))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_CONTROLLER))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(CERT_MANAGER_WEBHOOK))
 	#$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))

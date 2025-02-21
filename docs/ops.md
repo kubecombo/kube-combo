@@ -2,7 +2,16 @@
 
 前置依赖
 
+- k8s
 - cert-manager
+- cni(kube-ovn)
+
+```bash
+
+# 基于 kube-ovn kind 部署，一键拉起 certmanager
+make kind-init-ha; make kind-install-webhook; make ovn-vpc-nat-gw-conformance-e2e
+
+```
 
 提供多种方式部署：
 
