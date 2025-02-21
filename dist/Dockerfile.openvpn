@@ -1,12 +1,12 @@
-FROM icoy/kube-combo-base:v0.0.2
+FROM icoy/kube-combo-base:v0.0.3
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install openvpn -y && \
-        rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 # Configure tun
 RUN mkdir -p /dev/net && \
-     mknod /dev/net/tun c 10 200
+    mknod /dev/net/tun c 10 200
 
 RUN mkdir -p /etc/openvpn/setup && \
     mkdir -p /etc/openvpn/certs && \

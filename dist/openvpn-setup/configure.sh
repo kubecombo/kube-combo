@@ -78,7 +78,13 @@ sed 's|NETMASK|'"${NETMASK}"'|' -i /etc/openvpn/openvpn.conf
 # DNS
 sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
 
+# debug openvpn.conf
+echo "cat /etc/openvpn/openvpn.conf start .............."
+cat /etc/openvpn/openvpn.conf
+echo "cat /etc/openvpn/openvpn.conf end .............."
+
 # show openvpn version
+echo "openvpn --version"
 openvpn --version
 
 echo "Running openvpn with config .............."

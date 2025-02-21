@@ -1,12 +1,8 @@
-FROM ubuntu:22.04
+FROM debian:bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install python3 python3-pip hostname vim tree iproute2 inetutils-ping arping ncat iptables tcpdump ipset curl openssl easy-rsa dnsutils net-tools -y && \
-        rm -rf /var/lib/apt/lists/* && \
-        rm -rf /etc/localtime
-
-        
-RUN pip3 install -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --no-cache-dir j2cli[yaml] && \
-    rm -rf /root/.cache/pip
+    apt-get install python3 python3-pip j2cli hostname vim tree iproute2 inetutils-ping arping ncat iptables tcpdump ipset curl openssl easy-rsa dnsutils net-tools -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /etc/localtime
