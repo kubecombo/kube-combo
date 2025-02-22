@@ -111,7 +111,7 @@ func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *KeepAlivedReconciler) validateKeepAlived(ctx context.Context, ka *vpngwv1.KeepAlived, namespacedName string) error {
+func (r *KeepAlivedReconciler) validateKeepAlived(ka *vpngwv1.KeepAlived, namespacedName string) error {
 	if ka.Spec.Subnet == "" {
 		err := fmt.Errorf("subnet is required for keepalived %s", namespacedName)
 		r.Log.Error(err, "subnet is required")
@@ -148,7 +148,7 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 	}
 
 	// validate keepalived spec
-	if err := r.validateKeepAlived(ctx, ka, namespacedName); err != nil {
+	if err := r.validateKeepAlived(ka, namespacedName); err != nil {
 		r.Log.Error(err, "failed to validate keepalived")
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err

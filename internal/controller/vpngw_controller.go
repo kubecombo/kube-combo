@@ -187,7 +187,7 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedName string) error {
+func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
 	if ka.Spec.Image == "" {
 		err := fmt.Errorf("keepalived image is required")
 		r.Log.Error(err, "should set keepalived image")
@@ -206,7 +206,7 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived, namespacedN
 	return nil
 }
 
-func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw, namespacedName string) error {
+func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 	r.Log.V(3).Info("start validateVpnGw", "vpn gw", gw)
 	if gw.Spec.Keepalived == "" {
 		err := fmt.Errorf("vpn gw keepalived is required")
@@ -636,6 +636,283 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	return
 }
 
+func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldDs *appsv1.DaemonSet) (newDs *appsv1.DaemonSet) {
+	namespacedName := fmt.Sprintf("%s/%s", gw.Namespace, gw.Name)
+	r.Log.Info("start daemonsetForVpnGw", "vpn gw", namespacedName)
+	defer r.Log.Info("end daemonsetForVpnGw", "vpn gw", namespacedName)
+	// TODO: HA may use router lb external eip as fontend
+	allowPrivilegeEscalation := true
+	privileged := true
+	labels := labelsForVpnGw(gw)
+	newPodAnnotations := map[string]string{}
+	if oldDs != nil && len(oldDs.Annotations) != 0 {
+		newPodAnnotations = oldDs.Annotations
+	}
+	podAnnotations := map[string]string{
+		KubeovnLogicalSwitchAnnotation: ka.Spec.Subnet,
+		KubeovnIngressRateAnnotation:   gw.Spec.QoSBandwidth,
+		KubeovnEgressRateAnnotation:    gw.Spec.QoSBandwidth,
+	}
+	for key, value := range podAnnotations {
+		newPodAnnotations[key] = value
+	}
+
+	containers := []corev1.Container{}
+	volumes := []corev1.Volume{}
+
+	// keepalived
+	keepalivedContainer := corev1.Container{
+		Name:  KeepAlivedServer,
+		Image: ka.Spec.Image,
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+			},
+		},
+		Command: []string{KeepalivedStartUpCMD},
+		Env: []corev1.EnvVar{
+			{
+				Name:  KeepalivedVipKey,
+				Value: ka.Spec.VipV4,
+			},
+			{
+				Name:  keepalivedVirtualRouterID,
+				Value: strconv.Itoa(ka.Status.RouterID),
+			},
+		},
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		SecurityContext: &corev1.SecurityContext{
+			Privileged:               &privileged,
+			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+		},
+	}
+
+	if gw.Spec.EnableSslVpn {
+		// config ssl vpn openvpn pod：
+		// port, proto, cipher, auth, subnet
+		// volume: x.509 secret, dhparams secret
+		// env: proto, port, cipher, auth, subnet
+		// command: openvpn --config /etc/openvpn/server.conf
+
+		sslVpnPort := SslVpnUdpPort
+		if gw.Spec.SslVpnProto == "tcp" {
+			sslVpnPort = SslVpnTcpPort
+		}
+
+		sslContainer := corev1.Container{
+			Name:  SslVpnServer,
+			Image: gw.Spec.SslVpnImage,
+			VolumeMounts: []corev1.VolumeMount{
+				// mount x.509 secret
+				{
+					Name:      gw.Spec.SslVpnSecret,
+					MountPath: SslVpnSecretPath,
+					ReadOnly:  true,
+				},
+				// mount openssl dhparams secret
+				{
+					Name:      gw.Spec.DhSecret,
+					MountPath: DhSecretPath,
+					ReadOnly:  true,
+				},
+			},
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+			},
+			Command: []string{SslVpnStartUpCMD},
+			Ports: []corev1.ContainerPort{{
+				ContainerPort: int32(sslVpnPort),
+				Name:          SslVpnServer,
+				Protocol:      corev1.Protocol(strings.ToUpper(gw.Spec.SslVpnProto)),
+			}},
+			Env: []corev1.EnvVar{
+				{
+					Name:  SslVpnProtoKey,
+					Value: gw.Spec.SslVpnProto,
+				},
+				{
+					Name:  SslVpnPortKey,
+					Value: strconv.Itoa(sslVpnPort),
+				},
+				{
+					Name:  SslVpnCipherKey,
+					Value: gw.Spec.SslVpnCipher,
+				},
+				{
+					Name:  SslVpnAuthKey,
+					Value: gw.Spec.SslVpnAuth,
+				},
+				{
+					Name:  SslVpnSubnetCidrKey,
+					Value: gw.Spec.SslVpnSubnetCidr,
+				},
+				{
+					Name:  KeepalivedVipKey,
+					Value: ka.Spec.VipV4,
+				},
+			},
+			ImagePullPolicy: corev1.PullIfNotPresent,
+			SecurityContext: &corev1.SecurityContext{
+				Privileged:               &privileged,
+				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			},
+		}
+		sslSecretVolume := corev1.Volume{
+			Name: gw.Spec.SslVpnSecret,
+			// define secrect volume
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: gw.Spec.SslVpnSecret,
+					Optional:   &[]bool{true}[0],
+				},
+			},
+		}
+		volumes = append(volumes, sslSecretVolume)
+		dhSecretVolume := corev1.Volume{
+			Name: gw.Spec.DhSecret,
+			// define secrect volume
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: gw.Spec.DhSecret,
+					Optional:   &[]bool{true}[0],
+				},
+			},
+		}
+		volumes = append(volumes, dhSecretVolume)
+		containers = append(containers, sslContainer)
+	}
+	if gw.Spec.EnableIpsecVpn {
+		// config ipsec vpn strongswan pod:
+		// port, proto
+		// volume: x.509 secret
+		// env: proto, port
+		// command: ipsec start
+		ipsecContainer := corev1.Container{
+			Name:  IpsecVpnServer,
+			Image: gw.Spec.IpsecVpnImage,
+			// mount x.509 secret
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      gw.Spec.IpsecSecret,
+					MountPath: IpsecVpnSecretPath,
+					ReadOnly:  true,
+				},
+			},
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.Cpu),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+			},
+			Command: []string{IpsecVpnStartUpCMD},
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: IpSecIsakmpPort,
+					Name:          IpSecIsakmpPortKey,
+					Protocol:      corev1.Protocol(IpsecProto),
+				},
+				{
+					ContainerPort: IpSecBootPcPort,
+					Name:          IpSecBootPcPortKey,
+					Protocol:      corev1.Protocol(IpsecProto),
+				},
+				{
+					ContainerPort: IpSecNatPort,
+					Name:          IpSecNatPortKey,
+					Protocol:      corev1.Protocol(IpsecProto)},
+			},
+			ImagePullPolicy: corev1.PullIfNotPresent,
+			SecurityContext: &corev1.SecurityContext{
+				Privileged:               &privileged,
+				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			},
+		}
+		ipsecSecretVolume := corev1.Volume{
+			// define secrect volume
+			Name: gw.Spec.IpsecSecret,
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: gw.Spec.IpsecSecret,
+					Optional:   &[]bool{true}[0],
+				},
+			},
+		}
+		volumes = append(volumes, ipsecSecretVolume)
+		containers = append(containers, ipsecContainer)
+	}
+	containers = append(containers, keepalivedContainer)
+	newDs = &appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      gw.Name,
+			Namespace: gw.Namespace,
+			Labels:    labels,
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      labels,
+					Annotations: newPodAnnotations,
+				},
+				Spec: corev1.PodSpec{
+					Containers: containers,
+					Volumes:    volumes,
+				},
+			},
+			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
+				Type: appsv1.RollingUpdateDaemonSetStrategyType,
+			},
+		},
+	}
+
+	if len(gw.Spec.Selector) > 0 {
+		selectors := make(map[string]string)
+		for _, v := range gw.Spec.Selector {
+			parts := strings.Split(strings.TrimSpace(v), ":")
+			if len(parts) != 2 {
+				continue
+			}
+			selectors[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+		newDs.Spec.Template.Spec.NodeSelector = selectors
+	}
+
+	if len(gw.Spec.Tolerations) > 0 {
+		newDs.Spec.Template.Spec.Tolerations = gw.Spec.Tolerations
+	}
+
+	if gw.Spec.Affinity.NodeAffinity != nil ||
+		gw.Spec.Affinity.PodAffinity != nil ||
+		gw.Spec.Affinity.PodAntiAffinity != nil {
+		newDs.Spec.Template.Spec.Affinity = &gw.Spec.Affinity
+	}
+
+	// set gw instance as the owner and controller
+	if err := controllerutil.SetControllerReference(gw, newDs, r.Scheme); err != nil {
+		r.Log.Error(err, "failed to set vpn gw as the owner and controller")
+		return nil
+	}
+	return
+}
+
 // belonging to the given vpn gw CR name.
 func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	return map[string]string{
@@ -644,6 +921,84 @@ func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	}
 }
 
+func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived) error {
+	// create or update statefulset
+	needToCreate := false
+	oldSts := &appsv1.StatefulSet{}
+	err := r.Get(context.Background(), req.NamespacedName, oldSts)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			needToCreate = true
+		} else {
+			r.Log.Error(err, "failed to get old statefulset")
+			return err
+		}
+	}
+	newGw := gw.DeepCopy()
+	if needToCreate {
+		// create statefulset
+		newSts := r.statefulSetForVpnGw(gw, ka, nil)
+		err = r.Create(context.Background(), newSts)
+		if err != nil {
+			r.Log.Error(err, "failed to create the new statefulset")
+			return err
+		}
+		time.Sleep(5 * time.Second)
+		return nil
+	} else if r.isChanged(newGw, nil) {
+		// update statefulset
+		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
+		err = r.Update(context.Background(), newSts)
+		if err != nil {
+			r.Log.Error(err, "failed to update the statefulset")
+			return err
+		}
+		time.Sleep(5 * time.Second)
+		return nil
+	}
+	r.Log.Info("vpn gw statefulset not changed", "vpn gw", gw.Name)
+	return nil
+}
+
+func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived) error {
+	// use daemonset to reconcile static pod yaml
+	// create or update daemonset
+	needToCreate := false
+	oldDs := &appsv1.DaemonSet{}
+	err := r.Get(context.Background(), req.NamespacedName, oldDs)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			needToCreate = true
+		} else {
+			r.Log.Error(err, "failed to get old daemonset")
+			return err
+		}
+	}
+	newGw := gw.DeepCopy()
+	if needToCreate {
+		// create daemonset
+		newSts := r.daemonsetForVpnGw(gw, ka, nil)
+		err = r.Create(context.Background(), newSts)
+		if err != nil {
+			r.Log.Error(err, "failed to create the new daemonset")
+			return err
+		}
+		time.Sleep(5 * time.Second)
+		return nil
+	} else if r.isChanged(newGw, nil) {
+		// update daemonset
+		newSts := r.daemonsetForVpnGw(gw, ka, oldDs.DeepCopy())
+		err = r.Update(context.Background(), newSts)
+		if err != nil {
+			r.Log.Error(err, "failed to update the daemonset")
+			return err
+		}
+		time.Sleep(5 * time.Second)
+		return nil
+	}
+	r.Log.Info("vpn gw daemonset not changed", "vpn gw", gw.Name)
+	return nil
+}
 func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create vpn gw statefulset
 	namespacedName := req.NamespacedName.String()
@@ -661,7 +1016,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		// vpn gw deleted
 		return SyncStateSuccess, nil
 	}
-	if err := r.validateVpnGw(gw, namespacedName); err != nil {
+	if err := r.validateVpnGw(gw); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err
@@ -680,43 +1035,25 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		r.Log.Error(err, "failed to get keepalived")
 		return SyncStateError, err
 	}
-	if err := r.validateKeepalived(ka, namespacedName); err != nil {
+	if err := r.validateKeepalived(ka); err != nil {
 		r.Log.Error(err, "failed to validate keepalived")
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err
 	}
 
-	// create or update statefulset
-	needToCreate := false
-	oldSts := &appsv1.StatefulSet{}
-	err = r.Get(context.Background(), req.NamespacedName, oldSts)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			needToCreate = true
-		} else {
-			r.Log.Error(err, "failed to get old statefulset")
+	// create vpn gw or update
+	if gw.Spec.WorkloadType == "statefulset" {
+		if err := r.handleAddOrUpdateVpnStatefulset(req, gw, ka); err != nil {
+			r.Log.Error(err, "failed to handleAddOrUpdateVpnStatefulset")
+			return SyncStateError, err
+		}
+	} else {
+		if err := r.handleAddOrUpdateVpnDaemonset(req, gw, ka); err != nil {
+			r.Log.Error(err, "failed to handleAddOrUpdateVpnDaemonset")
 			return SyncStateError, err
 		}
 	}
-	newGw := gw.DeepCopy()
-	if needToCreate {
-		newSts := r.statefulSetForVpnGw(gw, ka, nil)
-		err = r.Create(context.Background(), newSts)
-		if err != nil {
-			r.Log.Error(err, "failed to create the new statefulset")
-			return SyncStateError, err
-		}
-		time.Sleep(5 * time.Second)
-	} else if r.isChanged(newGw, nil) {
-		// update statefulset
-		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
-		err = r.Update(context.Background(), newSts)
-		if err != nil {
-			r.Log.Error(err, "failed to update the statefulset")
-			return SyncStateError, err
-		}
-		time.Sleep(5 * time.Second)
-	}
+
 	var conns []string
 	if gw.Spec.EnableIpsecVpn {
 		// fetch ipsec connections
@@ -784,7 +1121,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			}
 		}
 	}
-	newGw = gw.DeepCopy()
+	newGw := gw.DeepCopy()
 	if r.isChanged(newGw, conns) {
 		err = r.Status().Update(context.Background(), newGw)
 		if err != nil {

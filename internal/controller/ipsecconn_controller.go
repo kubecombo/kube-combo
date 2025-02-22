@@ -109,7 +109,7 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn, namespacedName string) error {
+func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn) error {
 	if ipsecConn.Spec.IkeVersion != "0" && ipsecConn.Spec.IkeVersion != "1" && ipsecConn.Spec.IkeVersion != "2" {
 		err := fmt.Errorf("ipsec connection spec ike version is invalid, ike version spec: %s", ipsecConn.Spec.IkeVersion)
 		r.Log.Error(err, "ignore invalid ipsec connection")
@@ -149,7 +149,7 @@ func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(ctx context.Conte
 	}
 
 	// validate ipsecConn spec
-	if err := r.validateIpsecConnection(ipsecConn, namespacedName); err != nil {
+	if err := r.validateIpsecConnection(ipsecConn); err != nil {
 		r.Log.Error(err, "failed to validate ipsecConn")
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err

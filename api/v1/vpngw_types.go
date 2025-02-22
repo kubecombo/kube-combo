@@ -29,6 +29,13 @@ type VpnGwSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// k8s workload type
+	// statefulset means use statefulset pod to provide vpn server
+	// static means use static pod to provide vpn server
+
+	// +kubebuilder:validation:Required
+	WorkloadType string `json:"workloadType"`
+
 	// cpu, memory request
 	// cpu, memory limit
 	// 1C 1G at least
