@@ -45,6 +45,13 @@ make docker-build-all
 ```bash
 
 make docker-pull-all
-
-
+# if kubeovn kind env
+make kind-load-image
 ```
+install kubecombo crd and deploy operator
+
+```bash
+make install
+make deploy
+```
+
