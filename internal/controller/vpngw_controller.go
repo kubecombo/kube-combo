@@ -879,6 +879,8 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				Spec: corev1.PodSpec{
 					Containers: containers,
 					Volumes:    volumes,
+					// host network
+					HostNetwork: true,
 				},
 			},
 			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
