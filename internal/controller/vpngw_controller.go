@@ -126,6 +126,10 @@ type VpnGwReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=statefulsets/scale,verbs=get;watch;update
 // +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps,resources=statefulsets/finalizers,verbs=get;list;watch
+// +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=daemonsets/scale,verbs=get;watch;update
+// +kubebuilder:rbac:groups=apps,resources=daemonsets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=apps,resources=daemonsets/finalizers,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods/exec,verbs=create
 // +kubebuilder:rbac:groups=core,resources=pods/log,verbs=get

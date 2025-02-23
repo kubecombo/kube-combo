@@ -15,6 +15,9 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.workloadType
+      name: WorkloadType
+      type: string
     - jsonPath: .spec.keepalived
       name: Keepalived
       type: string
