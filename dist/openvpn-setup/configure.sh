@@ -28,10 +28,16 @@ cidr2net() {
     echo "${netOctets#.}"
 }
 
+# make it runable in any directory
+CONF_HOME=${CONF_HOME:-/etc/openvpn}
+CONF="$CONF_HOME/openvpn.conf"
+SETUP_HOME="$CONF_HOME/setup"
+echo "setup openvpn in ${SETUP_HOME} .............."
+
 # use cert-manager secrets and user defined dh secret
-/etc/openvpn/setup/copy-certs.sh
+bash -x "${SETUP_HOME}/copy-certs.sh"
 # or generate certs with easyrsa
-# /etc/openvpn/setup/setup-certs.sh
+#bash -x "${SETUP_HOME}/setup-certs.sh"
 
 intAndIP="$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $5 "-" $7}')"
 int="${intAndIP%-*}"
@@ -60,32 +66,34 @@ FORMATTED_SEARCH=""
 for DOMAIN in $SEARCH; do
   FORMATTED_SEARCH="${FORMATTED_SEARCH}push \"dhcp-option DOMAIN-SEARCH ${DOMAIN}\"\n"
 done
+# create openvpn.conf
+\cp -f "${SETUP_HOME}/openvpn.conf" "${CONF}"
 
-cp -f /etc/openvpn/setup/openvpn.conf /etc/openvpn/
-sed 's|SSL_VPN_PROTO|'"${SSL_VPN_PROTO}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|SSL_VPN_PORT|'"${SSL_VPN_PORT}"'|' -i /etc/openvpn/openvpn.conf
+# format openvpn.conf
+sed 's|SSL_VPN_PROTO|'"${SSL_VPN_PROTO}"'|' -i "${CONF}"
+sed 's|SSL_VPN_PORT|'"${SSL_VPN_PORT}"'|' -i "${CONF}"
 
-sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_NETWORK|'"${SSL_VPN_NETWORK}"'|' -i "${CONF}"
+sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i "${CONF}"
+sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i "${CONF}"
+sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i "${CONF}"
 
 
 # NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
-sed 's|NETWORK|'"${NETWORK}"'|' -i /etc/openvpn/openvpn.conf
-sed 's|NETMASK|'"${NETMASK}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|NETWORK|'"${NETWORK}"'|' -i "${CONF}"
+sed 's|NETMASK|'"${NETMASK}"'|' -i "${CONF}"
 
 # DNS
-sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i /etc/openvpn/openvpn.conf
+sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i "${CONF}"
 
 # debug openvpn.conf
-echo "cat /etc/openvpn/openvpn.conf start .............."
-cat /etc/openvpn/openvpn.conf
-echo "cat /etc/openvpn/openvpn.conf end .............."
+echo "cat ${CONF} start .............."
+cat "${CONF}"
+echo "cat ${CONF} end .............."
 
 # show openvpn version
 echo "openvpn --version"
 openvpn --version
 
 echo "Running openvpn with config .............."
-openvpn --config /etc/openvpn/openvpn.conf
+openvpn --config "${CONF}"
