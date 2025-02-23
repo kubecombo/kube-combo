@@ -57,6 +57,9 @@ const (
 
 	SslVpnStartUpCMD = "/etc/openvpn/setup/configure.sh"
 
+	// debug daemonset ssl vpn pod need sleep infinity
+	SslVpnSleepInfinity = "sleep infinity"
+
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
 	// vpn gw pod env
@@ -424,7 +427,11 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// volume: x.509 secret, dhparams secret
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
-
+		cmd := []string{SslVpnStartUpCMD}
+		if gw.Spec.WorkloadType == "static" {
+			// debug daemonset ssl vpn pod need sleep infinity
+			cmd = []string{SslVpnSleepInfinity}
+		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = SslVpnTcpPort
@@ -457,7 +464,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{SslVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{{
 				ContainerPort: int32(sslVpnPort),
 				Name:          SslVpnServer,
@@ -703,6 +710,11 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 
+		cmd := []string{SslVpnStartUpCMD}
+		if gw.Spec.WorkloadType == "static" {
+			// debug daemonset ssl vpn pod need sleep infinity
+			cmd = []string{SslVpnSleepInfinity}
+		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = SslVpnTcpPort
@@ -735,7 +747,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{SslVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{{
 				ContainerPort: int32(sslVpnPort),
 				Name:          SslVpnServer,
