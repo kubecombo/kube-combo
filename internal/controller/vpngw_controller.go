@@ -60,6 +60,10 @@ const (
 	// debug daemonset ssl vpn pod need sleep infinity
 	SslVpnDebugCMD = "/etc/openvpn/setup/debug.sh"
 
+	// ssl vpn static pod config use host path
+	SslVpnHostPath     = "/etc/openvpn"
+	SslVpnHostPathName = "openvpn-hostpath"
+
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
 	// vpn gw pod env
@@ -724,6 +728,12 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			Name:  SslVpnServer,
 			Image: gw.Spec.SslVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
+				// use hostpath to map /etc/openvpn to host
+				{
+					Name:      SslVpnHostPathName,
+					MountPath: SslVpnHostPath,
+					ReadOnly:  false,
+				},
 				// mount x.509 secret
 				{
 					Name:      gw.Spec.SslVpnSecret,
@@ -785,6 +795,16 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
+		sslConfHostVolume := corev1.Volume{
+			Name: SslVpnHostPathName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: SslVpnHostPath,
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
+				},
+			},
+		}
+		volumes = append(volumes, sslConfHostVolume)
 		sslSecretVolume := corev1.Volume{
 			Name: gw.Spec.SslVpnSecret,
 			// define secrect volume
@@ -1060,6 +1080,8 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 
 	// create vpn gw or update
+	// statefulset for vpc case
+	// daemonset for static pod case
 	if gw.Spec.WorkloadType == "statefulset" {
 		if err := r.handleAddOrUpdateVpnStatefulset(req, gw, ka); err != nil {
 			r.Log.Error(err, "failed to handleAddOrUpdateVpnStatefulset")
