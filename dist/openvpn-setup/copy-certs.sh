@@ -10,7 +10,7 @@ EASY_RSA_CERTS_HOME=${EASY_RSA_CERTS_HOME:-/etc/openvpn/certs}
 echo "openvpn home in ${CONF_HOME} .............."
 tree "${CONF_HOME}"
 echo "make sure ${CERT_MANAGER_HOME} has ca.crt, tls.crt, tls.key"
-tree "${CERT_MANAGER_CERTS_HOME}"
+tree "${CERT_MANAGER_HOME}"
 echo "make sure ${EASY_RSA_CERTS_HOME} is empty .............."
 tree "${EASY_RSA_CERTS_HOME}"
 
