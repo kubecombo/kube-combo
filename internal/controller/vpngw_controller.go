@@ -55,10 +55,11 @@ const (
 	SslVpnSecretPath = "/etc/openvpn/certmanager"
 	DhSecretPath     = "/etc/openvpn/dh"
 
-	SslVpnStartUpCMD = "/etc/openvpn/setup/configure.sh"
+	// statefulset ssl vpn pod start up command
+	SslVpnStsCMD = "/etc/openvpn/setup/configure.sh"
 
-	// debug daemonset ssl vpn pod need sleep infinity
-	SslVpnDebugCMD = "/etc/openvpn/setup/debug.sh"
+	// daemonset ssl vpn pod start up command
+	SslVpnDsCMD = "/etc/openvpn/setup/daemonset-start.sh"
 
 	// ssl vpn static pod config use host path
 	SslVpnHostPath     = "/etc/openvpn/host-init"
@@ -431,10 +432,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// volume: x.509 secret, dhparams secret
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
-		cmd := []string{SslVpnStartUpCMD}
+		cmd := []string{SslVpnStsCMD}
 		if gw.Spec.WorkloadType == "static" {
 			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDebugCMD}
+			cmd = []string{SslVpnDsCMD}
 		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
@@ -714,10 +715,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 
-		cmd := []string{SslVpnStartUpCMD}
+		cmd := []string{SslVpnStsCMD}
 		if gw.Spec.WorkloadType == "static" {
 			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDebugCMD}
+			cmd = []string{SslVpnDsCMD}
 		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
