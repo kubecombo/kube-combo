@@ -61,7 +61,7 @@ const (
 	SslVpnDebugCMD = "/etc/openvpn/setup/debug.sh"
 
 	// ssl vpn static pod config use host path
-	SslVpnHostPath     = "/etc/openvpn"
+	SslVpnHostPath     = "/etc/openvpn/host-init"
 	SslVpnHostPathName = "openvpn-hostpath"
 
 	EnableSslVpnLabel = "enable-ssl-vpn"
