@@ -9,11 +9,29 @@
 # clean /etc/openvpn/ dir
 rm -fr /etc/openvpn/*
 
-# copy all openvpn server need file to /etc/openvpn
-\cp /etc/openvpn/host-init/openvpn.conf /etc/openvpn/
-\cp -r /etc/openvpn/host-init/certs /etc/openvpn/
+while [ ! -f "/etc/host-init-openvpn/openvpn.conf" ]
+do
+    sleep 1
+    echo "waiting for /etc/host-init-openvpn/openvpn.conf ............"
+done
+
+while [ ! -d "/etc/host-init-openvpn/certs" ]
+do
+    sleep 1
+    echo "waiting for /etc/host-init-openvpn/certs ............"
+done
+
+while [ ! -f "/etc/host-init-openvpn/dh.pem" ]
+do
+    sleep 1
+    echo "waiting for /etc/host-init-openvpn/dh.pem ............"
+done
+
+# copy all openvpn server need file from /etc/host-init-openvpn to /etc/openvpn
+\cp /etc/host-init-openvpn/openvpn.conf /etc/openvpn/
+\cp -r /etc/host-init-openvpn/certs /etc/openvpn/
 mkdir -p /etc/openvpn/dh
-\cp /etc/openvpn/host-init/dh.pem /etc/openvpn/dh
+\cp /etc/host-init-openvpn/dh.pem /etc/openvpn/dh
 
 # start openvpn server
 echo "Running openvpn with config .............."

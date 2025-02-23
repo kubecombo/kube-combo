@@ -61,9 +61,9 @@ const (
 	// daemonset ssl vpn pod start up command
 	SslVpnDsCMD = "/etc/openvpn/setup/daemonset-start.sh"
 
-	// ssl vpn static pod config use host path
-	SslVpnHostPath     = "/etc/openvpn/host-init"
-	SslVpnHostPathName = "openvpn-hostpath"
+	// cache path from ds openvpn to k8s static pod openvpn
+	SslVpnHostCachePath = "/etc/host-init-openvpn"
+	SslVpnCacheName     = "openvpn-cache"
 
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
@@ -731,8 +731,8 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			VolumeMounts: []corev1.VolumeMount{
 				// use hostpath to map /etc/openvpn to host
 				{
-					Name:      SslVpnHostPathName,
-					MountPath: SslVpnHostPath,
+					Name:      SslVpnCacheName,
+					MountPath: SslVpnHostCachePath,
 					ReadOnly:  false,
 				},
 				// mount x.509 secret
@@ -797,10 +797,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			},
 		}
 		sslConfHostVolume := corev1.Volume{
-			Name: SslVpnHostPathName,
+			Name: SslVpnCacheName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: SslVpnHostPath,
+					Path: SslVpnHostCachePath,
 					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
 				},
 			},
