@@ -95,5 +95,12 @@ echo "cat ${CONF} end .............."
 echo "openvpn --version"
 openvpn --version
 
+# if host-init directory is exist, skip running openvpn here
+# it will be run in k8s static pod later
+if [ -d "${CONF_HOME}/host-init" ]; then
+    echo "host-init directory is exist, skip running openvpn .............."
+    sleep infinity
+fi
 echo "Running openvpn with config .............."
+echo "openvpn --config ${CONF}"
 openvpn --config "${CONF}"
