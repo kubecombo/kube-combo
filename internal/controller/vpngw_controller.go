@@ -58,7 +58,7 @@ const (
 	SslVpnStartUpCMD = "/etc/openvpn/setup/configure.sh"
 
 	// debug daemonset ssl vpn pod need sleep infinity
-	SslVpnSleepInfinity = "sleep infinity"
+	SslVpnDebugCMD = "/etc/openvpn/setup/debug.sh"
 
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
@@ -430,7 +430,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		cmd := []string{SslVpnStartUpCMD}
 		if gw.Spec.WorkloadType == "static" {
 			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnSleepInfinity}
+			cmd = []string{SslVpnDebugCMD}
 		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
@@ -713,7 +713,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		cmd := []string{SslVpnStartUpCMD}
 		if gw.Spec.WorkloadType == "static" {
 			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnSleepInfinity}
+			cmd = []string{SslVpnDebugCMD}
 		}
 		sslVpnPort := SslVpnUdpPort
 		if gw.Spec.SslVpnProto == "tcp" {
