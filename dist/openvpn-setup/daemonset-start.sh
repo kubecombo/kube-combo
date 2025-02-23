@@ -16,5 +16,12 @@ rm -fr "$CONF_HOME/host-init/*"
 \cp -r "$CONF_HOME/certs" "$CONF_HOME/host-init/"
 \cp -L "$CONF_HOME/dh/dh.pem" "$CONF_HOME/host-init/"
 
-# k8s static pod will copy file from host-init to pod /etc/openvpn
+echo "show $CONF_HOME/host-init/ files .............."
+ls -lR "$CONF_HOME/host-init/"
+
+echo "alreay setup ssl vpn certs and config, sleep, you can use this pod to debug .............."
+echo "you can use this pod to debug later .............."
+sleep infinity
+
+# k8s static pod will copy file from this host-init to pod /etc/openvpn
 # and start openvpn server
