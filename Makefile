@@ -401,5 +401,5 @@ crictl-pull-image:
 	$(call crictl_pull_image,$(NETSHOOT_IMG))
 
 .PHONY: reload
-reload:
+reload: kind-load-image
 	kubectl delete po -n kube-system -l control-plane=controller-manager
