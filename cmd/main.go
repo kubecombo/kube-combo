@@ -64,7 +64,7 @@ func main() {
 	// vpn gw server pod need those config to start
 	flag.StringVar(&k8sManifestsPath, "k8s-manifests-path", "/etc/kubernetes/manifests", "The path the ssl vpn daemonset pod will copy static pod yaml to.")
 	flag.StringVar(&sslVpnSecretPath, "ssl-vpn-secret-path", "/etc/openvpn/certmanager", "The path the ssl vpn pod will copy secrets to.")
-	flag.StringVar(&dhSecretPath, "ssl-vpn-secret-path", "/etc/openvpn/dh", "The path the ssl vpn pod will copy dh secrets to.")
+	flag.StringVar(&dhSecretPath, "dh-secret-path", "/etc/openvpn/dh", "The path the ssl vpn pod will copy dh secrets to.")
 	flag.StringVar(&ipSecVpnSecretPath, "ip-sec-vpn-secret-path", "/etc/ipsec/certs", "The path the ip sec vpn pod will copy to.")
 	flag.StringVar(&sslVpnTCP, "ssl-vpn-tcp-port", "443", "The port the ssl vpn server binds to.")
 	flag.StringVar(&sslVpnUDP, "ssl-vpn-udp-port", "1194", "The port the ssl vpn server binds to.")
