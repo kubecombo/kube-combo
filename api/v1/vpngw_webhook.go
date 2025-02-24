@@ -107,16 +107,9 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 		e := field.Invalid(field.NewPath("spec").Child("SslVpnSubnetCidr"), r.Spec.SslVpnSubnetCidr, err.Error())
 		allErrs = append(allErrs, e)
 	}
-	if oldVpnGw.Spec.Keepalived != "" && oldVpnGw.Spec.Keepalived != r.Spec.Keepalived {
-		err := errors.New("vpn gw keepalived not support change")
-		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
-		allErrs = append(allErrs, e)
-	}
-
 	if len(allErrs) != 0 {
 		return allErrs.ToAggregate()
 	}
-
 	return nil
 }
 
@@ -130,13 +123,6 @@ func (r *VpnGw) ValidateDelete() error {
 
 func (r *VpnGw) validateVpnGw() error {
 	var allErrs field.ErrorList
-
-	if r.Spec.Keepalived == "" {
-		err := errors.New("vpn gw keepalived is required")
-		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
-		allErrs = append(allErrs, e)
-	}
-
 	if r.Spec.CPU == "" || r.Spec.Memory == "" {
 		err := errors.New("vpn gw cpu and memory is required, 1C 1Gi at least")
 		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.CPU, err.Error())
@@ -144,7 +130,6 @@ func (r *VpnGw) validateVpnGw() error {
 	}
 
 	// TODO:// maker sure the cpu and memory 1c1g at least
-
 	if r.Spec.QoSBandwidth == "" || r.Spec.QoSBandwidth == "0" {
 		err := errors.New("vpn gw qos bandwidth is required")
 		e := field.Invalid(field.NewPath("spec").Child("qosBandwidth"), r.Spec.QoSBandwidth, err.Error())

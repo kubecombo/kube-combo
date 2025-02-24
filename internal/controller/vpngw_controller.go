@@ -308,7 +308,6 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 		gw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
 	}
-
 	if gw.Status.CPU != gw.Spec.CPU {
 		gw.Status.CPU = gw.Spec.CPU
 		changed = true
@@ -702,39 +701,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
-
-	// keepalived
-	keepalivedContainer := corev1.Container{
-		Name:  KeepAlivedServer,
-		Image: ka.Spec.Image,
-		Resources: corev1.ResourceRequirements{
-			Requests: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-			},
-			Limits: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-			},
-		},
-		Command: []string{KeepalivedStartUpCMD},
-		Env: []corev1.EnvVar{
-			{
-				Name:  KeepalivedVipKey,
-				Value: ka.Spec.VipV4,
-			},
-			{
-				Name:  keepalivedVirtualRouterID,
-				Value: strconv.Itoa(ka.Status.RouterID),
-			},
-		},
-		ImagePullPolicy: corev1.PullIfNotPresent,
-		SecurityContext: &corev1.SecurityContext{
-			Privileged:               &privileged,
-			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
-		},
-	}
-
 	if gw.Spec.EnableSslVpn {
 		// config ssl vpn openvpn pod：
 		// port, proto, cipher, auth, subnet
@@ -961,7 +927,40 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
-	containers = append(containers, keepalivedContainer)
+	// need keepalived
+	if ka != nil {
+		keepalivedContainer := corev1.Container{
+			Name:  KeepAlivedServer,
+			Image: ka.Spec.Image,
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
+					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
+				},
+			},
+			Command: []string{KeepalivedStartUpCMD},
+			Env: []corev1.EnvVar{
+				{
+					Name:  KeepalivedVipKey,
+					Value: ka.Spec.VipV4,
+				},
+				{
+					Name:  keepalivedVirtualRouterID,
+					Value: strconv.Itoa(ka.Status.RouterID),
+				},
+			},
+			ImagePullPolicy: corev1.PullIfNotPresent,
+			SecurityContext: &corev1.SecurityContext{
+				Privileged:               &privileged,
+				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			},
+		}
+		containers = append(containers, keepalivedContainer)
+	}
 	newDs = &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      gw.Name,
@@ -1128,25 +1127,26 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		// invalid spec no retry
 		return SyncStateErrorNoRetry, err
 	}
+	var ka *vpngwv1.KeepAlived
+	if gw.Spec.Keepalived != "" {
+		ka := &vpngwv1.KeepAlived{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      gw.Spec.Keepalived,
+				Namespace: gw.Namespace,
+			},
+		}
 
-	ka := &vpngwv1.KeepAlived{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      gw.Spec.Keepalived,
-			Namespace: gw.Namespace,
-		},
+		ka, err = r.getValidKeepalived(ctx, ka)
+		if err != nil {
+			r.Log.Error(err, "failed to get keepalived")
+			return SyncStateError, err
+		}
+		if err := r.validateKeepalived(ka); err != nil {
+			r.Log.Error(err, "failed to validate keepalived")
+			// invalid spec no retry
+			return SyncStateErrorNoRetry, err
+		}
 	}
-
-	ka, err = r.getValidKeepalived(ctx, ka)
-	if err != nil {
-		r.Log.Error(err, "failed to get keepalived")
-		return SyncStateError, err
-	}
-	if err := r.validateKeepalived(ka); err != nil {
-		r.Log.Error(err, "failed to validate keepalived")
-		// invalid spec no retry
-		return SyncStateErrorNoRetry, err
-	}
-
 	// create vpn gw or update
 	// statefulset for vpc case
 	// daemonset for static pod case
