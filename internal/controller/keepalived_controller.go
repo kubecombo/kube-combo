@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -113,8 +112,8 @@ func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *KeepAlivedReconciler) validateKeepAlived(ka *vpngwv1.KeepAlived, namespacedName string) error {
 	if ka.Spec.Subnet == "" {
-		err := fmt.Errorf("subnet is required for keepalived %s", namespacedName)
-		r.Log.Error(err, "subnet is required")
+		err := errors.New("subnet is required")
+		r.Log.Error(err, "subnet is required", "keepalived", namespacedName)
 		return err
 	}
 	return nil
@@ -155,9 +154,8 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 	}
 
 	if err = r.setRouterID(ctx, ka); err != nil {
-		err := fmt.Errorf("failed to set router id for keepalived %s: %w", namespacedName, err)
-		r.Log.Error(err, "keepalived")
-		return SyncStateErrorNoRetry, nil
+		r.Log.Error(err, "failed to set router id")
+		return SyncStateErrorNoRetry, err
 	}
 
 	// patch lable so that vpn gw can find its keepalived
@@ -218,7 +216,6 @@ func (r *KeepAlivedReconciler) getKeepAlived(ctx context.Context, name types.Nam
 		return nil, nil
 	}
 	if err != nil {
-		err := fmt.Errorf("failed to get keepalived %s: %w", name.String(), err)
 		r.Log.Error(err, "failed to get keepalived")
 		return nil, err
 	}
@@ -230,7 +227,6 @@ func (r *KeepAlivedReconciler) listKeepAlived(ctx context.Context, ns string) (*
 	listOps := &client.ListOptions{Namespace: ns}
 	err := r.List(ctx, kaList, listOps)
 	if err != nil {
-		err := fmt.Errorf("failed to list keepalived %s: %w", ns, err)
 		r.Log.Error(err, "failed to list keepalived")
 		return nil, err
 	}
