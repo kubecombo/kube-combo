@@ -15,9 +15,6 @@ spec:
   scope: Namespaced
   versions:
     - additionalPrinterColumns:
-        - jsonPath: .spec.workloadType
-          name: WorkloadType
-          type: string
         - jsonPath: .spec.keepalived
           name: Keepalived
           type: string
@@ -35,6 +32,9 @@ spec:
           type: string
         - jsonPath: .spec.qosBandwidth
           name: QoS
+          type: string
+        - jsonPath: .spec.workloadType
+          name: WorkloadType
           type: string
       name: v1
       schema:
@@ -895,6 +895,7 @@ spec:
                     keepalived maintains the ha ip address alive
                     keepalived server need replica 2 at least
                     keepalived represents the keepalived crd name
+                    user may not need keepalived in the host-network static pod case
                   type: string
                 memory:
                   type: string
