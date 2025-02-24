@@ -61,6 +61,9 @@ const (
 	SslVpnHostCachePath = "/etc/host-init-openvpn"
 	SslVpnCacheName     = "openvpn-cache"
 
+	// ds pod use this volume to copy static pod yaml to kubelet
+	k8sManifests = "k8s-manifests"
+
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
 	// vpn gw pod env
@@ -758,6 +761,12 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			Name:  SslVpnServer,
 			Image: gw.Spec.SslVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
+				// use k8s manifests to copy static pod yaml to host kubelet
+				{
+					Name:      k8sManifests,
+					MountPath: r.K8sManifestsPath,
+					ReadOnly:  false,
+				},
 				// use hostpath to map /etc/openvpn to host
 				{
 					Name:      SslVpnCacheName,
@@ -825,11 +834,23 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
+		k8sManifestsVolume := corev1.Volume{
+			Name: k8sManifests,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: r.K8sManifestsPath,
+					// the directory on host must be exist
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
+				},
+			},
+		}
+		volumes = append(volumes, k8sManifestsVolume)
 		sslConfHostVolume := corev1.Volume{
 			Name: SslVpnCacheName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
 					Path: SslVpnHostCachePath,
+					// if the directory is not exist, create it
 					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
 				},
 			},
