@@ -26,8 +26,7 @@ type ExecOptions struct {
 	PreserveWhitespace bool
 }
 
-func ExecuteCommandInContainer(client kubernetes.Interface, cfg *rest.Config, namespace string, podName string, containerName string, cmd ...string) (
-	string, string, error) {
+func ExecuteCommandInContainer(client kubernetes.Interface, cfg *rest.Config, namespace, podName, containerName string, cmd ...string) (string, string, error) {
 	return ExecuteWithOptions(client, cfg, ExecOptions{
 		Command:            cmd,
 		Namespace:          namespace,
@@ -68,8 +67,7 @@ func ExecuteWithOptions(client kubernetes.Interface, cfg *rest.Config, options E
 	return strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err
 }
 
-func execute(method string, url *url.URL, cfg *rest.Config, stdin io.Reader, stdout, stderr io.Writer,
-	tty bool) error {
+func execute(method string, url *url.URL, cfg *rest.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool) error {
 	exec, err := remotecommand.NewSPDYExecutor(cfg, method, url)
 	if err != nil {
 		klog.Errorf("remotecommand.NewSPDYExecutor error: %v", err)
