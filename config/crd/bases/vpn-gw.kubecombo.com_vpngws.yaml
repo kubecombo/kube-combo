@@ -891,11 +891,6 @@ spec:
                   description: ipsec vpn server image, use Dockerfile.strongswan
                   type: string
                 keepalived:
-                  description: |-
-                    keepalived maintains the ha ip address alive
-                    keepalived server need replica 2 at least
-                    keepalived represents the keepalived crd name
-                    user may not need keepalived in the host-network static pod case
                   type: string
                 memory:
                   type: string
@@ -978,7 +973,6 @@ spec:
                 - enableIpsecVpn
                 - enableSslVpn
                 - ipsecVpnImage
-                - keepalived
                 - memory
                 - qosBandwidth
                 - replicas
