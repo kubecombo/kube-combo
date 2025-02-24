@@ -228,12 +228,6 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
 
 func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 	r.Log.V(3).Info("start validateVpnGw", "vpn gw", gw)
-	if gw.Spec.Keepalived == "" {
-		err := errors.New("vpn gw keepalived is required")
-		r.Log.Error(err, "should set keepalived")
-		return err
-	}
-
 	if gw.Spec.CPU == "" || gw.Spec.Memory == "" {
 		err := errors.New("vpn gw cpu and memory is required")
 		r.Log.Error(err, "should set cpu and memory")

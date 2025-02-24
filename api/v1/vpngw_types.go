@@ -112,7 +112,7 @@ type VpnGwSpec struct {
 	// keepalived maintains the ha ip address alive
 	// keepalived server need replica 2 at least
 	// keepalived represents the keepalived crd name
-	// +kubebuilder:validation:Required
+	// user may not need keepalived in the host-network static pod case
 	Keepalived string `json:"keepalived"`
 }
 
@@ -151,13 +151,13 @@ type VpnGwStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
-//+kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.workloadType`
 //+kubebuilder:printcolumn:name="Keepalived",type=string,JSONPath=`.spec.keepalived`
 //+kubebuilder:printcolumn:name="EnableSsl",type=string,JSONPath=`.spec.enableSslVpn`
 //+kubebuilder:printcolumn:name="EnableIpsec",type=string,JSONPath=`.spec.enableIpsecVpn`
 //+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.Spec.CPU`
 //+kubebuilder:printcolumn:name="Mem",type=string,JSONPath=`.spec.memory`
 //+kubebuilder:printcolumn:name="QoS",type=string,JSONPath=`.spec.qosBandwidth`
+//+kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.workloadType`
 
 // VpnGw is the Schema for the vpngws API
 type VpnGw struct {
