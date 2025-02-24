@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	"fmt"
+	"errors"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -88,7 +88,7 @@ func (r *IpsecConn) ValidateUpdate(old runtime.Object) error {
 	oldIpsecConn, _ := old.(*IpsecConn)
 	var allErrs field.ErrorList
 	if oldIpsecConn.Spec.VpnGw != "" && oldIpsecConn.Spec.VpnGw != r.Spec.VpnGw {
-		err := fmt.Errorf("ipsecConn vpn gw can not be changed")
+		err := errors.New("ipsecConn vpn gw can not be changed")
 		e := field.Invalid(field.NewPath("spec").Child("vpnGw"), r.Spec.VpnGw, err.Error())
 		allErrs = append(allErrs, e)
 	}
@@ -112,43 +112,43 @@ func (r *IpsecConn) validateIpsecConn() error {
 	// TODO:// use a func to format and append the error
 
 	if r.Spec.VpnGw == "" {
-		err := fmt.Errorf("ipsecConn vpn gw is required")
+		err := errors.New("ipsecConn vpn gw is required")
 		e := field.Invalid(field.NewPath("spec").Child("vpnGw"), r.Spec.VpnGw, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.IkeVersion != "0" && r.Spec.IkeVersion != "1" && r.Spec.IkeVersion != "2" {
-		err := fmt.Errorf("ipsec connection spec ike version is invalid, ike version spec: %s", r.Spec.IkeVersion)
+		err := errors.New("ipsec connection spec ike version is invalid")
 		e := field.Invalid(field.NewPath("spec").Child("ikeVersion"), r.Spec.IkeVersion, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.Auth != "psk" && r.Spec.Auth != "pubkey" {
-		err := fmt.Errorf("ipsec connection spec auth is invalid, auth spec: %s", r.Spec.Auth)
+		err := errors.New("ipsec connection spec auth is invalid, auth spec")
 		e := field.Invalid(field.NewPath("spec").Child("auth"), r.Spec.Auth, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.RemotePublicIp == "" {
-		err := fmt.Errorf("ipsecConn remote public ip is required")
+		err := errors.New("ipsecConn remote public ip is required")
 		e := field.Invalid(field.NewPath("spec").Child("localPublicIp"), r.Spec.RemotePublicIp, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.RemotePrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn remote private cidrs is required")
+		err := errors.New("ipsecConn remote private cidrs is required")
 		e := field.Invalid(field.NewPath("spec").Child("remotePrivateCidrs"), r.Spec.RemotePrivateCidrs, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.LocalPublicIp == "" {
-		err := fmt.Errorf("ipsecConn localPublicIp is required")
+		err := errors.New("ipsecConn localPublicIp is required")
 		e := field.Invalid(field.NewPath("spec").Child("localPublicIp"), r.Spec.LocalPublicIp, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.LocalPrivateCidrs == "" {
-		err := fmt.Errorf("ipsecConn local private cidrs is required")
+		err := errors.New("ipsecConn local private cidrs is required")
 		e := field.Invalid(field.NewPath("spec").Child("localPrivateCidrs"), r.Spec.LocalPrivateCidrs, err.Error())
 		allErrs = append(allErrs, e)
 	}

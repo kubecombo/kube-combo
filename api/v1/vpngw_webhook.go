@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	"fmt"
+	"errors"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -77,38 +77,38 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 	oldVpnGw, _ := old.(*VpnGw)
 	var allErrs field.ErrorList
 	if oldVpnGw.Spec.Keepalived != "" && oldVpnGw.Spec.Keepalived != r.Spec.Keepalived {
-		err := fmt.Errorf("vpn gw keepalived not support change")
+		err := errors.New("vpn gw keepalived not support change")
 		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.DhSecret != "" && oldVpnGw.Spec.DhSecret != r.Spec.DhSecret {
-		err := fmt.Errorf("vpn gw dh secret not support change")
+		err := errors.New("vpn gw dh secret not support change")
 		e := field.Invalid(field.NewPath("spec").Child("dhSecret"), r.Spec.DhSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.SslVpnSecret != "" && oldVpnGw.Spec.SslVpnSecret != r.Spec.SslVpnSecret {
-		err := fmt.Errorf("vpn gw ssl secret not support change")
+		err := errors.New("vpn gw ssl secret not support change")
 		e := field.Invalid(field.NewPath("spec").Child("sslVpnSecret"), r.Spec.SslVpnSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.IpsecSecret != "" && oldVpnGw.Spec.IpsecSecret != r.Spec.IpsecSecret {
-		err := fmt.Errorf("vpn gw ipsec secret not support change")
+		err := errors.New("vpn gw ipsec secret not support change")
 		e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IpsecSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if oldVpnGw.Spec.SslVpnProto != "" && oldVpnGw.Spec.SslVpnProto != r.Spec.SslVpnProto {
-		err := fmt.Errorf("vpn gw SslVpn proto not support change")
+		err := errors.New("vpn gw SslVpn proto not support change")
 		e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.SslVpnSubnetCidr != "" && oldVpnGw.Spec.SslVpnSubnetCidr != r.Spec.SslVpnSubnetCidr {
-		err := fmt.Errorf("vpn gw SslVpn subnet cidr not support change")
+		err := errors.New("vpn gw SslVpn subnet cidr not support change")
 		e := field.Invalid(field.NewPath("spec").Child("SslVpnSubnetCidr"), r.Spec.SslVpnSubnetCidr, err.Error())
 		allErrs = append(allErrs, e)
 	}
 	if oldVpnGw.Spec.Keepalived != "" && oldVpnGw.Spec.Keepalived != r.Spec.Keepalived {
-		err := fmt.Errorf("vpn gw keepalived not support change")
+		err := errors.New("vpn gw keepalived not support change")
 		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
 		allErrs = append(allErrs, e)
 	}
@@ -132,13 +132,13 @@ func (r *VpnGw) validateVpnGw() error {
 	var allErrs field.ErrorList
 
 	if r.Spec.Keepalived == "" {
-		err := fmt.Errorf("vpn gw keepalived is required")
+		err := errors.New("vpn gw keepalived is required")
 		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.Cpu == "" || r.Spec.Memory == "" {
-		err := fmt.Errorf("vpn gw cpu and memory is required, 1C 1Gi at least")
+		err := errors.New("vpn gw cpu and memory is required, 1C 1Gi at least")
 		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.Cpu, err.Error())
 		allErrs = append(allErrs, e)
 	}
@@ -146,56 +146,56 @@ func (r *VpnGw) validateVpnGw() error {
 	// TODO:// maker sure the cpu and memory 1c1g at least
 
 	if r.Spec.QoSBandwidth == "" || r.Spec.QoSBandwidth == "0" {
-		err := fmt.Errorf("vpn gw qos bandwidth is required")
+		err := errors.New("vpn gw qos bandwidth is required")
 		e := field.Invalid(field.NewPath("spec").Child("qosBandwidth"), r.Spec.QoSBandwidth, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.Keepalived == "" {
-		err := fmt.Errorf("vpn gw keepalived is required")
+		err := errors.New("vpn gw keepalived is required")
 		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if !r.Spec.EnableSslVpn && !r.Spec.EnableIpsecVpn {
-		err := fmt.Errorf("either ssl vpn or ipsec vpn should be enabled")
+		err := errors.New("either ssl vpn or ipsec vpn should be enabled")
 		e := field.Invalid(field.NewPath("spec").Child("enableSslVpn"), r.Spec.EnableSslVpn, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
 	if r.Spec.EnableSslVpn {
 		if r.Spec.DhSecret == "" {
-			err := fmt.Errorf("ssl vpn dh secret is required")
+			err := errors.New("ssl vpn dh secret is required")
 			e := field.Invalid(field.NewPath("spec").Child("dhSecret"), r.Spec.DhSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnSecret == "" {
-			err := fmt.Errorf("ssl vpn secret is required")
+			err := errors.New("ssl vpn secret is required")
 			e := field.Invalid(field.NewPath("spec").Child("sslVpnSecret"), r.Spec.SslVpnSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnCipher == "" {
-			err := fmt.Errorf("ssl vpn cipher is required")
+			err := errors.New("ssl vpn cipher is required")
 			e := field.Invalid(field.NewPath("spec").Child("SslVpnCipher"), r.Spec.SslVpnCipher, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnProto == "" {
-			err := fmt.Errorf("ssl vpn proto is required")
+			err := errors.New("ssl vpn proto is required")
 			e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnSubnetCidr == "" {
-			err := fmt.Errorf("ssl vpn subnet cidr is required")
+			err := errors.New("ssl vpn subnet cidr is required")
 			e := field.Invalid(field.NewPath("spec").Child("SslVpnSubnetCidr"), r.Spec.SslVpnSubnetCidr, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnProto != "udp" && r.Spec.SslVpnProto != "tcp" {
-			err := fmt.Errorf("ssl vpn proto should be udp or tcp")
+			err := errors.New("ssl vpn proto should be udp or tcp")
 			e := field.Invalid(field.NewPath("spec").Child("SslVpnProto"), r.Spec.SslVpnProto, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.SslVpnImage == "" {
-			err := fmt.Errorf("ssl vpn image is required")
+			err := errors.New("ssl vpn image is required")
 			e := field.Invalid(field.NewPath("spec").Child("sslVpnImage"), r.Spec.SslVpnImage, err.Error())
 			allErrs = append(allErrs, e)
 		}
@@ -203,12 +203,12 @@ func (r *VpnGw) validateVpnGw() error {
 
 	if r.Spec.EnableIpsecVpn {
 		if r.Spec.IpsecSecret == "" {
-			err := fmt.Errorf("ipsec vpn secret is required")
+			err := errors.New("ipsec vpn secret is required")
 			e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IpsecSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
 		if r.Spec.IpsecVpnImage == "" {
-			err := fmt.Errorf("ipsec vpn image is required")
+			err := errors.New("ipsec vpn image is required")
 			e := field.Invalid(field.NewPath("spec").Child("ipsecVpnImage"), r.Spec.IpsecVpnImage, err.Error())
 			allErrs = append(allErrs, e)
 		}
