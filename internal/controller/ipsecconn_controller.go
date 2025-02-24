@@ -1,25 +1,8 @@
-/*
-Copyright 2023 kubecombo.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package controller
 
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
@@ -111,12 +94,12 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn) error {
 	if ipsecConn.Spec.IkeVersion != "0" && ipsecConn.Spec.IkeVersion != "1" && ipsecConn.Spec.IkeVersion != "2" {
-		err := fmt.Errorf("ipsec connection spec ike version is invalid, ike version spec: %s", ipsecConn.Spec.IkeVersion)
+		err := errors.New("ipsec connection spec ike version is invalid")
 		r.Log.Error(err, "ignore invalid ipsec connection")
 	}
 
 	if ipsecConn.Spec.Auth != "psk" && ipsecConn.Spec.Auth != "pubkey" {
-		err := fmt.Errorf("ipsec connection spec auth is invalid, auth spec: %s", ipsecConn.Spec.Auth)
+		err := errors.New("ipsec connection spec auth is invalid")
 		r.Log.Error(err, "ignore invalid ipsec connection")
 	}
 
@@ -138,7 +121,6 @@ func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(ctx context.Conte
 	// fetch ipsecConn
 	ipsecConn, err := r.getIpsecConnection(ctx, req.NamespacedName)
 	if err != nil {
-		err := fmt.Errorf("failed to get ipsecConn: %w", err)
 		r.Log.Error(err, "failed to get ipsecConn")
 		return SyncStateError, err
 	}
@@ -174,8 +156,7 @@ func (r *IpsecConnReconciler) getIpsecConnection(ctx context.Context, name types
 		return nil, nil
 	}
 	if err != nil {
-		err := fmt.Errorf("failed to get ipsecConn %s: %w", name.String(), err)
-		r.Log.Error(err, "failed to get ipsecConn")
+		r.Log.Error(err, "failed to get ipsecConn", "ipsecConn", name.String())
 		return nil, err
 	}
 	return &res, nil
