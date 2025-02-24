@@ -41,7 +41,7 @@ type VpnGwSpec struct {
 	// 1C 1G at least
 
 	// +kubebuilder:validation:Required
-	Cpu string `json:"cpu"`
+	CPU string `json:"cpu"`
 
 	// +kubebuilder:validation:Required
 	Memory string `json:"memory"`
@@ -121,7 +121,7 @@ type VpnGwStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Cpu              string              `json:"cpu" patchStrategy:"merge"`
+	CPU              string              `json:"cpu" patchStrategy:"merge"`
 	Memory           string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth     string              `json:"qosBandwidth" patchStrategy:"merge"`
 	Replicas         int32               `json:"replicas" patchStrategy:"merge"`
@@ -155,7 +155,7 @@ type VpnGwStatus struct {
 //+kubebuilder:printcolumn:name="Keepalived",type=string,JSONPath=`.spec.keepalived`
 //+kubebuilder:printcolumn:name="EnableSsl",type=string,JSONPath=`.spec.enableSslVpn`
 //+kubebuilder:printcolumn:name="EnableIpsec",type=string,JSONPath=`.spec.enableIpsecVpn`
-//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.spec.cpu`
+//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.Spec.CPU`
 //+kubebuilder:printcolumn:name="Mem",type=string,JSONPath=`.spec.memory`
 //+kubebuilder:printcolumn:name="QoS",type=string,JSONPath=`.spec.qosBandwidth`
 
