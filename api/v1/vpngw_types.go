@@ -26,8 +26,8 @@ import (
 
 // VpnGwSpec defines the desired state of VpnGw
 type VpnGwSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:validation:Optional
+	Keepalived string `json:"keepalived"`
 
 	// k8s workload type
 	// statefulset means use statefulset pod to provide vpn server
@@ -108,12 +108,6 @@ type VpnGwSpec struct {
 
 	// ipsec vpn server image, use Dockerfile.strongswan
 	IpsecVpnImage string `json:"ipsecVpnImage"`
-
-	// keepalived maintains the ha ip address alive
-	// keepalived server need replica 2 at least
-	// keepalived represents the keepalived crd name
-	// user may not need keepalived in the host-network static pod case
-	Keepalived string `json:"keepalived"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
