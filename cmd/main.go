@@ -54,9 +54,24 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var enableWebhooks bool
+	var k8sManifestsPath string
+	var sslVpnSecretPath, dhSecretPath string
+	var sslVpnTCP, sslVpnUDP string
+	var ipSecBootPcPort, ipSecIsakmpPort, ipSecNatPort, ipSecVpnSecretPath string
 	flag.BoolVar(&enableWebhooks, "enable-webhooks", os.Getenv("ENABLE_WEBHOOKS") == "true", "Enable webhooks")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":38080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":38081", "The address the probe endpoint binds to.")
+	// vpn gw server pod need those config to start
+	flag.StringVar(&k8sManifestsPath, "k8s-manifests-path", "/etc/kubernetes/manifests", "The path the ssl vpn daemonset pod will copy static pod yaml to.")
+	flag.StringVar(&sslVpnSecretPath, "ssl-vpn-secret-path", "/etc/openvpn/certmanager", "The path the ssl vpn pod will copy secrets to.")
+	flag.StringVar(&dhSecretPath, "ssl-vpn-secret-path", "/etc/openvpn/dh", "The path the ssl vpn pod will copy dh secrets to.")
+	flag.StringVar(&ipSecVpnSecretPath, "ip-sec-vpn-secret-path", "/etc/ipsec/certs", "The path the ip sec vpn pod will copy to.")
+	flag.StringVar(&sslVpnTCP, "ssl-vpn-tcp-port", "443", "The port the ssl vpn server binds to.")
+	flag.StringVar(&sslVpnUDP, "ssl-vpn-udp-port", "1194", "The port the ssl vpn server binds to.")
+	flag.StringVar(&ipSecBootPcPort, "ip-sec-boot-pc-port", "68", "The port the ip sec vpn server binds to.")
+	flag.StringVar(&ipSecIsakmpPort, "ip-sec-isakmp-pc-port", "500", "The port the ip sec vpn server binds to.")
+	flag.StringVar(&ipSecNatPort, "ip-sec-nat-port", "4500", "The port the ip sec vpn server binds to.")
+
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -107,6 +122,16 @@ func main() {
 		Scheme:     mgr.GetScheme(),
 		RestConfig: restConfig,
 		Log:        ctrl.Log.WithName("vpngw"),
+		// vpn gw
+		SslVpnTCP:          sslVpnTCP,
+		SslVpnUDP:          sslVpnUDP,
+		IPSecBootPcPort:    ipSecBootPcPort,
+		IPSecIsakmpPort:    ipSecIsakmpPort,
+		IPSecNatPort:       ipSecNatPort,
+		SslVpnSecretPath:   sslVpnSecretPath,
+		DhSecretPath:       dhSecretPath,
+		K8sManifestsPath:   k8sManifestsPath,
+		IPSecVpnSecretPath: ipSecVpnSecretPath,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "VpnGw")
 		os.Exit(1)
