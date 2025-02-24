@@ -137,9 +137,9 @@ func (r *VpnGw) validateVpnGw() error {
 		allErrs = append(allErrs, e)
 	}
 
-	if r.Spec.Cpu == "" || r.Spec.Memory == "" {
+	if r.Spec.CPU == "" || r.Spec.Memory == "" {
 		err := errors.New("vpn gw cpu and memory is required, 1C 1Gi at least")
-		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.Cpu, err.Error())
+		e := field.Invalid(field.NewPath("spec").Child("cpu"), r.Spec.CPU, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
@@ -151,11 +151,8 @@ func (r *VpnGw) validateVpnGw() error {
 		allErrs = append(allErrs, e)
 	}
 
-	if r.Spec.Keepalived == "" {
-		err := errors.New("vpn gw keepalived is required")
-		e := field.Invalid(field.NewPath("spec").Child("keepalived"), r.Spec.Keepalived, err.Error())
-		allErrs = append(allErrs, e)
-	}
+	// user may use its own keepalived in the host-network static pod case
+	// skip check keepalived image
 
 	if !r.Spec.EnableSslVpn && !r.Spec.EnableIpsecVpn {
 		err := errors.New("either ssl vpn or ipsec vpn should be enabled")
