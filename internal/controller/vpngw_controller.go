@@ -690,8 +690,14 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 	if oldDs != nil && len(oldDs.Annotations) != 0 {
 		newPodAnnotations = oldDs.Annotations
 	}
+	subnet := ""
+	v4Vip := ""
+	if ka != nil {
+		subnet = ka.Spec.Subnet
+		v4Vip = ka.Spec.VipV4
+	}
 	podAnnotations := map[string]string{
-		KubeovnLogicalSwitchAnnotation: ka.Spec.Subnet,
+		KubeovnLogicalSwitchAnnotation: subnet,
 		KubeovnIngressRateAnnotation:   gw.Spec.QoSBandwidth,
 		KubeovnEgressRateAnnotation:    gw.Spec.QoSBandwidth,
 	}
@@ -791,7 +797,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				},
 				{
 					Name:  KeepalivedVipKey,
-					Value: ka.Spec.VipV4,
+					Value: v4Vip,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -1135,7 +1141,6 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 				Namespace: gw.Namespace,
 			},
 		}
-
 		ka, err = r.getValidKeepalived(ctx, ka)
 		if err != nil {
 			r.Log.Error(err, "failed to get keepalived")
