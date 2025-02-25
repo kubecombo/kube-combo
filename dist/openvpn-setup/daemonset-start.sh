@@ -21,7 +21,7 @@ while [ ! -f "${SETUP_HOME}/static-openvpn.yaml" ]; do
 	echo "waiting for ${SETUP_HOME}/static-openvpn.yaml ............"
 done
 
-while [ ! -d "${CONF_HOME}/openvpn.conf" ]; do
+while [ ! -f "${CONF_HOME}/openvpn.conf" ]; do
 	sleep 1
 	echo "waiting for ${CONF_HOME}/openvpn.conf ............"
 done
