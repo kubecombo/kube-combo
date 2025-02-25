@@ -49,6 +49,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets
   - statefulsets
   verbs:
   - create
@@ -61,6 +62,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets/finalizers
   - statefulsets/finalizers
   verbs:
   - get
@@ -69,6 +71,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets/scale
   - statefulsets/scale
   verbs:
   - get
@@ -77,6 +80,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - daemonsets/status
   - statefulsets/status
   verbs:
   - get

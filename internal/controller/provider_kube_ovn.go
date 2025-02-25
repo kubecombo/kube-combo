@@ -17,7 +17,6 @@ limitations under the License.
 package controller
 
 const (
-	KubeovnIpAddressAnnotation     = "ovn.kubernetes.io/ip_address"
 	KubeovnLogicalSwitchAnnotation = "ovn.kubernetes.io/logical_switch"
 	KubeovnIngressRateAnnotation   = "ovn.kubernetes.io/ingress_rate"
 	KubeovnEgressRateAnnotation    = "ovn.kubernetes.io/egress_rate"

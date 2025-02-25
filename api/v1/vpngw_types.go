@@ -26,15 +26,22 @@ import (
 
 // VpnGwSpec defines the desired state of VpnGw
 type VpnGwSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:validation:Optional
+	Keepalived string `json:"keepalived"`
+
+	// k8s workload type
+	// statefulset means use statefulset pod to provide vpn server
+	// static means use static pod to provide vpn server
+
+	// +kubebuilder:validation:Required
+	WorkloadType string `json:"workloadType"`
 
 	// cpu, memory request
 	// cpu, memory limit
 	// 1C 1G at least
 
 	// +kubebuilder:validation:Required
-	Cpu string `json:"cpu"`
+	CPU string `json:"cpu"`
 
 	// +kubebuilder:validation:Required
 	Memory string `json:"memory"`
@@ -101,12 +108,6 @@ type VpnGwSpec struct {
 
 	// ipsec vpn server image, use Dockerfile.strongswan
 	IpsecVpnImage string `json:"ipsecVpnImage"`
-
-	// keepalived maintains the ha ip address alive
-	// keepalived server need replica 2 at least
-	// keepalived represents the keepalived crd name
-	// +kubebuilder:validation:Required
-	Keepalived string `json:"keepalived"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
@@ -114,7 +115,7 @@ type VpnGwStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Cpu              string              `json:"cpu" patchStrategy:"merge"`
+	CPU              string              `json:"cpu" patchStrategy:"merge"`
 	Memory           string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth     string              `json:"qosBandwidth" patchStrategy:"merge"`
 	Replicas         int32               `json:"replicas" patchStrategy:"merge"`
@@ -147,9 +148,10 @@ type VpnGwStatus struct {
 //+kubebuilder:printcolumn:name="Keepalived",type=string,JSONPath=`.spec.keepalived`
 //+kubebuilder:printcolumn:name="EnableSsl",type=string,JSONPath=`.spec.enableSslVpn`
 //+kubebuilder:printcolumn:name="EnableIpsec",type=string,JSONPath=`.spec.enableIpsecVpn`
-//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.spec.cpu`
+//+kubebuilder:printcolumn:name="Cpu",type=string,JSONPath=`.Spec.CPU`
 //+kubebuilder:printcolumn:name="Mem",type=string,JSONPath=`.spec.memory`
 //+kubebuilder:printcolumn:name="QoS",type=string,JSONPath=`.spec.qosBandwidth`
+//+kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.workloadType`
 
 // VpnGw is the Schema for the vpngws API
 type VpnGw struct {

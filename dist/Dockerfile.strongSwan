@@ -1,4 +1,4 @@
-FROM icoy/kube-combo-base:v0.0.3
+FROM icoy/kube-combo-base:v0.0.5
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \

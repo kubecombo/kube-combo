@@ -23,7 +23,7 @@ make kind-init-ha; make kind-install-webhook; make ovn-vpc-nat-gw-conformance-e2
 
 目前认为 olm 本身不够成熟，基于 `make deploy` 来部署
 
-``` bash
+```bash
 
 cd config/manager && /root/kube-combo/bin/kustomize edit set image controller=registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo:latest
 /root/kube-combo/bin/kustomize build config/default | kubectl apply -f -
@@ -46,7 +46,7 @@ chmod +x install.sh
 
 # 运行 operator
 
-operator-sdk run bundle registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo-bundle:v0.0.3
+operator-sdk run bundle registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo-bundle:v0.0.5
 
 # 检查 operator 已安装
 
@@ -63,7 +63,7 @@ operator-sdk cleanup vpn-gw
 
 ### 4. certmanager
 
-``` bash
+```bash
 operator-sdk olm install
 
 # 功能上 operator-sdk == kubectl operator

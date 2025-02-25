@@ -24,7 +24,7 @@ spec:
     - jsonPath: .spec.enableIpsecVpn
       name: EnableIpsec
       type: string
-    - jsonPath: .spec.cpu
+    - jsonPath: .Spec.CPU
       name: Cpu
       type: string
     - jsonPath: .spec.memory
@@ -32,6 +32,9 @@ spec:
       type: string
     - jsonPath: .spec.qosBandwidth
       name: QoS
+      type: string
+    - jsonPath: .spec.workloadType
+      name: WorkloadType
       type: string
     name: v1
     schema:
@@ -848,10 +851,6 @@ spec:
                 description: ipsec vpn server image, use Dockerfile.strongswan
                 type: string
               keepalived:
-                description: |-
-                  keepalived maintains the ha ip address alive
-                  keepalived server need replica 2 at least
-                  keepalived represents the keepalived crd name
                 type: string
               memory:
                 type: string
@@ -926,12 +925,13 @@ spec:
                       type: string
                   type: object
                 type: array
+              workloadType:
+                type: string
             required:
             - cpu
             - enableIpsecVpn
             - enableSslVpn
             - ipsecVpnImage
-            - keepalived
             - memory
             - qosBandwidth
             - replicas
@@ -940,6 +940,7 @@ spec:
             - sslVpnImage
             - sslVpnProto
             - sslVpnSubnetCidr
+            - workloadType
             type: object
           status:
             description: VpnGwStatus defines the observed state of VpnGw

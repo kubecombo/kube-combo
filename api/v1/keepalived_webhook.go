@@ -17,7 +17,10 @@ limitations under the License.
 package v1
 
 import (
+	"errors"
+
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -63,6 +66,21 @@ func (r *KeepAlived) ValidateUpdate(old runtime.Object) error {
 	keepalivedlog.Info("validate update", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object update.
+	oldKa, _ := old.(*KeepAlived)
+	var allErrs field.ErrorList
+	if oldKa.Spec.VipV4 != "" && oldKa.Spec.VipV4 != r.Spec.VipV4 {
+		err := errors.New("keepalived v4 ip can not be changed")
+		e := field.Invalid(field.NewPath("spec").Child("keepAlived"), r.Spec.VipV4, err.Error())
+		allErrs = append(allErrs, e)
+	}
+	if oldKa.Spec.VipV6 != "" && oldKa.Spec.VipV6 != r.Spec.VipV6 {
+		err := errors.New("keepalived v6 ip can not be changed")
+		e := field.Invalid(field.NewPath("spec").Child("keepAlived"), r.Spec.VipV6, err.Error())
+		allErrs = append(allErrs, e)
+	}
+	if len(allErrs) == 0 {
+		return nil
+	}
 	return nil
 }
 
