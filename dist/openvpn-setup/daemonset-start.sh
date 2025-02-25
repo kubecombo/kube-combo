@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -eux
+set -eux
 # k8s daemonset use this script to start static pod on node
 
 # make it runable in any directory

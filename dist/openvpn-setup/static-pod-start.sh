@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -eux
+set -eux
 # k8s static pod use this script to start openvpn server on node
 
 # k8s static pod copy file from host-init to pod /etc/openvpn
@@ -35,5 +35,4 @@ mkdir -p /etc/openvpn/dh
 
 # start openvpn server
 echo "Running openvpn with config .............."
-echo "openvpn --config ${CONF}"
 openvpn --config /etc/openvpn/openvpn.conf

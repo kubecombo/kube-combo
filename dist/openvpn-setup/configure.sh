@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -eux
+set -eux
 
 cidr2mask() {
    # Number of args to shift, 255..255, first non-255 byte, zeroes
