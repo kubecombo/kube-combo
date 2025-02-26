@@ -96,18 +96,18 @@ type VpnGwSpec struct {
 
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=false
-	EnableIpsecVpn bool `json:"enableIpsecVpn"`
+	EnableIPSecVpn bool `json:"enableIpsecVpn"`
 
 	// ipsec use strongswan server
 	// all ipsec vpn spec start with ipsec
 	// ipsec vpn secret name, the secret should in the same namespace as the vpn gw
-	IpsecSecret string `json:"ipsecSecret,omitempty"`
+	IPSecSecret string `json:"ipsecSecret,omitempty"`
 
 	// ipsec vpn local and remote connections, inlude remote ip and subnet
-	IpsecConnections []string `json:"ipsecConnections,omitempty"`
+	IPSecConnections []string `json:"ipsecConnections,omitempty"`
 
 	// +kubebuilder:validation:Optional
-	IpsecVpnImage string `json:"ipsecVpnImage"`
+	IPSecVpnImage string `json:"ipsecVpnImage"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
@@ -131,10 +131,10 @@ type VpnGwStatus struct {
 	SslVpnProto      string              `json:"sslVpnProto" patchStrategy:"merge"`
 	SslVpnPort       int32               `json:"sslVpnPort" patchStrategy:"merge"`
 	SslVpnSubnetCidr string              `json:"sslVpnSubnetCidr" patchStrategy:"merge"`
-	EnableIpsecVpn   bool                `json:"enableIpsecVpn" patchStrategy:"merge"`
-	IpsecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
-	IpsecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
-	IpsecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
+	EnableIPSecVpn   bool                `json:"enableIpsecVpn" patchStrategy:"merge"`
+	IPSecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
+	IPSecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
+	IPSecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
 	Keepalived       string              `json:"keepalived" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
