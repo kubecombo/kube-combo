@@ -930,12 +930,7 @@ spec:
             - enableIpsecVpn
             - enableSslVpn
             - memory
-            - qosBandwidth
             - replicas
-            - sslVpnAuth
-            - sslVpnCipher
-            - sslVpnProto
-            - sslVpnSubnetCidr
             - workloadType
             type: object
           status:
