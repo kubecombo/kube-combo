@@ -91,9 +91,9 @@ func (r *VpnGw) ValidateUpdate(old runtime.Object) error {
 		e := field.Invalid(field.NewPath("spec").Child("sslVpnSecret"), r.Spec.SslVpnSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
-	if oldVpnGw.Spec.IpsecSecret != "" && oldVpnGw.Spec.IpsecSecret != r.Spec.IpsecSecret {
+	if oldVpnGw.Spec.IPSecSecret != "" && oldVpnGw.Spec.IPSecSecret != r.Spec.IPSecSecret {
 		err := errors.New("vpn gw ipsec secret not support change")
-		e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IpsecSecret, err.Error())
+		e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IPSecSecret, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
@@ -139,7 +139,7 @@ func (r *VpnGw) validateVpnGw() error {
 	// user may use its own keepalived in the host-network static pod case
 	// skip check keepalived image
 
-	if !r.Spec.EnableSslVpn && !r.Spec.EnableIpsecVpn {
+	if !r.Spec.EnableSslVpn && !r.Spec.EnableIPSecVpn {
 		err := errors.New("either ssl vpn or ipsec vpn should be enabled")
 		e := field.Invalid(field.NewPath("spec").Child("enableSslVpn"), r.Spec.EnableSslVpn, err.Error())
 		allErrs = append(allErrs, e)
@@ -183,15 +183,15 @@ func (r *VpnGw) validateVpnGw() error {
 		}
 	}
 
-	if r.Spec.EnableIpsecVpn {
-		if r.Spec.IpsecSecret == "" {
+	if r.Spec.EnableIPSecVpn {
+		if r.Spec.IPSecSecret == "" {
 			err := errors.New("ipsec vpn secret is required")
-			e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IpsecSecret, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IPSecSecret, err.Error())
 			allErrs = append(allErrs, e)
 		}
-		if r.Spec.IpsecVpnImage == "" {
+		if r.Spec.IPSecVpnImage == "" {
 			err := errors.New("ipsec vpn image is required")
-			e := field.Invalid(field.NewPath("spec").Child("ipsecVpnImage"), r.Spec.IpsecVpnImage, err.Error())
+			e := field.Invalid(field.NewPath("spec").Child("ipsecVpnImage"), r.Spec.IPSecVpnImage, err.Error())
 			allErrs = append(allErrs, e)
 		}
 	}
