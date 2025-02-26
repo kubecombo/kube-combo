@@ -129,13 +129,6 @@ func (r *VpnGw) validateVpnGw() error {
 		allErrs = append(allErrs, e)
 	}
 
-	// TODO:// maker sure the cpu and memory 1c1g at least
-	if r.Spec.QoSBandwidth == "" || r.Spec.QoSBandwidth == "0" {
-		err := errors.New("vpn gw qos bandwidth is required")
-		e := field.Invalid(field.NewPath("spec").Child("qosBandwidth"), r.Spec.QoSBandwidth, err.Error())
-		allErrs = append(allErrs, e)
-	}
-
 	// user may use its own keepalived in the host-network static pod case
 	// skip check keepalived image
 
