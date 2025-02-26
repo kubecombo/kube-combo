@@ -20,7 +20,9 @@ Dockerfile.cross
 !vendor/**/zz_generated.*
 
 # editor and IDE paraphernalia
-.idea
+.idea/*
+.vscode/*
+.DS_Store
 *.swp
 *.swo
 *~
