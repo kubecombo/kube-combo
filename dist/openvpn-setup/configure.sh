@@ -2,10 +2,10 @@
 set -eux
 
 cidr2mask() {
-   # Number of args to shift, 255..255, first non-255 byte, zeroes
-   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
-   [ $1 -gt 1 ] && shift "$1" || shift
-   echo ${1-0}.${2-0}.${3-0}.${4-0}
+    # Number of args to shift, 255..255, first non-255 byte, zeroes
+    set -- $((5 - ($1 / 8))) 255 255 255 255 $(((255 << (8 - ($1 % 8))) & 255)) 0 0 0
+    [ $1 -gt 1 ] && shift "$1" || shift
+    echo ${1-0}.${2-0}.${3-0}.${4-0}
 }
 
 cidr2net() {
@@ -15,11 +15,11 @@ cidr2net() {
     netOctets=""
     i=0
     for octet in $octets; do
-        i=$((i+1))
-        if [ $i -le $(( mask / 8)) ]; then
+        i=$((i + 1))
+        if [ $i -le $((mask / 8)) ]; then
             netOctets="$netOctets.$octet"
-        elif [ $i -eq  $(( mask / 8 +1 )) ]; then
-            netOctets="$netOctets.$((((octet / ((256 / ((2**((mask % 8)))))))) * ((256 / ((2**((mask % 8))))))))"
+        elif [ $i -eq $((mask / 8 + 1)) ]; then
+            netOctets="$netOctets.$((((octet / ((256 / ((2 ** ((mask % 8)))))))) * ((256 / ((2 ** ((mask % 8))))))))"
         else
             netOctets="$netOctets.0"
         fi
@@ -64,7 +64,7 @@ fi
 SEARCH=$(grep -v '^#' /etc/resolv.conf | grep search | awk '{$1=""; print $0}')
 FORMATTED_SEARCH=""
 for DOMAIN in $SEARCH; do
-  FORMATTED_SEARCH="${FORMATTED_SEARCH}push \"dhcp-option DOMAIN-SEARCH ${DOMAIN}\"\n"
+    FORMATTED_SEARCH="${FORMATTED_SEARCH}push \"dhcp-option DOMAIN-SEARCH ${DOMAIN}\"\n"
 done
 # create openvpn.conf
 \cp -f "${SETUP_HOME}/openvpn.conf" "${CONF}"
@@ -78,10 +78,9 @@ sed 's|SSL_VPN_SUBNET_MASK|'"${SSL_VPN_SUBNET_MASK}"'|' -i "${CONF}"
 sed 's|CIPHER|'"${SSL_VPN_CIPHER}"'|' -i "${CONF}"
 sed 's|AUTH|'"${SSL_VPN_AUTH}"'|' -i "${CONF}"
 
-
 # NETWORK is in SSL_VPN_NETWORK, so leave it last to sed
-sed 's|NETWORK|'"${NETWORK}"'|' -i "${CONF}"
-sed 's|NETMASK|'"${NETMASK}"'|' -i "${CONF}"
+# sed 's|NETWORK|'"${NETWORK}"'|' -i "${CONF}"
+# sed 's|NETMASK|'"${NETMASK}"'|' -i "${CONF}"
 
 # DNS
 sed 's|SSL_VPN_K8S_SEARCH|'"${FORMATTED_SEARCH}"'|' -i "${CONF}"
