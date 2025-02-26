@@ -89,7 +89,7 @@ type VpnGwSpec struct {
 	// SslVpn ssl vpn clinet server subnet cidr 10.240.0.0/16
 	SslVpnSubnetCidr string `json:"sslVpnSubnetCidr"`
 
-	// ssl vpn server image, use Dockerfile.openvpn
+	// +kubebuilder:validation:Optional
 	SslVpnImage string `json:"sslVpnImage"`
 
 	// vpn gw enable ipsec vpn
@@ -106,7 +106,7 @@ type VpnGwSpec struct {
 	// ipsec vpn local and remote connections, inlude remote ip and subnet
 	IpsecConnections []string `json:"ipsecConnections,omitempty"`
 
-	// ipsec vpn server image, use Dockerfile.strongswan
+	// +kubebuilder:validation:Optional
 	IpsecVpnImage string `json:"ipsecVpnImage"`
 }
 
