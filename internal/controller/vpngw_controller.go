@@ -301,7 +301,63 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 }
 
 func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string) bool {
+	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
+		return true
+	}
+	if gw.Status.CPU != gw.Spec.CPU {
+		return true
+	}
+	if gw.Status.Memory != gw.Spec.Memory {
+		return true
+	}
+	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
+		return true
+	}
+	if gw.Status.Replicas != gw.Spec.Replicas {
+		return true
+	}
+	if gw.Status.EnableSslVpn != gw.Spec.EnableSslVpn {
+		return true
+	}
+	if gw.Status.SslVpnCipher != gw.Spec.SslVpnCipher {
+		return true
+	}
+	if gw.Status.SslVpnProto != gw.Spec.SslVpnProto {
+		return true
+	}
+	if gw.Status.SslVpnSubnetCidr != gw.Spec.SslVpnSubnetCidr {
+		return true
+	}
+	if gw.Status.SslVpnImage != gw.Spec.SslVpnImage {
+		return true
+	}
+	if gw.Status.EnableIPSecVpn != gw.Spec.EnableIPSecVpn {
+		return true
+	}
+	if gw.Status.IPSecVpnImage != gw.Spec.IPSecVpnImage {
+		return true
+	}
+	if gw.Status.EnableIPSecVpn && ipsecConnections != nil {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.IPSecConnections, ipsecConnections) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Selector, gw.Status.Selector) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Tolerations, gw.Status.Tolerations) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Affinity, gw.Status.Affinity) {
+		return true
+	}
+	return false
+}
+
+func (r *VpnGwReconciler) UpdateVpnGW(gw *vpngwv1.VpnGw, ipsecConnections []string) error {
 	changed := false
+	newGw := gw.DeepCopy()
 	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
 		gw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
@@ -368,7 +424,16 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 		gw.Status.Affinity = gw.Spec.Affinity
 		changed = true
 	}
-	return changed
+
+    if !changed {
+		return nil
+	}
+
+	if err := r.Status().Update(context.Background(), newGw); err != nil {
+		r.Log.Error(err, "failed to update vpn gw status")
+		return err
+	}
+	return nil
 }
 
 func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
@@ -1063,11 +1128,12 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
 		} else {
-			r.Log.Error(err, "failed to get old statefulset")
+			r.Log.Error(err, "failed to get statefulset")
 			return err
 		}
 	}
 	newGw := gw.DeepCopy()
+	// create
 	if needToCreate {
 		// create statefulset
 		newSts := r.statefulSetForVpnGw(gw, ka, nil)
@@ -1078,7 +1144,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		}
 		time.Sleep(5 * time.Second)
 		return nil
-	} else if r.isChanged(newGw, nil) {
+	}
+	// update
+	if r.isChanged(newGw, nil) {
 		// update statefulset
 		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
 		err = r.Update(context.Background(), newSts)
@@ -1089,6 +1157,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		time.Sleep(5 * time.Second)
 		return nil
 	}
+	// no change
 	r.Log.Info("vpn gw statefulset not changed", "vpn gw", gw.Name)
 	return nil
 }
@@ -1103,13 +1172,13 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
 		} else {
-			r.Log.Error(err, "failed to get old daemonset")
+			r.Log.Error(err, "failed to get daemonset")
 			return err
 		}
 	}
 	newGw := gw.DeepCopy()
+	// create daemonset
 	if needToCreate {
-		// create daemonset
 		newSts := r.daemonsetForVpnGw(gw, ka, nil)
 		err = r.Create(context.Background(), newSts)
 		if err != nil {
@@ -1118,8 +1187,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		}
 		time.Sleep(5 * time.Second)
 		return nil
-	} else if r.isChanged(newGw, nil) {
-		// update daemonset
+	}
+	// update daemonset
+	if r.isChanged(newGw, nil) {
 		newSts := r.daemonsetForVpnGw(gw, ka, oldDs.DeepCopy())
 		err = r.Update(context.Background(), newSts)
 		if err != nil {
@@ -1129,6 +1199,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		time.Sleep(5 * time.Second)
 		return nil
 	}
+	// no change
 	r.Log.Info("vpn gw daemonset not changed", "vpn gw", gw.Name)
 	return nil
 }
@@ -1151,7 +1222,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 	if err := r.validateVpnGw(gw); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
-		// invalid spec no retry
+		// invalid spec, no retry
 		return SyncStateErrorNoRetry, err
 	}
 	var ka *vpngwv1.KeepAlived
@@ -1253,13 +1324,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			}
 		}
 	}
-	newGw := gw.DeepCopy()
-	if r.isChanged(newGw, conns) {
-		err = r.Status().Update(context.Background(), newGw)
-		if err != nil {
-			r.Log.Error(err, "failed to update vpn gw status")
-			return SyncStateError, err
-		}
+	if err := r.UpdateVpnGW(gw, conns); err != nil {
+		r.Log.Error(err, "failed to update vpn gw")
+		return SyncStateError, err
 	}
 	return SyncStateSuccess, nil
 }
