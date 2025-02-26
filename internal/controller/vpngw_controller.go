@@ -76,15 +76,19 @@ const (
 
 // ipsec vpn strongswan
 const (
-	IpsecVpnServer = "ipsec-vpn"
+	IPSecVpnServer = "ipsec-vpn"
 
-	IpsecVpnLocalPortKey  = "ipsec-local"
-	IpsecVpnRemotePortKey = "ipsec-remote"
+	IPSecVpnLocalPortKey  = "ipsec-local"
+	IPSecVpnRemotePortKey = "ipsec-remote"
 
-	IpsecVpnStartUpCMD             = "/usr/sbin/charon-systemd"
+	IPSecVpnStartUpCMD             = "/usr/sbin/charon-systemd"
 	IpsecConnectionRefreshTemplate = "/connection.sh refresh %s"
 
-	EnableIpsecVpnLabel = "enable-ipsec-vpn"
+	EnableIPSecVpnLabel = "enable-ipsec-vpn"
+
+	// cache path from ds ipsec vpn to k8s static pod openvpn
+	IPSecVpnHostCachePath = "/etc/host-init-strongswan"
+	IPSecVpnCacheName     = "strongswan-cache"
 
 	IPSecBootPcPortKey = "bootpc"
 	IPSecIsakmpPortKey = "isakmp"
@@ -92,14 +96,14 @@ const (
 
 	IPSecProto = "UDP"
 
-	// IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
-	// IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
+	// IPSecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
+	// IPSecRemoteTsKey    = "IPSEC_REMOTE_TS"
 )
 
 // keepalived
 const (
 	KeepalivedVipKey          = "KEEPALIVED_VIP"
-	keepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	KeepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
 	KeepalivedStartUpCMD      = "/configure.sh"
 	KeepAlivedServer          = "keepalived"
 )
@@ -243,7 +247,7 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 		return err
 	}
 
-	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
+	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIPSecVpn {
 		err := errors.New("vpn gw spec should enable ssl vpn or ipsec vpn at least one")
 		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn at least one")
 		return err
@@ -287,13 +291,13 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 		}
 	}
 
-	if gw.Spec.EnableIpsecVpn {
-		if gw.Spec.IpsecSecret == "" {
+	if gw.Spec.EnableIPSecVpn {
+		if gw.Spec.IPSecSecret == "" {
 			err := errors.New("ipsec vpn secret is required")
 			r.Log.Error(err, "should set ipsec vpn secret")
 			return err
 		}
-		if gw.Spec.IpsecVpnImage == "" {
+		if gw.Spec.IPSecVpnImage == "" {
 			err := errors.New("ipsec vpn image is required")
 			r.Log.Error(err, "should set ipsec vpn image")
 			return err
@@ -342,18 +346,18 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 		changed = true
 	}
 
-	if gw.Status.EnableIpsecVpn != gw.Spec.EnableIpsecVpn {
-		gw.Status.EnableIpsecVpn = gw.Spec.EnableIpsecVpn
-		if gw.Status.IpsecVpnImage != gw.Spec.IpsecVpnImage {
-			gw.Status.IpsecVpnImage = gw.Spec.IpsecVpnImage
+	if gw.Status.EnableIPSecVpn != gw.Spec.EnableIPSecVpn {
+		gw.Status.EnableIPSecVpn = gw.Spec.EnableIPSecVpn
+		if gw.Status.IPSecVpnImage != gw.Spec.IPSecVpnImage {
+			gw.Status.IPSecVpnImage = gw.Spec.IPSecVpnImage
 		}
 		changed = true
 	}
 
-	if gw.Status.EnableIpsecVpn && ipsecConnections != nil {
-		if !reflect.DeepEqual(gw.Spec.IpsecConnections, ipsecConnections) {
-			gw.Spec.IpsecConnections = ipsecConnections
-			gw.Status.IpsecConnections = ipsecConnections
+	if gw.Status.EnableIPSecVpn && ipsecConnections != nil {
+		if !reflect.DeepEqual(gw.Spec.IPSecConnections, ipsecConnections) {
+			gw.Spec.IPSecConnections = ipsecConnections
+			gw.Status.IPSecConnections = ipsecConnections
 		}
 		changed = true
 	}
@@ -419,7 +423,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				Value: ka.Spec.VipV4,
 			},
 			{
-				Name:  keepalivedVirtualRouterID,
+				Name:  KeepalivedVirtualRouterID,
 				Value: strconv.Itoa(ka.Status.RouterID),
 			},
 		},
@@ -540,7 +544,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		volumes = append(volumes, dhSecretVolume)
 		containers = append(containers, sslContainer)
 	}
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// config ipsec vpn strongswan pod:
 		// port, proto
 		// volume: x.509 secret
@@ -563,12 +567,12 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			return nil
 		}
 		ipsecContainer := corev1.Container{
-			Name:  IpsecVpnServer,
-			Image: gw.Spec.IpsecVpnImage,
+			Name:  IPSecVpnServer,
+			Image: gw.Spec.IPSecVpnImage,
 			// mount x.509 secret
 			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:      gw.Spec.IpsecSecret,
+					Name:      gw.Spec.IPSecSecret,
 					MountPath: r.IPSecVpnSecretPath,
 					ReadOnly:  true,
 				},
@@ -583,7 +587,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IpsecVpnStartUpCMD},
+			Command: []string{IPSecVpnStartUpCMD},
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
@@ -609,10 +613,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		}
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
-			Name: gw.Spec.IpsecSecret,
+			Name: gw.Spec.IPSecSecret,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IpsecSecret,
+					SecretName: gw.Spec.IPSecSecret,
 					Optional:   &[]bool{true}[0],
 				},
 			},
@@ -707,6 +711,19 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
+	if gw.Spec.EnableIPSecVpn || gw.Spec.EnableSslVpn {
+		k8sManifestsVolume := corev1.Volume{
+			Name: k8sManifests,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: r.K8sManifestsPath,
+					// the directory on host must be exist
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
+				},
+			},
+		}
+		volumes = append(volumes, k8sManifestsVolume)
+	}
 	if gw.Spec.EnableSslVpn {
 		// config ssl vpn openvpn pod：
 		// port, proto, cipher, auth, subnet
@@ -806,17 +823,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
-		k8sManifestsVolume := corev1.Volume{
-			Name: k8sManifests,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: r.K8sManifestsPath,
-					// the directory on host must be exist
-					Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
-				},
-			},
-		}
-		volumes = append(volumes, k8sManifestsVolume)
 		sslConfHostVolume := corev1.Volume{
 			Name: SslVpnCacheName,
 			VolumeSource: corev1.VolumeSource{
@@ -852,7 +858,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		volumes = append(volumes, dhSecretVolume)
 		containers = append(containers, sslContainer)
 	}
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// config ipsec vpn strongswan pod:
 		// port, proto
 		// volume: x.509 secret
@@ -876,12 +882,24 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		}
 
 		ipsecContainer := corev1.Container{
-			Name:  IpsecVpnServer,
-			Image: gw.Spec.IpsecVpnImage,
+			Name:  IPSecVpnServer,
+			Image: gw.Spec.IPSecVpnImage,
 			// mount x.509 secret
 			VolumeMounts: []corev1.VolumeMount{
+				// use k8s manifests to copy static pod yaml to host kubelet
 				{
-					Name:      gw.Spec.IpsecSecret,
+					Name:      k8sManifests,
+					MountPath: r.K8sManifestsPath,
+					ReadOnly:  false,
+				},
+				// use hostpath to map /etc/strongswan to host
+				{
+					Name:      IPSecVpnCacheName,
+					MountPath: IPSecVpnHostCachePath,
+					ReadOnly:  false,
+				},
+				{
+					Name:      gw.Spec.IPSecSecret,
 					MountPath: r.IPSecVpnSecretPath,
 					ReadOnly:  true,
 				},
@@ -896,7 +914,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IpsecVpnStartUpCMD},
+			Command: []string{IPSecVpnStartUpCMD},
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
@@ -922,10 +940,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		}
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
-			Name: gw.Spec.IpsecSecret,
+			Name: gw.Spec.IPSecSecret,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IpsecSecret,
+					SecretName: gw.Spec.IPSecSecret,
 					Optional:   &[]bool{true}[0],
 				},
 			},
@@ -955,7 +973,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					Value: ka.Spec.VipV4,
 				},
 				{
-					Name:  keepalivedVirtualRouterID,
+					Name:  KeepalivedVirtualRouterID,
 					Value: strconv.Itoa(ka.Status.RouterID),
 				},
 			},
@@ -1029,7 +1047,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	return map[string]string{
 		EnableSslVpnLabel:   strconv.FormatBool(gw.Spec.EnableSslVpn),
-		EnableIpsecVpnLabel: strconv.FormatBool(gw.Spec.EnableIpsecVpn),
+		EnableIPSecVpnLabel: strconv.FormatBool(gw.Spec.EnableIPSecVpn),
 	}
 }
 
@@ -1168,7 +1186,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 
 	var conns []string
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// fetch ipsec connections
 		res, err := r.getIpsecConnections(context.Background(), gw)
 		if err != nil {
@@ -1214,7 +1232,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			cmd := fmt.Sprintf(IpsecConnectionRefreshTemplate, connections)
 			r.Log.Info("start run cmd", "cmd", cmd)
 			// refresh ipsec connections by exec pod
-			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, pod.Namespace, pod.Name, IpsecVpnServer, []string{"/bin/bash", "-c", cmd}...)
+			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, pod.Namespace, pod.Name, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
 			if err != nil {
 				if len(errOutput) > 0 {
 					err = fmt.Errorf("failed to ExecuteCommandInContainer, errOutput: %v", errOutput)
