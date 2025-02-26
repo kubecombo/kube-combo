@@ -47,7 +47,7 @@ type VpnGwSpec struct {
 	Memory string `json:"memory"`
 
 	// 1Mbps bandwidth at least
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	QoSBandwidth string `json:"qosBandwidth"`
 
 	// vpn gw private vpc subnet static ip
@@ -74,19 +74,25 @@ type VpnGwSpec struct {
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
+	// +kubebuilder:validation:Optional
 	SslVpnSecret string `json:"sslVpnSecret,omitempty"`
 
 	// ssl vpn dh secret name, the secret should in the same namespace as the vpn gw
-	DhSecret     string `json:"dhSecret,omitempty"`
+	// +kubebuilder:validation:Optional
+	DhSecret string `json:"dhSecret,omitempty"`
+	// +kubebuilder:validation:Optional
 	SslVpnCipher string `json:"sslVpnCipher"`
-	SslVpnAuth   string `json:"sslVpnAuth"`
+	// +kubebuilder:validation:Optional
+	SslVpnAuth string `json:"sslVpnAuth"`
 
 	// ssl vpn use openvpn server
 	// ssl vpn proto, udp or tcp, udp probably is better
 	// +kubebuilder:default:=udp
+	// +kubebuilder:validation:Optional
 	SslVpnProto string `json:"sslVpnProto"`
 
 	// SslVpn ssl vpn clinet server subnet cidr 10.240.0.0/16
+	// +kubebuilder:validation:Optional
 	SslVpnSubnetCidr string `json:"sslVpnSubnetCidr"`
 
 	// +kubebuilder:validation:Optional
@@ -101,9 +107,11 @@ type VpnGwSpec struct {
 	// ipsec use strongswan server
 	// all ipsec vpn spec start with ipsec
 	// ipsec vpn secret name, the secret should in the same namespace as the vpn gw
+	// +kubebuilder:validation:Optional
 	IPSecSecret string `json:"ipsecSecret,omitempty"`
 
 	// ipsec vpn local and remote connections, inlude remote ip and subnet
+	// +kubebuilder:validation:Optional
 	IPSecConnections []string `json:"ipsecConnections,omitempty"`
 
 	// +kubebuilder:validation:Optional
