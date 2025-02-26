@@ -46,7 +46,7 @@ chmod +x install.sh
 
 # 运行 operator
 
-operator-sdk run bundle registry.cn-hangzhou.aliyuncs.com/bobz/kube-combo-bundle:v0.0.5
+operator-sdk run bundle kube-combo-bundle:888
 
 # 检查 operator 已安装
 
