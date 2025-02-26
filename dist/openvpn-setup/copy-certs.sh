@@ -25,27 +25,23 @@ tree "${EASY_RSA_CERTS_HOME}"
 # pod mount secret to /etc/openvpn/certs, but not that fast
 # after pod start, the secret maybe is not mounted yet
 
-while [ ! -f "${EASY_RSA_CERTS_HOME}/ca.crt" ]
-do
+while [ ! -f "${EASY_RSA_CERTS_HOME}/ca.crt" ]; do
     sleep 1
     echo "waiting for ${EASY_RSA_CERTS_HOME}/ca.crt ............"
 done
 
-while [ ! -f "${EASY_RSA_CERTS_HOME}/tls.crt" ]
-do
+while [ ! -f "${EASY_RSA_CERTS_HOME}/tls.crt" ]; do
     sleep 1
     echo "waiting for ${EASY_RSA_CERTS_HOME}/tls.crt ............"
 done
 
-while [ ! -f "${EASY_RSA_CERTS_HOME}/tls.key" ]
-do
+while [ ! -f "${EASY_RSA_CERTS_HOME}/tls.key" ]; do
     sleep 1
     echo "waiting for ${EASY_RSA_CERTS_HOME}/tls.key ............"
 done
 
 # dh pem is managed by k8s secret mount, so it may not be there yet
-while [ ! -f /etc/openvpn/dh/dh.pem ]
-do
+while [ ! -f /etc/openvpn/dh/dh.pem ]; do
     sleep 1
     echo "waiting for /etc/openvpn/dh/dh.pem ............"
 done
@@ -56,7 +52,7 @@ chmod 600 "$EASY_RSA_CERTS_HOME/pki/private/server.key"
 
 cp "${EASY_RSA_CERTS_HOME}/ca.crt" "$EASY_RSA_CERTS_HOME/pki/ca.crt"
 
-openssl x509 --nout --text --in "${EASY_RSA_CERTS_HOME}/tls.crt" > "$EASY_RSA_CERTS_HOME/pki/issued/server.crt"
+openssl x509 --nout --text --in "${EASY_RSA_CERTS_HOME}/tls.crt" >"$EASY_RSA_CERTS_HOME/pki/issued/server.crt"
 # cat /etc/openvpn/certs/tls.crt >> $EASY_RSA_LOC/pki/issued/server.crt
 
 cp /etc/openvpn/dh/dh.pem "$EASY_RSA_CERTS_HOME/pki/dh.pem"
