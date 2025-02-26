@@ -705,21 +705,8 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
-	if gw.Spec.EnableIPSecVpn || gw.Spec.EnableSslVpn {
-		k8sManifestsVolume := corev1.Volume{
-			Name: k8sManifests,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: r.K8sManifestsPath,
-					// the directory on host must be exist
-					Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
-				},
-			},
-		}
-		volumes = append(volumes, k8sManifestsVolume)
-	}
 	if gw.Spec.EnableSslVpn {
-		// config ssl vpn openvpn pod：
+		// config ssl vpn openvpn pod:
 		// port, proto, cipher, auth, subnet
 		// volume: x.509 secret, dhparams secret
 		// env: proto, port, cipher, auth, subnet
@@ -932,6 +919,17 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
+		ipsecConfHostVolume := corev1.Volume{
+			Name: IPSecVpnCacheName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: IPSecVpnHostCachePath,
+					// if the directory is not exist, create it
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
+				},
+			},
+		}
+		volumes = append(volumes, ipsecConfHostVolume)
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
 			Name: gw.Spec.IPSecSecret,
@@ -945,6 +943,17 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
+	k8sManifestsVolume := corev1.Volume{
+		Name: k8sManifests,
+		VolumeSource: corev1.VolumeSource{
+			HostPath: &corev1.HostPathVolumeSource{
+				Path: r.K8sManifestsPath,
+				// the directory on host must be exist
+				Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
+			},
+		},
+	}
+	volumes = append(volumes, k8sManifestsVolume)
 	// need keepalived
 	if ka != nil {
 		keepalivedContainer := corev1.Container{
