@@ -241,12 +241,6 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 		return err
 	}
 
-	if gw.Spec.QoSBandwidth == "" || gw.Spec.QoSBandwidth == "0" {
-		err := errors.New("vpn gw qos bandwidth is required")
-		r.Log.Error(err, "should set qos bandwidth")
-		return err
-	}
-
 	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIPSecVpn {
 		err := errors.New("vpn gw spec should enable ssl vpn or ipsec vpn at least one")
 		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn at least one")

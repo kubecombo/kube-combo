@@ -59,12 +59,15 @@ type VpnGwSpec struct {
 	Replicas int32 `json:"replicas"`
 
 	// vpn gw pod node selector
+	// +kubebuilder:validation:Optional
 	Selector []string `json:"selector,omitempty"`
 
 	// vpn gw pod tolerations
+	// +kubebuilder:validation:Optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	// vpn gw pod affinity
+	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
 	// vpn gw enable ssl vpn
