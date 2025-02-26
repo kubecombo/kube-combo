@@ -27,9 +27,9 @@ fi
 #     exit 1
 # fi
 
-printf "KA_VIP: %s\n" "${KEEPALIVED_VIP}" > $VALUES_YAML
+printf "KA_VIP: %s\n" "${KEEPALIVED_VIP}" >$VALUES_YAML
 # printf "KA_VIP_MASK: %s\n" "${mask}" >> $VALUES_YAML
-printf "KA_VRID: %s\n" "${KEEPALIVED_VIRTUAL_ROUTER_ID}" >> $VALUES_YAML
+printf "KA_VRID: %s\n" "${KEEPALIVED_VIRTUAL_ROUTER_ID}" >>$VALUES_YAML
 
 cat $VALUES_YAML
 
