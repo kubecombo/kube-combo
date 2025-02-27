@@ -1,0 +1,131 @@
+{{- if .Values.func.ENABLE_SSL_VPN }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: self-signed-cluster-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ssl-vpn-gw-ca
+  namespace: {{.Values.namespace}}
+spec:
+  isCA: true
+  commonName: ssl.vpn.gw.com
+  secretName: ssl-vpn-gw-ca
+  privateKey:
+    algorithm: {{ .Values.sslvpn.algorithm }}
+    size: {{ .Values.sslvpn.size }}
+    encoding: {{ .Values.sslvpn.encoding }}
+  usages:
+    - cert sign
+    - crl sign
+  duration: 876600h
+  renewBefore: 720h
+  issuerRef:
+    name: self-signed-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ssl-vpn-gw-ca-issuer
+  namespace: {{.Values.namespace}}
+spec:
+  ca:
+    secretName: ssl-vpn-gw-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ovpnsrv
+  namespace: {{.Values.namespace}}
+spec:
+  commonName: ovpnsrv.vpn.gw.com
+  secretName: ovpnsrv
+  duration: 876600h
+  renewBefore: 720h
+  usages:
+    - server auth
+  dnsNames:
+    - ovpnsrv.vpn.gw.com
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    encoding: PKCS1
+  issuerRef:
+    name: ssl-vpn-gw-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ovpncli
+  namespace: {{.Values.namespace}}
+spec:
+  commonName: ovpncli.vpn.gw.com
+  secretName: ovpncli
+  duration: 876600h
+  renewBefore: 720h
+  usages:
+    - client auth
+  dnsNames:
+    - ovpncli.vpn.gw.com
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    encoding: PKCS1
+  issuerRef:
+    name: ssl-vpn-gw-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: v1
+data:
+  dh.pem: {{ .Values.sslvpn.dhPemData }}
+kind: Secret
+metadata:
+  name: ssl-vpn-dh-pem
+  namespace: {{.Values.namespace}}
+---
+kind: VpnGw
+apiVersion: vpn-gw.kubecombo.com/v1
+metadata:
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "1"
+  name: ssl-vpn
+  namespace: {{.Values.namespace}}
+spec:
+  workloadType: static
+  cpu: "1"
+  memory: "1024M"
+  qosBandwidth: "20"
+  replicas: 2
+  selector:
+    - "kubernetes.io/os: linux"
+    {{- if .Values.MASTER_NODES_LABEL }}
+      {{- with splitList "=" .Values.MASTER_NODES_LABEL }}
+        {{- if eq (len .) 2 }}
+    - "{{ index . 0 }}: {{ index . 1 }}"
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  tolerations:
+  affinity:
+  enableSslVpn: true
+  sslVpnSecret: ovpnsrv
+  dhSecret: ssl-vpn-dh-pem
+  sslVpnImage: {{ .Values.global.registry.address }}/{{ .Values.global.images.openvpn.repository }}:{{ .Values.global.images.openvpn.tag }}
+  sslVpnCipher: AES-256-GCM
+  sslVpnAuth: SHA1
+  sslVpnProto: udp
+  sslVpnSubnetCidr: {{ .Values.sslvpn.sslVpnSubnetCidr }}
+  enableIpsecVpn: false
+  ipsecSecret: ""
+  ipsecVpnImage: ""
+{{- end }}

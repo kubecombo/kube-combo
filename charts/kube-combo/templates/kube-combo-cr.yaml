@@ -1,0 +1,203 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kube-combo
+    app.kubernetes.io/instance: leader-election-role
+    app.kubernetes.io/name: role
+    app.kubernetes.io/part-of: kube-combo
+  name: kube-combo-leader-election-role
+  namespace: {{.Values.namespace}}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-combo-manager-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - pods/log
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+      - statefulsets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets/finalizers
+      - statefulsets/finalizers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets/scale
+      - statefulsets/scale
+    verbs:
+      - get
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets/status
+      - statefulsets/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - vpn-gw.kubecombo.com
+    resources:
+      - ipsecconns
+      - keepaliveds
+      - vpngws
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - vpn-gw.kubecombo.com
+    resources:
+      - ipsecconns/finalizers
+      - keepaliveds/finalizers
+      - vpngws/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - vpn-gw.kubecombo.com
+    resources:
+      - ipsecconns/status
+      - keepaliveds/status
+      - vpngws/status
+    verbs:
+      - get
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: kube-combo
+    app.kubernetes.io/instance: metrics-reader
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: kube-combo
+  name: kube-combo-metrics-reader
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: kube-combo
+    app.kubernetes.io/instance: proxy-role
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: kube-combo
+  name: kube-combo-proxy-role
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
