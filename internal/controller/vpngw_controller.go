@@ -615,11 +615,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
 			return nil
 		}
-		IPSecBootPcPortInt32, err := getPortInt32(r.IPSecBootPcPort)
-		if err != nil {
-			r.Log.Error(err, "failed to convert ipsec bootpc port to int32")
-			return nil
-		}
 		IPSecNatPortInt32, err := getPortInt32(r.IPSecNatPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec nat port to int32")
@@ -651,17 +646,12 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
 					Name:          IPSecIsakmpPortKey,
-					Protocol:      corev1.Protocol(r.IPSecIsakmpPort),
-				},
-				{
-					ContainerPort: IPSecBootPcPortInt32,
-					Name:          IPSecBootPcPortKey,
-					Protocol:      corev1.Protocol(r.IPSecBootPcPort),
+					Protocol:      corev1.Protocol(IPSecProto),
 				},
 				{
 					ContainerPort: IPSecNatPortInt32,
 					Name:          IPSecNatPortKey,
-					Protocol:      corev1.Protocol(r.IPSecNatPort),
+					Protocol:      corev1.Protocol(IPSecProto),
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -916,11 +906,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
 			return nil
 		}
-		IPSecBootPcPortInt32, err := getPortInt32(r.IPSecBootPcPort)
-		if err != nil {
-			r.Log.Error(err, "failed to convert ipsec bootpc port to int32")
-			return nil
-		}
 		IPSecNatPortInt32, err := getPortInt32(r.IPSecNatPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec nat port to int32")
@@ -965,11 +950,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
 					Name:          IPSecIsakmpPortKey,
-					Protocol:      corev1.Protocol(IPSecProto),
-				},
-				{
-					ContainerPort: IPSecBootPcPortInt32,
-					Name:          IPSecBootPcPortKey,
 					Protocol:      corev1.Protocol(IPSecProto),
 				},
 				{
