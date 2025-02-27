@@ -1,9 +1,14 @@
 FROM icoy/kube-combo-base:v0.0.6
 
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-    apt-get install systemd strongswan libstrongswan strongswan-swanctl strongswan-charon charon-systemd -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    strongswan \
+    strongswan-swanctl \
+    strongswan-charon \
+    && rm -rf /etc/ipsec.conf \
+    && apt-get clean \
+    && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 500/udp 4500/udp
 
