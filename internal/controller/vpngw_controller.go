@@ -1232,6 +1232,11 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			// invalid spec no retry
 			return SyncStateErrorNoRetry, err
 		}
+		if ka.Status.RouterID == 0 {
+			r.Log.Error(err, "keepalived router id not ready to use, please wait a while")
+			time.Sleep(1 * time.Second)
+			return SyncStateError, err
+		}
 	}
 	// create vpn gw or update
 	// statefulset for vpc case
