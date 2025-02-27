@@ -2,8 +2,10 @@ FROM icoy/kube-combo-base:v0.0.6
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install charon-systemd -y && \
+    apt-get install systemd strongswan libstrongswan strongswan-swanctl strongswan-charon charon-systemd -y && \
     rm -rf /var/lib/apt/lists/*
+
+EXPOSE 500/udp 4500/udp
 
 COPY dist/strongswan-setup /
 RUN chmod +x *.sh
