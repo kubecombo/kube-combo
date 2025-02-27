@@ -425,7 +425,7 @@ func (r *VpnGwReconciler) UpdateVpnGW(gw *vpngwv1.VpnGw, ipsecConnections []stri
 		changed = true
 	}
 
-    if !changed {
+	if !changed {
 		return nil
 	}
 
@@ -1227,7 +1227,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 	var ka *vpngwv1.KeepAlived
 	if gw.Spec.Keepalived != "" {
-		ka := &vpngwv1.KeepAlived{
+		ka = &vpngwv1.KeepAlived{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gw.Spec.Keepalived,
 				Namespace: gw.Namespace,
