@@ -355,80 +355,89 @@ func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string
 	return false
 }
 
-func (r *VpnGwReconciler) UpdateVpnGW(gw *vpngwv1.VpnGw, ipsecConnections []string) error {
+func (r *VpnGwReconciler) UpdateVpnGW(ctx context.Context, req ctrl.Request, ipsecConnections []string) error {
+	// fetch vpn gw
+	gw, err := r.getVpnGw(ctx, req.NamespacedName)
+	if err != nil {
+		r.Log.Error(err, "failed to get vpn gw")
+		return err
+	}
+	if gw == nil {
+		// vpn gw deleted
+		return nil
+	}
 	changed := false
 	newGw := gw.DeepCopy()
 	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
-		gw.Status.Keepalived = gw.Spec.Keepalived
+		newGw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
 	}
 	if gw.Status.CPU != gw.Spec.CPU {
-		gw.Status.CPU = gw.Spec.CPU
+		newGw.Status.CPU = gw.Spec.CPU
 		changed = true
 	}
 	if gw.Status.Memory != gw.Spec.Memory {
-		gw.Status.Memory = gw.Spec.Memory
+		newGw.Status.Memory = gw.Spec.Memory
 		changed = true
 	}
 	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
-		gw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
+		newGw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
 		changed = true
 	}
 	if gw.Status.Replicas != gw.Spec.Replicas {
-		gw.Status.Replicas = gw.Spec.Replicas
+		newGw.Status.Replicas = gw.Spec.Replicas
 		changed = true
 	}
 
 	if gw.Status.EnableSslVpn != gw.Spec.EnableSslVpn {
-		gw.Status.EnableSslVpn = gw.Spec.EnableSslVpn
+		newGw.Status.EnableSslVpn = gw.Spec.EnableSslVpn
 		if gw.Status.SslVpnCipher != gw.Spec.SslVpnCipher {
-			gw.Status.SslVpnCipher = gw.Spec.SslVpnCipher
+			newGw.Status.SslVpnCipher = gw.Spec.SslVpnCipher
 		}
 		if gw.Status.SslVpnProto != gw.Spec.SslVpnProto {
-			gw.Status.SslVpnProto = gw.Spec.SslVpnProto
+			newGw.Status.SslVpnProto = gw.Spec.SslVpnProto
 		}
 		if gw.Status.SslVpnSubnetCidr != gw.Spec.SslVpnSubnetCidr {
-			gw.Status.SslVpnSubnetCidr = gw.Spec.SslVpnSubnetCidr
+			newGw.Status.SslVpnSubnetCidr = gw.Spec.SslVpnSubnetCidr
 		}
 		if gw.Status.SslVpnImage != gw.Spec.SslVpnImage {
-			gw.Status.SslVpnImage = gw.Spec.SslVpnImage
+			newGw.Status.SslVpnImage = gw.Spec.SslVpnImage
 		}
 		changed = true
 	}
 
 	if gw.Status.EnableIPSecVpn != gw.Spec.EnableIPSecVpn {
-		gw.Status.EnableIPSecVpn = gw.Spec.EnableIPSecVpn
+		newGw.Status.EnableIPSecVpn = gw.Spec.EnableIPSecVpn
 		if gw.Status.IPSecVpnImage != gw.Spec.IPSecVpnImage {
-			gw.Status.IPSecVpnImage = gw.Spec.IPSecVpnImage
+			newGw.Status.IPSecVpnImage = gw.Spec.IPSecVpnImage
 		}
 		changed = true
 	}
 
 	if gw.Status.EnableIPSecVpn && ipsecConnections != nil {
 		if !reflect.DeepEqual(gw.Spec.IPSecConnections, ipsecConnections) {
-			gw.Spec.IPSecConnections = ipsecConnections
-			gw.Status.IPSecConnections = ipsecConnections
+			newGw.Spec.IPSecConnections = ipsecConnections
+			newGw.Status.IPSecConnections = ipsecConnections
+			changed = true
 		}
-		changed = true
 	}
 
 	if !reflect.DeepEqual(gw.Spec.Selector, gw.Status.Selector) {
-		gw.Status.Selector = gw.Spec.Selector
+		newGw.Status.Selector = gw.Spec.Selector
 		changed = true
 	}
 	if !reflect.DeepEqual(gw.Spec.Tolerations, gw.Status.Tolerations) {
-		gw.Status.Tolerations = gw.Spec.Tolerations
+		newGw.Status.Tolerations = gw.Spec.Tolerations
 		changed = true
 	}
 	if !reflect.DeepEqual(gw.Spec.Affinity, gw.Status.Affinity) {
-		gw.Status.Affinity = gw.Spec.Affinity
+		newGw.Status.Affinity = gw.Spec.Affinity
 		changed = true
 	}
 
 	if !changed {
 		return nil
 	}
-
 	if err := r.Status().Update(context.Background(), newGw); err != nil {
 		r.Log.Error(err, "failed to update vpn gw status")
 		return err
@@ -1304,7 +1313,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			}
 		}
 	}
-	if err := r.UpdateVpnGW(gw, conns); err != nil {
+	if err := r.UpdateVpnGW(ctx, req, conns); err != nil {
 		r.Log.Error(err, "failed to update vpn gw")
 		return SyncStateError, err
 	}
