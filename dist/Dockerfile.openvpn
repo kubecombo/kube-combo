@@ -2,7 +2,7 @@ FROM icoy/kube-combo-base:v0.0.6
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install openvpn -y && \
+    apt-get install openvpn -y \
     && apt-get clean \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
