@@ -1,5 +1,14 @@
 #!/bin/bash
 set -eux
+# usage example:
+# site1
+# /connection.sh refresh \
+# moon-sun pubkey 2 default moon.vpn.gw.com 172.19.0.101 10.1.0.0/24 sun.vpn.gw.com 172.19.0.102 10.2.0.0/24,\
+# moon-mars pubkey 2 default moon.vpn.gw.com 172.19.0.101 10.1.0.0/24 mars.vpn.gw.com 172.19.0.103 10.3.0.0/24
+
+# site2
+# /connection.sh refresh \
+# sun-moon pubkey 2 default sun.vpn.gw.com 172.19.0.102 10.2.0.0/24 moon.vpn.gw.com 172.19.0.101 10.1.0.0/24,
 
 CONF=/etc/swanctl/swanctl.conf
 CONNECTIONS_YAML=connections.yaml
@@ -26,7 +35,6 @@ function init() {
 	cp /etc/ipsec/certs/ca.crt /etc/swanctl/x509ca
 	cp /etc/ipsec/certs/tls.key /etc/swanctl/private
 	cp /etc/ipsec/certs/tls.crt /etc/swanctl/x509
-
 }
 
 function refresh() {
