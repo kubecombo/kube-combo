@@ -81,8 +81,15 @@ const (
 	IPSecVpnLocalPortKey  = "ipsec-local"
 	IPSecVpnRemotePortKey = "ipsec-remote"
 
+	// statefulset ipsec vpn pod start up command
 	IPSecVpnStartUpCMD             = "/usr/sbin/charon-systemd"
-	IpsecConnectionRefreshTemplate = "/connection.sh refresh %s"
+	IPSecConnectionRefreshTemplate = "/connection.sh refresh %s"
+
+	// daemonset ipsec vpn pod start up command
+	IPSecVpnDsCMD = "/daemonset-start.sh"
+	// cache path from ds openvpn to k8s static pod openvpn
+	IPSecVpnHostCachePath = "/etc/host-init-ipsecvpn"
+	IPSecVpnCacheName     = "ipsecvpn-cache"
 
 	EnableIPSecVpnLabel = "enable-ipsec-vpn"
 
@@ -475,10 +482,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		Name:  KeepAlivedServer,
 		Image: ka.Spec.Image,
 		Resources: corev1.ResourceRequirements{
-			Requests: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-			},
 			Limits: corev1.ResourceList{
 				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -541,10 +544,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -618,7 +617,11 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-
+		cmd := []string{IPSecVpnStartUpCMD}
+		if gw.Spec.WorkloadType == "static" {
+			// debug daemonset ipsec vpn pod need sleep infinity
+			cmd = []string{IPSecVpnDsCMD}
+		}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
@@ -632,8 +635,20 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		ipsecContainer := corev1.Container{
 			Name:  IPSecVpnServer,
 			Image: gw.Spec.IPSecVpnImage,
-			// mount x.509 secret
 			VolumeMounts: []corev1.VolumeMount{
+				// use k8s manifests to copy static pod yaml to host kubelet
+				{
+					Name:      k8sManifests,
+					MountPath: r.K8sManifestsPath,
+					ReadOnly:  false,
+				},
+				// use hostpath to copy /etc/hosts and /etc/swanctl to host
+				{
+					Name:      IPSecVpnCacheName,
+					MountPath: IPSecVpnHostCachePath,
+					ReadOnly:  false,
+				},
+				// mount x.509 secret
 				{
 					Name:      gw.Spec.IPSecSecret,
 					MountPath: r.IPSecVpnSecretPath,
@@ -641,16 +656,12 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IPSecVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
@@ -669,6 +680,17 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
+		ipsecConfHostVolume := corev1.Volume{
+			Name: IPSecVpnCacheName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: IPSecVpnHostCachePath,
+					// if the directory is not exist, create it
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
+				},
+			},
+		}
+		volumes = append(volumes, ipsecConfHostVolume)
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
 			Name: gw.Spec.IPSecSecret,
@@ -801,7 +823,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					MountPath: r.K8sManifestsPath,
 					ReadOnly:  false,
 				},
-				// use hostpath to map /etc/openvpn to host
+				// use hostpath to copy /etc/openvpn to host
 				{
 					Name:      SslVpnCacheName,
 					MountPath: SslVpnHostCachePath,
@@ -821,10 +843,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -945,10 +963,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -1014,10 +1028,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			Name:  KeepAlivedServer,
 			Image: ka.Spec.Image,
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -1297,7 +1307,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			}
 			r.Log.Info("found vpn gw pod", "pod", pod.Name)
 			// exec pod to run cmd to refresh ipsec connections
-			cmd := fmt.Sprintf(IpsecConnectionRefreshTemplate, connections)
+			cmd := fmt.Sprintf(IPSecConnectionRefreshTemplate, connections)
 			r.Log.Info("start run cmd", "cmd", cmd)
 			// refresh ipsec connections by exec pod
 			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, pod.Namespace, pod.Name, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
