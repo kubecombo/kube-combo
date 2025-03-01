@@ -5,10 +5,6 @@ set -eux
 # k8s static pod copy file from host-init to pod /etc/openvpn
 # and start openvpn server
 
-
-# clean /etc/openvpn/ dir
-rm -fr /etc/openvpn/*
-
 while [ ! -f "/etc/host-init-openvpn/openvpn.conf" ]
 do
     sleep 1
@@ -26,6 +22,9 @@ do
     sleep 1
     echo "waiting for /etc/host-init-openvpn/dh.pem ............"
 done
+
+# clean /etc/openvpn/ dir
+rm -fr /etc/openvpn/*
 
 # copy all openvpn server need file from /etc/host-init-openvpn to /etc/openvpn
 \cp /etc/host-init-openvpn/openvpn.conf /etc/openvpn/
