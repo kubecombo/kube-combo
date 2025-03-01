@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eux
 
 CONF=/etc/swanctl/swanctl.conf
 CONNECTIONS_YAML=connections.yaml
@@ -12,13 +12,13 @@ CHECK_SCRIPT=check
 function init() {
 	# prepare hosts.j2
 	if [ ! -f hosts.j2 ]; then
-		cp $HOSTS hosts.j2
-		cat $TEMPLATE_HOSTS >>hosts.j2
+		cp "${HOSTS}" hosts.j2
+		cat "${TEMPLATE_HOSTS}" >>hosts.j2
 	fi
 	# prepare swanctl.conf.j2
 	if [ ! -f swanctl.conf.j2 ]; then
-		mv $CONF swanctl.conf.orig
-		cp $TEMPLATE_SWANCTL_CONF swanctl.conf.j2
+		mv "${CONF}" swanctl.conf.orig
+		cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
 	fi
 
 	#
@@ -34,7 +34,7 @@ function refresh() {
 	init
 	# 2. refresh connections
 	# format connections into connection.yaml
-	printf "connections: \n" >$CONNECTIONS_YAML
+	printf "connections: \n" >"${CONNECTIONS_YAML}"
 	IFS=',' read -r -a array <<<"${connections}"
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
@@ -60,14 +60,14 @@ function refresh() {
 			printf "    remoteCN: %s\n" "${remoteCN}"
 			printf "    remotePublicIp: %s\n" "${remotePublicIp}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
-		} >>$CONNECTIONS_YAML
+		} >>"${CONNECTIONS_YAML}"
 	done
 	# 3. generate hosts and swanctl.conf
 	# use j2 to generate hosts and swanctl.conf
-	j2 hosts.j2 $CONNECTIONS_YAML -o $HOSTS
-	j2 swanctl.conf.j2 $CONNECTIONS_YAML -o $CONF
-	j2 $TEMPLATE_CHECK $CONNECTIONS_YAML -o $CHECK_SCRIPT
-	chmod +x $CHECK_SCRIPT
+	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${HOSTS}"
+	j2 swanctl.conf.j2 "${CONNECTIONS_YAML}" -o "${CONF}"
+	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
+	chmod +x "${CHECK_SCRIPT}"
 
 	# 4. reload strongswan connections
 	# show version
@@ -83,7 +83,7 @@ if [ $# -eq 0 ]; then
 fi
 connections=${*:2:${#}}
 opt=$1
-case $opt in
+case ${opt} in
 init)
 	init
 	;;
