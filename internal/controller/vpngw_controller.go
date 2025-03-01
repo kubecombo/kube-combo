@@ -87,15 +87,11 @@ const (
 
 	// daemonset ipsec vpn pod start up command
 	IPSecVpnDsCMD = "/daemonset-start.sh"
-	// cache path from ds openvpn to k8s static pod openvpn
-	IPSecVpnHostCachePath = "/etc/host-init-ipsecvpn"
-	IPSecVpnCacheName     = "ipsecvpn-cache"
-
-	EnableIPSecVpnLabel = "enable-ipsec-vpn"
-
 	// cache path from ds ipsec vpn to k8s static pod openvpn
 	IPSecVpnHostCachePath = "/etc/host-init-strongswan"
 	IPSecVpnCacheName     = "strongswan-cache"
+
+	EnableIPSecVpnLabel = "enable-ipsec-vpn"
 
 	IPSecBootPcPortKey = "bootpc"
 	IPSecIsakmpPortKey = "isakmp"
