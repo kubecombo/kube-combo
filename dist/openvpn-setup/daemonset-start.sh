@@ -8,9 +8,6 @@ SETUP_HOME="$CONF_HOME/setup"
 echo "debug setup openvpn in ${SETUP_HOME} .............."
 bash -x "${SETUP_HOME}/configure.sh"
 
-# clean up openvpn certs and conf cache dir /etc/host-init-openvpn
-rm -fr "/etc/host-init-openvpn/*"
-
 while [ ! -f "${SETUP_HOME}/static-pod-start.sh" ]; do
 	sleep 1
 	echo "waiting for ${SETUP_HOME}/static-pod-start.sh ............"
@@ -30,6 +27,9 @@ while [ ! -f "${CONF_HOME}/dh/dh.pem" ]; do
 	sleep 1
 	echo "waiting for ${CONF_HOME}/dh/dh.pem ............"
 done
+
+# clean up openvpn certs and conf cache dir /etc/host-init-openvpn
+rm -fr "/etc/host-init-openvpn/*"
 
 # copy all openvpn server need file from /etc/openvpn to /etc/host-init-openvpn
 \cp "${SETUP_HOME}/static-pod-start.sh" "/etc/host-init-openvpn"
