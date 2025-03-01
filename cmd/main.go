@@ -63,11 +63,13 @@ func main() {
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":38081", "The address the probe endpoint binds to.")
 	// vpn gw server pod need those config to start
 	flag.StringVar(&k8sManifestsPath, "k8s-manifests-path", "/etc/kubernetes/manifests", "The path the ssl vpn daemonset pod will copy static pod yaml to.")
+	// ssl vpn
 	flag.StringVar(&sslVpnSecretPath, "ssl-vpn-secret-path", "/etc/openvpn/certmanager", "The path the ssl vpn pod will copy secrets to.")
 	flag.StringVar(&dhSecretPath, "dh-secret-path", "/etc/openvpn/dh", "The path the ssl vpn pod will copy dh secrets to.")
 	flag.StringVar(&ipSecVpnSecretPath, "ip-sec-vpn-secret-path", "/etc/ipsec/certs", "The path the ip sec vpn pod will copy to.")
 	flag.StringVar(&sslVpnTCP, "ssl-vpn-tcp-port", "443", "The port the ssl vpn server binds to.")
 	flag.StringVar(&sslVpnUDP, "ssl-vpn-udp-port", "1194", "The port the ssl vpn server binds to.")
+	// ipsec vpn
 	flag.StringVar(&ipSecBootPcPort, "ip-sec-boot-pc-port", "68", "The port the ip sec vpn server binds to.")
 	flag.StringVar(&ipSecIsakmpPort, "ip-sec-isakmp-pc-port", "500", "The port the ip sec vpn server binds to.")
 	flag.StringVar(&ipSecNatPort, "ip-sec-nat-port", "4500", "The port the ip sec vpn server binds to.")
