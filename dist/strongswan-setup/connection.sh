@@ -77,14 +77,6 @@ function refresh() {
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
 
-	# 4. reload strongswan connections
-	# show version
-	# /usr/sbin/swanctl --help
-
-	echo "load strongswan connections"
-	/usr/sbin/swanctl --load-all | grep successfully
-	# /usr/sbin/swanctl --list-conns
-
 	# 5. /etc/host-init-ipsecvpn for static pod
 	host-init-cache
 }
@@ -126,7 +118,18 @@ function host-init-cache() {
 
 		echo "deploy static pod /etc/kubernetes/manifests .............."
 		\cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
-		fi
+	else
+	# only run /usr/sbin/swanctl --load-all while /usr/sbin/charon-systemd is running, or
+	# /usr/sbin/swanctl --load-all
+    # connecting to 'unix:///var/run/charon.vici' failed: No such file or directory
+
+	# 4. reload strongswan connections
+	# show version
+	# /usr/sbin/swanctl --help
+	echo "load strongswan connections"
+	/usr/sbin/swanctl --load-all | grep successfully
+	# /usr/sbin/swanctl --list-conns
+	fi
 }
 
 if [ $# -eq 0 ]; then
