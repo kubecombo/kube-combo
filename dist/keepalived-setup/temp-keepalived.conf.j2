@@ -4,7 +4,7 @@
 vrrp_instance vi {
     state BACKUP
     nopreempt
-    interface eth0
+    interface {{ KA_NIC }}
     virtual_router_id {{ KA_VRID }}
     priority 100
     advert_int 1
@@ -14,6 +14,6 @@ vrrp_instance vi {
         auth_pass kubecomb
     }
     virtual_ipaddress {
-        {{ KA_VIP }} dev eth0
+        {{ KA_VIP }} dev {{ KA_NIC }}
     }
 }

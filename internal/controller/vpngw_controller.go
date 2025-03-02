@@ -107,6 +107,7 @@ const (
 const (
 	KeepalivedVipKey          = "KEEPALIVED_VIP"
 	KeepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	keepalivedNicKey          = "KEEPALIVED_NIC"
 	KeepalivedStartUpCMD      = "/configure.sh"
 	KeepAlivedServer          = "keepalived"
 )
@@ -221,11 +222,6 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
 	if ka.Spec.Image == "" {
 		err := errors.New("keepalived image is required")
 		r.Log.Error(err, "should set keepalived image")
-		return err
-	}
-	if ka.Spec.Subnet == "" {
-		err := errors.New("keepalived subnet is required")
-		r.Log.Error(err, "should set keepalived subnet")
 		return err
 	}
 	if ka.Spec.VipV4 == "" && ka.Spec.VipV6 == "" {
@@ -492,6 +488,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			{
 				Name:  KeepalivedVirtualRouterID,
 				Value: strconv.Itoa(ka.Status.RouterID),
+			},
+			{
+				Name:  keepalivedNicKey,
+				Value: ka.Spec.Nic,
 			},
 		},
 		ImagePullPolicy: corev1.PullIfNotPresent,
@@ -1032,6 +1032,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				{
 					Name:  KeepalivedVirtualRouterID,
 					Value: strconv.Itoa(ka.Status.RouterID),
+				},
+				{
+					Name:  keepalivedNicKey,
+					Value: ka.Spec.Nic,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
