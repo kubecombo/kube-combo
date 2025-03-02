@@ -43,7 +43,10 @@ ls -lR "${CONF_HOME}"
 
 # copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-ipsecvpn
 # fix:// todo:// wait connection is ready and then copy it
-\cp -r "${CONF_HOME}/*" "${CACHE_HOME}/"
+\cp -r "${CONF_HOME}/private" "${CACHE_HOME}/"
+\cp -r "${CONF_HOME}/x509" "${CACHE_HOME}/"
+\cp -r "${CONF_HOME}/x509ca" "${CACHE_HOME}/"
+
 \cp "${HOSTS_HOME}" "${CACHE_HOME}/"
 
 echo "show /etc/host-init-ipsecvpn files .............."
