@@ -47,6 +47,8 @@ ls -lR "${CONF_HOME}"
 \cp -r "${CONF_HOME}/x509" "${CACHE_HOME}/"
 \cp -r "${CONF_HOME}/x509ca" "${CACHE_HOME}/"
 
+\cp "${CONF_HOME}/swanctl.conf" "${CACHE_HOME}/"
+
 \cp "${HOSTS_HOME}" "${CACHE_HOME}/"
 
 echo "show /etc/host-init-ipsecvpn files .............."
