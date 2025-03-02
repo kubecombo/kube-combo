@@ -632,12 +632,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			Name:  IPSecVpnServer,
 			Image: gw.Spec.IPSecVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
-				// use k8s manifests to copy static pod yaml to host kubelet
-				{
-					Name:      k8sManifests,
-					MountPath: r.K8sManifestsPath,
-					ReadOnly:  false,
-				},
 				// use hostpath to copy /etc/hosts and /etc/swanctl to host
 				{
 					Name:      IPSecVpnCacheName,
