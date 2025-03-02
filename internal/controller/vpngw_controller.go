@@ -82,7 +82,7 @@ const (
 	IPSecVpnRemotePortKey = "ipsec-remote"
 
 	// statefulset ipsec vpn pod start up command
-	IPSecVpnStartUpCMD             = "/usr/sbin/charon-systemd"
+	IPSecVpnStsCMD                 = "/usr/sbin/charon-systemd"
 	IPSecConnectionRefreshTemplate = "/connection.sh refresh %s"
 
 	// daemonset ipsec vpn pod start up command
@@ -508,10 +508,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 		cmd := []string{SslVpnStsCMD}
-		if gw.Spec.WorkloadType == "static" {
-			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDsCMD}
-		}
 		sslVpnPort := r.SslVpnUDP
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = r.SslVpnTCP
@@ -613,11 +609,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-		cmd := []string{IPSecVpnStartUpCMD}
-		if gw.Spec.WorkloadType == "static" {
-			// debug daemonset ipsec vpn pod need sleep infinity
-			cmd = []string{IPSecVpnDsCMD}
-		}
+		cmd := []string{IPSecVpnStsCMD}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
@@ -788,11 +780,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 
-		cmd := []string{SslVpnStsCMD}
-		if gw.Spec.WorkloadType == "static" {
-			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDsCMD}
-		}
+		cmd := []string{SslVpnDsCMD}
 		sslVpnPort := r.SslVpnUDP
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = r.SslVpnTCP
@@ -917,7 +905,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-
+		cmd := []string{IPSecVpnDsCMD}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
@@ -958,7 +946,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IPSecVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
