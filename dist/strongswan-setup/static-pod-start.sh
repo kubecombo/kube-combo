@@ -28,7 +28,7 @@ while [ ! -f "${CONF_HOME}/swanctl.conf" ]; do
 done
 
 # clean up old ipsecvpn certs and conf cache to use new in /etc/host-init-ipsecvpn
-rm -fr "${CONF_HOME}/*"
+rm -fr "/etc/swanctl/*"
 
 \cp -r "${CACHE_HOME}/*" "${CONF_HOME}/"
 \cp "${CACHE_HOME}/hosts" "${HOSTS_HOME}" 

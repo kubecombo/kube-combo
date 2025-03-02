@@ -26,7 +26,7 @@ while [ ! -f "${CONF_HOME}/swanctl.conf" ]; do
 done
 
 # clean up old ipsecvpn certs and conf cache dir /etc/host-init-ipsecvpn to refresh
-rm -fr "${CACHE_HOME}/*"
+rm -fr "/etc/host-init-ipsecvpn/*"
 
 # copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-ipsecvpn
 # fix:// todo:// wait connection is ready and then copy it
