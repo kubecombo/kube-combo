@@ -26,7 +26,6 @@ function init() {
 	fi
 	# prepare swanctl.conf.j2
 	if [ ! -f swanctl.conf.j2 ]; then
-		mv "${CONF}" swanctl.conf.orig
 		cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
 	fi
 
