@@ -1281,30 +1281,18 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 				v.Spec.LocalCN, v.Spec.LocalPublicIp, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteCN, v.Spec.RemotePublicIp, v.Spec.RemotePrivateCidrs)
 		}
-		if connections != "" {
-			// get pod from statefulset
-			pod := &corev1.Pod{}
-			err = r.Get(context.Background(), types.NamespacedName{
-				Name:      gw.Name + "-0",
-				Namespace: gw.Namespace,
-			}, pod)
-
-			if err != nil {
-				r.Log.Error(err, "failed to get vpn gw pod")
-				time.Sleep(1 * time.Second)
-				return SyncStateError, err
-			} else if pod.Status.Phase != "Running" {
-				err = errors.New("pod is not running now")
-				r.Log.Error(err, "wait a while to refresh vpn gw ipsec connections")
-				time.Sleep(5 * time.Second)
-				return SyncStateError, err
-			}
-			r.Log.Info("found vpn gw pod", "pod", pod.Name)
+		if connections == "" {
+			r.Log.Info("no ipsec connections to refresh")
+			return SyncStateSuccess, nil
+		}
+		// get pods
+		podNames, podNotRunErr := r.getVpnGwPodNames(context.Background(), req.NamespacedName, gw)
+		for _, podName := range podNames {
 			// exec pod to run cmd to refresh ipsec connections
 			cmd := fmt.Sprintf(IPSecConnectionRefreshTemplate, connections)
-			r.Log.Info("start run cmd", "cmd", cmd)
+			r.Log.Info("refresh ipsec connections", "pod", podName, "cmd", cmd)
 			// refresh ipsec connections by exec pod
-			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, pod.Namespace, pod.Name, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
+			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, gw.Namespace, podName, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
 			if err != nil {
 				if len(errOutput) > 0 {
 					err = fmt.Errorf("failed to ExecuteCommandInContainer, errOutput: %v", errOutput)
@@ -1314,13 +1302,18 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 					err = fmt.Errorf("failed to ExecuteCommandInContainer, errOutput: %v", errOutput)
 					r.Log.Error(err, "failed to refresh vpn gw ipsec connections")
 				}
-				time.Sleep(2 * time.Second)
+				time.Sleep(5 * time.Second)
 				return SyncStateError, err
 			}
-			r.Log.Info("refresh vpn gw ipsec connections success", "output", stdOutput)
-			for _, conn := range *res {
-				conns = append(conns, conn.Name)
-			}
+			r.Log.Info("refresh ipsec connections ok", "pod", podName, "output", stdOutput)
+		}
+		if podNotRunErr != nil {
+			r.Log.Error(err, "failed to get vpn gw pod, wait a while to refresh vpn gw ipsec connections")
+			time.Sleep(5 * time.Second)
+			return SyncStateError, err
+		}
+		for _, conn := range *res {
+			conns = append(conns, conn.Name)
 		}
 	}
 	if err := r.UpdateVpnGW(ctx, req, conns); err != nil {
@@ -1328,6 +1321,38 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		return SyncStateError, err
 	}
 	return SyncStateSuccess, nil
+}
+
+func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.NamespacedName, gw *vpngwv1.VpnGw) ([]string, error) {
+	filterLabel := EnableSslVpnLabel
+	if gw.Spec.EnableIPSecVpn {
+		filterLabel = EnableIPSecVpnLabel
+	}
+	podList := &corev1.PodList{}
+	err := r.List(ctx, podList, client.InNamespace(name.Namespace), client.MatchingLabels{filterLabel: "true"})
+	if err != nil {
+		r.Log.Error(err, "failed to list pods", "namespace", name.Namespace)
+		return nil, err
+	}
+	podNames := []string{}
+	// check if all pods are running, return running pod names
+	badPodNames := []string{}
+	for _, pod := range podList.Items {
+		if pod.Status.Phase != "Running" {
+			err = fmt.Errorf("pod %s is not running now", pod.Name)
+			r.Log.Error(err, "wait a while to refresh vpn gw ipsec connections")
+			badPodNames = append(badPodNames, pod.Name)
+		}
+		podNames = append(podNames, pod.Name)
+	}
+	r.Log.Info("found running vpn gw pod", "pod", podNames)
+	if len(podNames) == 0 {
+		return nil, fmt.Errorf("gw %s has no running pod", gw.Name)
+	}
+	if len(badPodNames) > 0 {
+		return podNames, fmt.Errorf("pod %v is not running now", badPodNames)
+	}
+	return podNames, nil
 }
 
 func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedName) (*vpngwv1.VpnGw, error) {
