@@ -10,6 +10,7 @@ set -eux
 # /connection.sh refresh \
 # sun-moon pubkey 2 default sun.vpn.gw.com 172.19.0.102 10.2.0.0/24 moon.vpn.gw.com 172.19.0.101 10.1.0.0/24,
 
+# make it runable in any directory
 CONF=/etc/swanctl/swanctl.conf
 CONNECTIONS_YAML=connections.yaml
 HOSTS=/etc/hosts
@@ -83,6 +84,49 @@ function refresh() {
 	echo "load strongswan connections"
 	/usr/sbin/swanctl --load-all | grep successfully
 	# /usr/sbin/swanctl --list-conns
+
+	# 5. /etc/host-init-ipsecvpn for static pod
+	host-init-cache
+}
+
+function host-init-cache() {
+	if [ -d "/etc/host-init-ipsecvpn" ]; then
+		CACHE_HOME=/etc/host-init-ipsecvpn
+		CONF_HOME=/etc/swanctl
+		HOSTS_HOME=/etc/hosts
+
+		# if /etc/host-init-ipsecvpn directory is exist, skip running openvpn here
+		# it will be run in k8s static pod later
+		echo "/etc/host-init-openvpn directory is exist, skip running openvpn here .............."
+		echo "k8s static pod will run it later .............."
+
+		# clean up old ipsecvpn certs and conf cache dir /etc/host-init-ipsecvpn to refresh
+		rm -fr "/etc/host-init-ipsecvpn/*"
+		echo "show ${CONF_HOME} files..........."
+		ls -lR "${CONF_HOME}"
+
+		# copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-ipsecvpn
+		# fix:// todo:// wait connection is ready and then copy it
+		\cp -r "${CONF_HOME}/private" "${CACHE_HOME}/"
+		\cp -r "${CONF_HOME}/x509" "${CACHE_HOME}/"
+		\cp -r "${CONF_HOME}/x509ca" "${CACHE_HOME}/"
+
+		\cp "${CONF_HOME}/swanctl.conf" "${CACHE_HOME}/"
+
+		\cp "${HOSTS_HOME}" "${CACHE_HOME}/"
+
+		echo "show /etc/host-init-ipsecvpn files .............."
+		ls -lR "${CACHE_HOME}/"
+
+		ls -l /static-pod-start.sh
+		\cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
+
+		echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
+		cat  /etc/host-init-strongswan/static-pod-start.sh
+
+		echo "deploy static pod /etc/kubernetes/manifests .............."
+		\cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
+		fi
 }
 
 if [ $# -eq 0 ]; then
