@@ -54,6 +54,11 @@ ls -lR "${CONF_HOME}"
 echo "show /etc/host-init-ipsecvpn files .............."
 ls -lR "${CACHE_HOME}/"
 
+\cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
+
+echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
+cat  /etc/host-init-strongswan/static-pod-start.sh
+
 echo "deploy static pod /etc/kubernetes/manifests .............."
 \cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
 
