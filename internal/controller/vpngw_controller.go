@@ -1313,6 +1313,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 				time.Sleep(2 * time.Second)
 				return SyncStateError, err
 			}
+			r.Log.Info("refresh vpn gw ipsec connections success", "output", stdOutput)
 			for _, conn := range *res {
 				conns = append(conns, conn.Name)
 			}
