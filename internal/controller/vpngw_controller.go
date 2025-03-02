@@ -1290,7 +1290,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		for _, podName := range podNames {
 			// exec pod to run cmd to refresh ipsec connections
 			cmd := fmt.Sprintf(IPSecConnectionRefreshTemplate, connections)
-			r.Log.Info("refresh ipsec connections", "pod", podName, "cmd", cmd)
+			r.Log.Info("refresh ipsec connections start", "pod", podName, "cmd", cmd)
 			// refresh ipsec connections by exec pod
 			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, gw.Namespace, podName, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
 			if err != nil {
@@ -1308,9 +1308,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			r.Log.Info("refresh ipsec connections ok", "pod", podName, "output", stdOutput)
 		}
 		if podNotRunErr != nil {
-			r.Log.Error(err, "failed to get vpn gw pod, wait a while to refresh vpn gw ipsec connections")
+			r.Log.Error(podNotRunErr, "pod not running now")
 			time.Sleep(5 * time.Second)
-			return SyncStateError, err
+			return SyncStateError, podNotRunErr
 		}
 		for _, conn := range *res {
 			conns = append(conns, conn.Name)
