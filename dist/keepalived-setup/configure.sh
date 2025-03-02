@@ -36,6 +36,9 @@ printf "KA_VIP: %s\n" "${KEEPALIVED_VIP}" >"${VALUES_YAML}"
 printf "KA_VRID: %s\n" "${KEEPALIVED_VIRTUAL_ROUTER_ID}" >>"${VALUES_YAML}"
 printf "KA_NIC: %s\n" "${KEEPALIVED_NIC}" >>"${VALUES_YAML}"
 
+random_number=$((RANDOM % 99 + 1))
+printf "KA_PRIORITY: %s\n" "${random_number}" >>"${VALUES_YAML}"
+
 cat "${VALUES_YAML}"
 
 echo "prepare keepalived.conf..."
