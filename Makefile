@@ -404,5 +404,5 @@ crictl-pull-image:
 reload: kind-load-image
 	kubectl delete po -n kube-system -l control-plane=controller-manager
 
-.PHONY: lid
-lid: kind-load-image install deploy
+.PHONY: kidr
+kidr: kind-load-image install deploy reload
