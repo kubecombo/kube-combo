@@ -9,6 +9,8 @@ HOSTS_HOME=${HOSTS_HOME:-/etc/hosts}
 # use READY_FLAG to check /etc/hosts is aleady has connections
 READY_FLAG="STRONGSWAN_CONTENT_END"
 
+echo "start strongswan-setup daemonset-start.sh .............."
+
 # wait connection is ready and then copy it
 # loop to check if hosts has connection
 while true; do
