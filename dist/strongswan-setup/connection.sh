@@ -78,10 +78,11 @@ function refresh() {
 
 	# 4. reload strongswan connections
 	# show version
-	/usr/sbin/swanctl --help
+	# /usr/sbin/swanctl --help
 
 	echo "load strongswan connections"
-	/usr/sbin/swanctl --load-all
+	/usr/sbin/swanctl --load-all | grep successfully
+	# /usr/sbin/swanctl --list-conns
 }
 
 if [ $# -eq 0 ]; then
