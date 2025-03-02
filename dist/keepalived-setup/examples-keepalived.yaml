@@ -1,2 +1,2 @@
-keepalived_virtual_router_id: 0
+# keepalived_virtual_router_id: 0 // 1-254
 keepalived_priority: // 取 pod 后缀 + 1 openstack 逻辑如此

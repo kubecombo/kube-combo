@@ -29,8 +29,13 @@ type KeepAlivedSpec struct {
 	VipV4 string `json:"vipV4"`
 	// +kubebuilder:validation:Optional
 	VipV6 string `json:"vipV6"`
-	// +kubebuilder:validation:Required
+	// daemonset pod not use kube-ovn subnet
+	// +kubebuilder:validation:Optional
 	Subnet string `json:"subnet"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=eth0
+	Nic string `json:"nic"`
 
 	// +kubebuilder:validation:Required
 	Image string `json:"image"`
