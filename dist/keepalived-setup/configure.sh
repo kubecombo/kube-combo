@@ -44,6 +44,9 @@ cp "${TEMPLATE_CONF}" keepalived.conf.j2
 # use j2 to generate keepalived.conf
 j2 keepalived.conf.j2 "${VALUES_YAML}" -o "${CONF}"
 
+echo "keepalived.conf:"
+cat "${CONF}"
+
 echo "start keepalived..."
 host=$(hostname)
 /usr/sbin/keepalived --log-console --log-detail --dont-fork --config-id="${host}" --use-file="${CONF}"
