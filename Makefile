@@ -403,3 +403,6 @@ crictl-pull-image:
 .PHONY: reload
 reload: kind-load-image
 	kubectl delete po -n kube-system -l control-plane=controller-manager
+
+.PHONY: lid
+lid: kind-load-image install deploy
