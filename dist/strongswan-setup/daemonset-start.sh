@@ -13,19 +13,28 @@ echo "start strongswan-setup daemonset-start.sh .............."
 
 # wait connection is ready and then copy it
 # loop to check if hosts has connection
-while true; do
-    if grep -q "$READY_FLAG" /etc/hosts; then  
-        echo "found connections: $READY_FLAG"
-        break
-    else
-        echo "not found connections: $READY_FLAG, waiting"
-        sleep 5
-    fi  
-done  
+
+echo "check if has ${CONF_HOME}/swanctl.conf ............"
 while [ ! -f "${CONF_HOME}/swanctl.conf" ]; do
 	echo "waiting for ${CONF_HOME}/swanctl.conf ............"
 	sleep 5
 done
+echo "found ${CONF_HOME}/swanctl.conf ............"
+cat "${CONF_HOME}/swanctl.conf"
+
+echo "check if ${HOSTS_HOME} ready ............"
+while true; do
+    cat "${HOSTS_HOME}"
+    if grep -q "${READY_FLAG}" "${HOSTS_HOME}"; then
+        echo "found connections: ${READY_FLAG}"
+        break
+    else
+        echo "not found connections: ${READY_FLAG}, waiting"
+        sleep 5
+    fi
+done
+echo "found connections: ${READY_FLAG}"
+cat "${HOSTS_HOME}"
 
 # clean up old ipsecvpn certs and conf cache dir /etc/host-init-ipsecvpn to refresh
 rm -fr "/etc/host-init-ipsecvpn/*"
