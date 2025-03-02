@@ -4,6 +4,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     strongswan-swanctl \
     charon-systemd \
+    libcharon-extauth-plugins \
+    libcharon-extra-plugins \
+    libstrongswan \
+    libstrongswan-extra-plugins \
+    libstrongswan-standard-plugins \
     && rm -f /etc/ipsec.conf \
     && rm -f /etc/swanctl/swanctl.conf \
     && apt-get clean \
