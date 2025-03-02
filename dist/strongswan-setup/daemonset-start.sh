@@ -24,7 +24,6 @@ cat "${CONF_HOME}/swanctl.conf"
 
 echo "check if ${HOSTS_HOME} ready ............"
 while true; do
-    cat "${HOSTS_HOME}"
     if grep -q "${READY_FLAG}" "${HOSTS_HOME}"; then
         echo "found connections: ${READY_FLAG}"
         break
@@ -38,6 +37,9 @@ cat "${HOSTS_HOME}"
 
 # clean up old ipsecvpn certs and conf cache dir /etc/host-init-ipsecvpn to refresh
 rm -fr "/etc/host-init-ipsecvpn/*"
+
+echo "show ${CONF_HOME} files..........."
+ls -lR "${CONF_HOME}"
 
 # copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-ipsecvpn
 # fix:// todo:// wait connection is ready and then copy it
