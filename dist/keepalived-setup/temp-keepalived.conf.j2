@@ -6,7 +6,7 @@ vrrp_instance vi {
     nopreempt
     interface {{ KA_NIC }}
     virtual_router_id {{ KA_VRID }}
-    priority 100
+    priority {{ KA_PRIORITY }}
     advert_int 1
 
     authentication {
