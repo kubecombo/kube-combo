@@ -54,6 +54,7 @@ ls -lR "${CONF_HOME}"
 echo "show /etc/host-init-ipsecvpn files .............."
 ls -lR "${CACHE_HOME}/"
 
+ls -l /static-pod-start.sh
 \cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
 
 echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
