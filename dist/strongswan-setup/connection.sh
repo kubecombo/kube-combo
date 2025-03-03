@@ -22,7 +22,6 @@ CHECK_SCRIPT=check
 function init() {
 	# prepare hosts.j2
 	if [ ! -f hosts.j2 ]; then
-		cp "${HOSTS}" hosts.j2
 		cat "${TEMPLATE_HOSTS}" >>hosts.j2
 	fi
 	# prepare swanctl.conf.j2
@@ -30,7 +29,6 @@ function init() {
 		cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
 	fi
 
-	#
 	# configure ca
 	cp /etc/ipsec/certs/ca.crt /etc/swanctl/x509ca
 	cp /etc/ipsec/certs/tls.key /etc/swanctl/private
