@@ -13,15 +13,13 @@ READY_FLAG="STRONGSWAN_CONTENT_END"
 
 # wait connection is ready and then copy it
 # loop to check if hosts has connection
-echo "check if has ${CACHE_HOME}/swanctl.conf ............"
 while [ ! -f "${CACHE_HOME}/swanctl.conf" ]; do
     echo "waiting for ${CACHE_HOME}/swanctl.conf ............"
     sleep 5
 done
 
-echo "check if ${CACHE_HOME}/hosts ready ............"
 while true; do
-    if grep -q "${READY_FLAG}" "${CACHE_HOME}/hosts"; then
+    if grep -q "${READY_FLAG}" "${CACHE_HOME}/hosts.ipsec"; then
         echo "found connections: ${READY_FLAG}"
         break
     else
