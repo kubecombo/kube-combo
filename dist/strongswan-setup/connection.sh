@@ -89,13 +89,12 @@ function host-init-cache() {
 
 		# if /etc/host-init-strongswan directory is exist, skip running ipsecvpn here
 		# it will be run in k8s static pod later
-		echo "/etc/host-init-ipsecvpn directory is exist, skip running ipsecvpn here .............."
-		echo "k8s static pod will run it later .............."
+		echo "/etc/host-init-ipsecvpn cache directory exist .............."
 
 		# clean up old ipsecvpn certs and conf cache dir /etc/host-init-strongswan to refresh
 		rm -fr "/etc/host-init-strongswan/*"
-		echo "show ${CONF_HOME} files..........."
-		ls -lR "${CONF_HOME}"
+		# echo "show ${CONF_HOME} files..........."
+		# ls -lR "${CONF_HOME}"
 
 		# copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-strongswan
 		# fix:// todo:// wait connection is ready and then copy it
@@ -107,16 +106,16 @@ function host-init-cache() {
 
 		\cp "${HOSTS_HOME}" "${CACHE_HOME}/"
 
-		echo "show /etc/host-init-strongswan files .............."
-		ls -lR "${CACHE_HOME}/"
+		# echo "show /etc/host-init-strongswan files .............."
+		# ls -lR "${CACHE_HOME}/"
 
-		ls -l /static-pod-start.sh
+		# ls -l /static-pod-start.sh
 		\cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
 
-		echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
-		cat /etc/host-init-strongswan/static-pod-start.sh
+		# echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
+		# cat /etc/host-init-strongswan/static-pod-start.sh
 
-		echo "deploy static pod /etc/kubernetes/manifests .............."
+		# echo "deploy static pod /etc/kubernetes/manifests .............."
 		\cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
 	else
 		# only run /usr/sbin/swanctl --load-all while /usr/sbin/charon-systemd is running, or
