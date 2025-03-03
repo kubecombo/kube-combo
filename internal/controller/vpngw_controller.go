@@ -85,9 +85,7 @@ const (
 	IPSecVpnStsCMD                 = "/usr/sbin/charon-systemd"
 	IPSecConnectionRefreshTemplate = "/connection.sh refresh %s"
 
-	// daemonset ipsec vpn pod start up command
-	IPSecVpnDsCMD = "/daemonset-start.sh"
-	// cache path from ds ipsec vpn to k8s static pod openvpn
+	// cache path from ds ipsec vpn to k8s static pod ipsecvpn
 	IPSecVpnHostCachePath = "/etc/host-init-strongswan"
 	IPSecVpnCacheName     = "strongswan-cache"
 
@@ -905,7 +903,8 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-		cmd := []string{IPSecVpnDsCMD}
+		// ipsec vpn use sleep infinity to keep container running
+		cmd := []string{"sleep", "infinity"}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
