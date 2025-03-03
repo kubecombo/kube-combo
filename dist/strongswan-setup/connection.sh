@@ -13,7 +13,7 @@ set -eux
 # make it runable in any directory
 CONF=/etc/swanctl/swanctl.conf
 CONNECTIONS_YAML=connections.yaml
-HOSTS=/etc/hosts
+IPSEC_HOSTS=/etc/hosts.ipsec
 TEMPLATE_HOSTS=template-hosts.j2
 TEMPLATE_SWANCTL_CONF=template-swanctl.conf.j2
 TEMPLATE_CHECK=template-check.j2
@@ -72,7 +72,13 @@ function refresh() {
 	done
 	# 3. generate hosts and swanctl.conf
 	# use j2 to generate hosts and swanctl.conf
-	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${HOSTS}"
+	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${IPSEC_HOSTS}"
+	if [ ! -e "/etc/hosts.ori" ]; then
+		# backup hosts
+		cp /etc/hosts /etc/hosts.ori
+	fi
+	cat /etc/hosts.ori >/etc/hosts
+	cat "${IPSEC_HOSTS}" >>/etc/hosts
 	j2 swanctl.conf.j2 "${CONNECTIONS_YAML}" -o "${CONF}"
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
@@ -85,8 +91,6 @@ function host-init-cache() {
 	if [ -d "/etc/host-init-strongswan" ]; then
 		CACHE_HOME=/etc/host-init-strongswan
 		CONF_HOME=/etc/swanctl
-		HOSTS_HOME=/etc/hosts
-
 		# if /etc/host-init-strongswan directory is exist, skip running ipsecvpn here
 		# it will be run in k8s static pod later
 		echo "/etc/host-init-strongswan cache directory exist .............."
@@ -104,7 +108,8 @@ function host-init-cache() {
 
 		\cp "${CONF_HOME}/swanctl.conf" "${CACHE_HOME}/"
 
-		\cp "${HOSTS_HOME}" "${CACHE_HOME}/"
+		\cp "${IPSEC_HOSTS}" "${CACHE_HOME}/"
+		\cp "${CHECK_SCRIPT}" "${CACHE_HOME}/"
 
 		# echo "show /etc/host-init-strongswan files .............."
 		# ls -lR "${CACHE_HOME}/"

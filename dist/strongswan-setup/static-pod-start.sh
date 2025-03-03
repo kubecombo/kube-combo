@@ -38,9 +38,17 @@ rm -fr "/etc/swanctl/*"
 \cp -r "${CACHE_HOME}/x509" "${CONF_HOME}/"
 \cp -r "${CACHE_HOME}/x509ca" "${CONF_HOME}/"
 \cp "${CACHE_HOME}/swanctl.conf" "${CONF_HOME}/"
+# check script
+\cp "${CACHE_HOME}/check" "${CONF_HOME}/"
 
 # hosts
-\cp "${CACHE_HOME}/hosts" "${HOSTS_HOME}"
+\cp "${CACHE_HOME}/hosts.ipsec" "/etc/"
+if [ ! -e "/etc/hosts.ori" ]; then
+    # backup hosts
+    cp /etc/hosts /etc/hosts.ori
+fi
+cat /etc/hosts.ori >/etc/hosts
+cat /etc/hosts.ipsec >>/etc/hosts
 
 # debug config
 echo "cat ${CONF_HOME}/swanctl.conf ............"
