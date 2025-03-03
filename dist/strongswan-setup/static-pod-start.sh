@@ -18,8 +18,6 @@ while [ ! -f "${CACHE_HOME}/swanctl.conf" ]; do
     echo "waiting for ${CACHE_HOME}/swanctl.conf ............"
     sleep 5
 done
-echo "found ${CACHE_HOME}/swanctl.conf ............"
-cat "${CACHE_HOME}/swanctl.conf"
 
 echo "check if ${CACHE_HOME}/hosts ready ............"
 while true; do
@@ -35,13 +33,21 @@ done
 # clean up old ipsecvpn certs and conf cache to use new in /etc/host-init-strongswan
 rm -fr "/etc/swanctl/*"
 
+# certs and conf
 \cp -r "${CACHE_HOME}/private" "${CONF_HOME}/"
 \cp -r "${CACHE_HOME}/x509" "${CONF_HOME}/"
 \cp -r "${CACHE_HOME}/x509ca" "${CONF_HOME}/"
-
 \cp "${CACHE_HOME}/swanctl.conf" "${CONF_HOME}/"
 
-\cp "${CACHE_HOME}/hosts" "${CONF_HOME}/"
+# hosts
+\cp "${CACHE_HOME}/hosts" "${HOSTS_HOME}"
+
+# debug config
+echo "cat ${CONF_HOME}/swanctl.conf ............"
+cat "${CONF_HOME}/swanctl.conf"
+
+echo "cat ${HOSTS_HOME} ............"
+cat "${HOSTS_HOME}"
 
 # start ipsecvpn server
 echo "Running ipsecvpn .............."
