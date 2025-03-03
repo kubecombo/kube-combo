@@ -17,10 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-const (
-	VpnGwLabel = "vpn-gw"
-)
-
 // IpsecConnReconciler reconciles a IpsecConn object
 type IpsecConnReconciler struct {
 	client.Client
