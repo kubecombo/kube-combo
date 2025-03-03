@@ -89,7 +89,7 @@ function host-init-cache() {
 
 		# if /etc/host-init-strongswan directory is exist, skip running ipsecvpn here
 		# it will be run in k8s static pod later
-		echo "/etc/host-init-ipsecvpn cache directory exist .............."
+		echo "/etc/host-init-strongswan cache directory exist .............."
 
 		# clean up old ipsecvpn certs and conf cache dir /etc/host-init-strongswan to refresh
 		rm -fr "/etc/host-init-strongswan/*"
