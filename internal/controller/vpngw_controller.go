@@ -47,8 +47,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ssl vpn openvpn
 const (
+	VpnGwLabel = "vpn-gw"
+
+	// ssl vpn openvpn
 	SslVpnServer = "ssl-vpn"
 
 	// statefulset ssl vpn pod start up command
@@ -72,10 +74,8 @@ const (
 	SslVpnCipherKey     = "SSL_VPN_CIPHER"
 	SslVpnAuthKey       = "SSL_VPN_AUTH"
 	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
-)
 
-// ipsec vpn strongswan
-const (
+	// ipsec vpn strongswan
 	IPSecVpnServer = "ipsec-vpn"
 
 	IPSecVpnLocalPortKey  = "ipsec-local"
@@ -1079,6 +1079,7 @@ func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	return map[string]string{
 		EnableSslVpnLabel:   strconv.FormatBool(gw.Spec.EnableSslVpn),
 		EnableIPSecVpnLabel: strconv.FormatBool(gw.Spec.EnableIPSecVpn),
+		VpnGwLabel:          gw.Name,
 	}
 }
 
@@ -1294,12 +1295,12 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 }
 
 func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.NamespacedName, gw *vpngwv1.VpnGw) ([]string, error) {
-	filterLabel := EnableSslVpnLabel
+	enableVPN := EnableSslVpnLabel
 	if gw.Spec.EnableIPSecVpn {
-		filterLabel = EnableIPSecVpnLabel
+		enableVPN = EnableIPSecVpnLabel
 	}
 	podList := &corev1.PodList{}
-	err := r.List(ctx, podList, client.InNamespace(name.Namespace), client.MatchingLabels{filterLabel: "true"})
+	err := r.List(ctx, podList, client.InNamespace(name.Namespace), client.MatchingLabels{enableVPN: "true", VpnGwLabel: gw.Name})
 	if err != nil {
 		r.Log.Error(err, "failed to list pods", "namespace", name.Namespace)
 		return nil, err
