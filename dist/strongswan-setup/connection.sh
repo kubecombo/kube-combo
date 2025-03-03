@@ -127,7 +127,7 @@ function host-init-cache() {
 		# /usr/sbin/swanctl --help
 		echo "load strongswan connections"
 		/usr/sbin/swanctl --load-all | grep successfully
-	# /usr/sbin/swanctl --list-conns
+		# /usr/sbin/swanctl --list-conns
 	fi
 }
 

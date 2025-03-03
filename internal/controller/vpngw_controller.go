@@ -622,12 +622,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			Name:  IPSecVpnServer,
 			Image: gw.Spec.IPSecVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
-				// use hostpath to copy /etc/hosts and /etc/swanctl to host
-				{
-					Name:      IPSecVpnCacheName,
-					MountPath: IPSecVpnHostCachePath,
-					ReadOnly:  false,
-				},
 				// mount x.509 secret
 				{
 					Name:      gw.Spec.IPSecSecret,
@@ -660,17 +654,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
-		ipsecConfHostVolume := corev1.Volume{
-			Name: IPSecVpnCacheName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: IPSecVpnHostCachePath,
-					// if the directory is not exist, create it
-					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
-				},
-			},
-		}
-		volumes = append(volumes, ipsecConfHostVolume)
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
 			Name: gw.Spec.IPSecSecret,
