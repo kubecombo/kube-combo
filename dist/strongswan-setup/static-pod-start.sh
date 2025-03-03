@@ -5,7 +5,7 @@ set -eux
 # 2. start ipsecvpn server
 
 # make it runable in any directory
-CACHE_HOME=${CACHE_HOME:-/etc/host-init-ipsecvpn}
+CACHE_HOME=${CACHE_HOME:-/etc/host-init-strongswan}
 CONF_HOME=${CONF_HOME:-/etc/swanctl}
 HOSTS_HOME=${HOSTS_HOME:-/etc/hosts}
 # use READY_FLAG to check /etc/hosts is aleady has connections
@@ -15,8 +15,8 @@ READY_FLAG="STRONGSWAN_CONTENT_END"
 # loop to check if hosts has connection
 echo "check if has ${CACHE_HOME}/swanctl.conf ............"
 while [ ! -f "${CACHE_HOME}/swanctl.conf" ]; do
-	echo "waiting for ${CACHE_HOME}/swanctl.conf ............"
-	sleep 5
+    echo "waiting for ${CACHE_HOME}/swanctl.conf ............"
+    sleep 5
 done
 echo "found ${CACHE_HOME}/swanctl.conf ............"
 cat "${CACHE_HOME}/swanctl.conf"
@@ -32,7 +32,7 @@ while true; do
     fi
 done
 
-# clean up old ipsecvpn certs and conf cache to use new in /etc/host-init-ipsecvpn
+# clean up old ipsecvpn certs and conf cache to use new in /etc/host-init-strongswan
 rm -fr "/etc/swanctl/*"
 
 \cp -r "${CACHE_HOME}/private" "${CONF_HOME}/"

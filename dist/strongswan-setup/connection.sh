@@ -77,27 +77,27 @@ function refresh() {
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
 
-	# 5. /etc/host-init-ipsecvpn for static pod
+	# 5. /etc/host-init-strongswan for static pod
 	host-init-cache
 }
 
 function host-init-cache() {
-	if [ -d "/etc/host-init-ipsecvpn" ]; then
-		CACHE_HOME=/etc/host-init-ipsecvpn
+	if [ -d "/etc/host-init-strongswan" ]; then
+		CACHE_HOME=/etc/host-init-strongswan
 		CONF_HOME=/etc/swanctl
 		HOSTS_HOME=/etc/hosts
 
-		# if /etc/host-init-ipsecvpn directory is exist, skip running openvpn here
+		# if /etc/host-init-strongswan directory is exist, skip running ipsecvpn here
 		# it will be run in k8s static pod later
-		echo "/etc/host-init-openvpn directory is exist, skip running openvpn here .............."
+		echo "/etc/host-init-ipsecvpn directory is exist, skip running ipsecvpn here .............."
 		echo "k8s static pod will run it later .............."
 
-		# clean up old ipsecvpn certs and conf cache dir /etc/host-init-ipsecvpn to refresh
-		rm -fr "/etc/host-init-ipsecvpn/*"
+		# clean up old ipsecvpn certs and conf cache dir /etc/host-init-strongswan to refresh
+		rm -fr "/etc/host-init-strongswan/*"
 		echo "show ${CONF_HOME} files..........."
 		ls -lR "${CONF_HOME}"
 
-		# copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-ipsecvpn
+		# copy all ipsecvpn server need file from /etc/ipsecvpn to /etc/host-init-strongswan
 		# fix:// todo:// wait connection is ready and then copy it
 		\cp -r "${CONF_HOME}/private" "${CACHE_HOME}/"
 		\cp -r "${CONF_HOME}/x509" "${CACHE_HOME}/"
@@ -107,27 +107,27 @@ function host-init-cache() {
 
 		\cp "${HOSTS_HOME}" "${CACHE_HOME}/"
 
-		echo "show /etc/host-init-ipsecvpn files .............."
+		echo "show /etc/host-init-strongswan files .............."
 		ls -lR "${CACHE_HOME}/"
 
 		ls -l /static-pod-start.sh
 		\cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
 
 		echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
-		cat  /etc/host-init-strongswan/static-pod-start.sh
+		cat /etc/host-init-strongswan/static-pod-start.sh
 
 		echo "deploy static pod /etc/kubernetes/manifests .............."
 		\cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
 	else
-	# only run /usr/sbin/swanctl --load-all while /usr/sbin/charon-systemd is running, or
-	# /usr/sbin/swanctl --load-all
-    # connecting to 'unix:///var/run/charon.vici' failed: No such file or directory
+		# only run /usr/sbin/swanctl --load-all while /usr/sbin/charon-systemd is running, or
+		# /usr/sbin/swanctl --load-all
+		# connecting to 'unix:///var/run/charon.vici' failed: No such file or directory
 
-	# 4. reload strongswan connections
-	# show version
-	# /usr/sbin/swanctl --help
-	echo "load strongswan connections"
-	/usr/sbin/swanctl --load-all | grep successfully
+		# 4. reload strongswan connections
+		# show version
+		# /usr/sbin/swanctl --help
+		echo "load strongswan connections"
+		/usr/sbin/swanctl --load-all | grep successfully
 	# /usr/sbin/swanctl --list-conns
 	fi
 }
