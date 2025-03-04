@@ -848,7 +848,6 @@ spec:
                   ipsec vpn secret name, the secret should in the same namespace as the vpn gw
                 type: string
               ipsecVpnImage:
-                description: ipsec vpn server image, use Dockerfile.strongswan
                 type: string
               keepalived:
                 type: string
@@ -871,7 +870,6 @@ spec:
               sslVpnCipher:
                 type: string
               sslVpnImage:
-                description: ssl vpn server image, use Dockerfile.openvpn
                 type: string
               sslVpnProto:
                 default: udp
@@ -931,15 +929,8 @@ spec:
             - cpu
             - enableIpsecVpn
             - enableSslVpn
-            - ipsecVpnImage
             - memory
-            - qosBandwidth
             - replicas
-            - sslVpnAuth
-            - sslVpnCipher
-            - sslVpnImage
-            - sslVpnProto
-            - sslVpnSubnetCidr
             - workloadType
             type: object
           status:

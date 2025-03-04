@@ -110,21 +110,6 @@ func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *KeepAlivedReconciler) validateKeepAlived(ka *vpngwv1.KeepAlived, namespacedName string) error {
-	if ka.Spec.Subnet == "" {
-		err := errors.New("subnet is required")
-		r.Log.Error(err, "subnet is required", "keepalived", namespacedName)
-		return err
-	}
-	return nil
-}
-
-func labelsForKeepAlived(ka *vpngwv1.KeepAlived) map[string]string {
-	return map[string]string{
-		SubnetLabel: ka.Spec.Subnet,
-	}
-}
-
 func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create keepalived crd
 	namespacedName := req.NamespacedName.String()
@@ -146,27 +131,11 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 		return SyncStateSuccess, nil
 	}
 
-	// validate keepalived spec
-	if err := r.validateKeepAlived(ka, namespacedName); err != nil {
-		r.Log.Error(err, "failed to validate keepalived")
-		// invalid spec no retry
-		return SyncStateErrorNoRetry, err
-	}
-
 	if err = r.setRouterID(ctx, ka); err != nil {
 		r.Log.Error(err, "failed to set router id")
 		return SyncStateErrorNoRetry, err
 	}
 
-	// patch lable so that vpn gw can find its keepalived
-	newKa := ka.DeepCopy()
-	labels := labelsForKeepAlived(newKa)
-	newKa.SetLabels(labels)
-	err = r.Patch(context.Background(), newKa, client.MergeFrom(ka))
-	if err != nil {
-		r.Log.Error(err, "failed to update the keepalived")
-		return SyncStateError, err
-	}
 	return SyncStateSuccess, nil
 }
 

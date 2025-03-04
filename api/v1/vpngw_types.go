@@ -47,7 +47,7 @@ type VpnGwSpec struct {
 	Memory string `json:"memory"`
 
 	// 1Mbps bandwidth at least
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	QoSBandwidth string `json:"qosBandwidth"`
 
 	// vpn gw private vpc subnet static ip
@@ -59,12 +59,15 @@ type VpnGwSpec struct {
 	Replicas int32 `json:"replicas"`
 
 	// vpn gw pod node selector
+	// +kubebuilder:validation:Optional
 	Selector []string `json:"selector,omitempty"`
 
 	// vpn gw pod tolerations
+	// +kubebuilder:validation:Optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	// vpn gw pod affinity
+	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
 	// vpn gw enable ssl vpn
@@ -74,40 +77,48 @@ type VpnGwSpec struct {
 	EnableSslVpn bool `json:"enableSslVpn"`
 
 	// ssl vpn secret name, the secret should in the same namespace as the vpn gw
+	// +kubebuilder:validation:Optional
 	SslVpnSecret string `json:"sslVpnSecret,omitempty"`
 
 	// ssl vpn dh secret name, the secret should in the same namespace as the vpn gw
-	DhSecret     string `json:"dhSecret,omitempty"`
+	// +kubebuilder:validation:Optional
+	DhSecret string `json:"dhSecret,omitempty"`
+	// +kubebuilder:validation:Optional
 	SslVpnCipher string `json:"sslVpnCipher"`
-	SslVpnAuth   string `json:"sslVpnAuth"`
+	// +kubebuilder:validation:Optional
+	SslVpnAuth string `json:"sslVpnAuth"`
 
 	// ssl vpn use openvpn server
 	// ssl vpn proto, udp or tcp, udp probably is better
 	// +kubebuilder:default:=udp
+	// +kubebuilder:validation:Optional
 	SslVpnProto string `json:"sslVpnProto"`
 
 	// SslVpn ssl vpn clinet server subnet cidr 10.240.0.0/16
+	// +kubebuilder:validation:Optional
 	SslVpnSubnetCidr string `json:"sslVpnSubnetCidr"`
 
-	// ssl vpn server image, use Dockerfile.openvpn
+	// +kubebuilder:validation:Optional
 	SslVpnImage string `json:"sslVpnImage"`
 
 	// vpn gw enable ipsec vpn
 
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=false
-	EnableIpsecVpn bool `json:"enableIpsecVpn"`
+	EnableIPSecVpn bool `json:"enableIpsecVpn"`
 
 	// ipsec use strongswan server
 	// all ipsec vpn spec start with ipsec
 	// ipsec vpn secret name, the secret should in the same namespace as the vpn gw
-	IpsecSecret string `json:"ipsecSecret,omitempty"`
+	// +kubebuilder:validation:Optional
+	IPSecSecret string `json:"ipsecSecret,omitempty"`
 
 	// ipsec vpn local and remote connections, inlude remote ip and subnet
-	IpsecConnections []string `json:"ipsecConnections,omitempty"`
+	// +kubebuilder:validation:Optional
+	IPSecConnections []string `json:"ipsecConnections,omitempty"`
 
-	// ipsec vpn server image, use Dockerfile.strongswan
-	IpsecVpnImage string `json:"ipsecVpnImage"`
+	// +kubebuilder:validation:Optional
+	IPSecVpnImage string `json:"ipsecVpnImage"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
@@ -131,10 +142,10 @@ type VpnGwStatus struct {
 	SslVpnProto      string              `json:"sslVpnProto" patchStrategy:"merge"`
 	SslVpnPort       int32               `json:"sslVpnPort" patchStrategy:"merge"`
 	SslVpnSubnetCidr string              `json:"sslVpnSubnetCidr" patchStrategy:"merge"`
-	EnableIpsecVpn   bool                `json:"enableIpsecVpn" patchStrategy:"merge"`
-	IpsecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
-	IpsecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
-	IpsecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
+	EnableIPSecVpn   bool                `json:"enableIpsecVpn" patchStrategy:"merge"`
+	IPSecSecret      string              `json:"ipsecSecret"  patchStrategy:"merge"`
+	IPSecVpnImage    string              `json:"ipsecVpnImage" patchStrategy:"merge"`
+	IPSecConnections []string            `json:"ipsecConnections,omitempty" patchStrategy:"merge"`
 	Keepalived       string              `json:"keepalived" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances

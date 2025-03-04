@@ -270,8 +270,8 @@ func (in *VpnGwSpec) DeepCopyInto(out *VpnGwSpec) {
 		}
 	}
 	in.Affinity.DeepCopyInto(&out.Affinity)
-	if in.IpsecConnections != nil {
-		in, out := &in.IpsecConnections, &out.IpsecConnections
+	if in.IPSecConnections != nil {
+		in, out := &in.IPSecConnections, &out.IPSecConnections
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
@@ -303,8 +303,8 @@ func (in *VpnGwStatus) DeepCopyInto(out *VpnGwStatus) {
 		}
 	}
 	in.Affinity.DeepCopyInto(&out.Affinity)
-	if in.IpsecConnections != nil {
-		in, out := &in.IpsecConnections, &out.IpsecConnections
+	if in.IPSecConnections != nil {
+		in, out := &in.IPSecConnections, &out.IPSecConnections
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: strongswan
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+    - name: strongswan-container
+      image: icoy/kube-combo-strongswan:v0.0.6
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1024M
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
+      command:
+        - /etc/host-init-strongswan/static-pod-start.sh
+      volumeMounts:
+        - name: strongswan-hostpath
+          mountPath: /etc/strongswan
+        - name: strongswan-cache
+          mountPath: /etc/host-init-strongswan
+
+    - name: strongswan-check
+      image: icoy/kube-combo-strongswan:v0.0.6
+      command:
+        - /etc/host-init-strongswan/check
+      volumeMounts:
+        - name: strongswan-hostpath
+          mountPath: /etc/strongswan
+        - name: strongswan-cache
+          mountPath: /etc/host-init-strongswan
+
+  volumes:
+    - name: strongswan-hostpath
+      hostPath:
+        path: /etc/strongswan
+        type: DirectoryOrCreate
+    - name: strongswan-cache
+      hostPath:
+        path: /etc/host-init-strongswan
+        type: Directory

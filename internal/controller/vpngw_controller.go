@@ -47,8 +47,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ssl vpn openvpn
 const (
+	VpnGwLabel = "vpn-gw"
+
+	// ssl vpn openvpn
 	SslVpnServer = "ssl-vpn"
 
 	// statefulset ssl vpn pod start up command
@@ -72,19 +74,22 @@ const (
 	SslVpnCipherKey     = "SSL_VPN_CIPHER"
 	SslVpnAuthKey       = "SSL_VPN_AUTH"
 	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
-)
 
-// ipsec vpn strongswan
-const (
-	IpsecVpnServer = "ipsec-vpn"
+	// ipsec vpn strongswan
+	IPSecVpnServer = "ipsec-vpn"
 
-	IpsecVpnLocalPortKey  = "ipsec-local"
-	IpsecVpnRemotePortKey = "ipsec-remote"
+	IPSecVpnLocalPortKey  = "ipsec-local"
+	IPSecVpnRemotePortKey = "ipsec-remote"
 
-	IpsecVpnStartUpCMD             = "/usr/sbin/charon-systemd"
-	IpsecConnectionRefreshTemplate = "/connection.sh refresh %s"
+	// statefulset ipsec vpn pod start up command
+	IPSecVpnStsCMD                 = "/usr/sbin/charon-systemd"
+	IPSecConnectionRefreshTemplate = "/connection.sh refresh %s"
 
-	EnableIpsecVpnLabel = "enable-ipsec-vpn"
+	// cache path from ds ipsec vpn to k8s static pod ipsecvpn
+	IPSecVpnHostCachePath = "/etc/host-init-strongswan"
+	IPSecVpnCacheName     = "strongswan-cache"
+
+	EnableIPSecVpnLabel = "enable-ipsec-vpn"
 
 	IPSecBootPcPortKey = "bootpc"
 	IPSecIsakmpPortKey = "isakmp"
@@ -92,14 +97,15 @@ const (
 
 	IPSecProto = "UDP"
 
-	// IpsecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
-	// IpsecRemoteTsKey    = "IPSEC_REMOTE_TS"
+	// IPSecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
+	// IPSecRemoteTsKey    = "IPSEC_REMOTE_TS"
 )
 
 // keepalived
 const (
 	KeepalivedVipKey          = "KEEPALIVED_VIP"
-	keepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	KeepalivedVirtualRouterID = "KEEPALIVED_VIRTUAL_ROUTER_ID"
+	keepalivedNicKey          = "KEEPALIVED_NIC"
 	KeepalivedStartUpCMD      = "/configure.sh"
 	KeepAlivedServer          = "keepalived"
 )
@@ -216,11 +222,6 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
 		r.Log.Error(err, "should set keepalived image")
 		return err
 	}
-	if ka.Spec.Subnet == "" {
-		err := errors.New("keepalived subnet is required")
-		r.Log.Error(err, "should set keepalived subnet")
-		return err
-	}
 	if ka.Spec.VipV4 == "" && ka.Spec.VipV6 == "" {
 		err := errors.New("keepalived vip v4 or v6 ip is required")
 		r.Log.Error(err, "should set keepalived vip")
@@ -237,13 +238,7 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 		return err
 	}
 
-	if gw.Spec.QoSBandwidth == "" || gw.Spec.QoSBandwidth == "0" {
-		err := errors.New("vpn gw qos bandwidth is required")
-		r.Log.Error(err, "should set qos bandwidth")
-		return err
-	}
-
-	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIpsecVpn {
+	if !gw.Spec.EnableSslVpn && !gw.Spec.EnableIPSecVpn {
 		err := errors.New("vpn gw spec should enable ssl vpn or ipsec vpn at least one")
 		r.Log.Error(err, "vpn gw spec should enable ssl vpn or ipsec vpn at least one")
 		return err
@@ -287,13 +282,13 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 		}
 	}
 
-	if gw.Spec.EnableIpsecVpn {
-		if gw.Spec.IpsecSecret == "" {
+	if gw.Spec.EnableIPSecVpn {
+		if gw.Spec.IPSecSecret == "" {
 			err := errors.New("ipsec vpn secret is required")
 			r.Log.Error(err, "should set ipsec vpn secret")
 			return err
 		}
-		if gw.Spec.IpsecVpnImage == "" {
+		if gw.Spec.IPSecVpnImage == "" {
 			err := errors.New("ipsec vpn image is required")
 			r.Log.Error(err, "should set ipsec vpn image")
 			return err
@@ -303,74 +298,148 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 }
 
 func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string) bool {
-	changed := false
 	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
-		gw.Status.Keepalived = gw.Spec.Keepalived
+		return true
+	}
+	if gw.Status.CPU != gw.Spec.CPU {
+		return true
+	}
+	if gw.Status.Memory != gw.Spec.Memory {
+		return true
+	}
+	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
+		return true
+	}
+	if gw.Status.Replicas != gw.Spec.Replicas {
+		return true
+	}
+	if gw.Status.EnableSslVpn != gw.Spec.EnableSslVpn {
+		return true
+	}
+	if gw.Status.SslVpnCipher != gw.Spec.SslVpnCipher {
+		return true
+	}
+	if gw.Status.SslVpnProto != gw.Spec.SslVpnProto {
+		return true
+	}
+	if gw.Status.SslVpnSubnetCidr != gw.Spec.SslVpnSubnetCidr {
+		return true
+	}
+	if gw.Status.SslVpnImage != gw.Spec.SslVpnImage {
+		return true
+	}
+	if gw.Status.EnableIPSecVpn != gw.Spec.EnableIPSecVpn {
+		return true
+	}
+	if gw.Status.IPSecVpnImage != gw.Spec.IPSecVpnImage {
+		return true
+	}
+	if gw.Status.EnableIPSecVpn && ipsecConnections != nil {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.IPSecConnections, ipsecConnections) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Selector, gw.Status.Selector) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Tolerations, gw.Status.Tolerations) {
+		return true
+	}
+	if !reflect.DeepEqual(gw.Spec.Affinity, gw.Status.Affinity) {
+		return true
+	}
+	return false
+}
+
+func (r *VpnGwReconciler) UpdateVpnGW(ctx context.Context, req ctrl.Request, ipsecConnections []string) error {
+	// fetch vpn gw
+	gw, err := r.getVpnGw(ctx, req.NamespacedName)
+	if err != nil {
+		r.Log.Error(err, "failed to get vpn gw")
+		return err
+	}
+	if gw == nil {
+		// vpn gw deleted
+		return nil
+	}
+	changed := false
+	newGw := gw.DeepCopy()
+	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
+		newGw.Status.Keepalived = gw.Spec.Keepalived
 		changed = true
 	}
 	if gw.Status.CPU != gw.Spec.CPU {
-		gw.Status.CPU = gw.Spec.CPU
+		newGw.Status.CPU = gw.Spec.CPU
 		changed = true
 	}
 	if gw.Status.Memory != gw.Spec.Memory {
-		gw.Status.Memory = gw.Spec.Memory
+		newGw.Status.Memory = gw.Spec.Memory
 		changed = true
 	}
 	if gw.Status.QoSBandwidth != gw.Spec.QoSBandwidth {
-		gw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
+		newGw.Status.QoSBandwidth = gw.Spec.QoSBandwidth
 		changed = true
 	}
 	if gw.Status.Replicas != gw.Spec.Replicas {
-		gw.Status.Replicas = gw.Spec.Replicas
+		newGw.Status.Replicas = gw.Spec.Replicas
 		changed = true
 	}
 
 	if gw.Status.EnableSslVpn != gw.Spec.EnableSslVpn {
-		gw.Status.EnableSslVpn = gw.Spec.EnableSslVpn
+		newGw.Status.EnableSslVpn = gw.Spec.EnableSslVpn
 		if gw.Status.SslVpnCipher != gw.Spec.SslVpnCipher {
-			gw.Status.SslVpnCipher = gw.Spec.SslVpnCipher
+			newGw.Status.SslVpnCipher = gw.Spec.SslVpnCipher
 		}
 		if gw.Status.SslVpnProto != gw.Spec.SslVpnProto {
-			gw.Status.SslVpnProto = gw.Spec.SslVpnProto
+			newGw.Status.SslVpnProto = gw.Spec.SslVpnProto
 		}
 		if gw.Status.SslVpnSubnetCidr != gw.Spec.SslVpnSubnetCidr {
-			gw.Status.SslVpnSubnetCidr = gw.Spec.SslVpnSubnetCidr
+			newGw.Status.SslVpnSubnetCidr = gw.Spec.SslVpnSubnetCidr
 		}
 		if gw.Status.SslVpnImage != gw.Spec.SslVpnImage {
-			gw.Status.SslVpnImage = gw.Spec.SslVpnImage
+			newGw.Status.SslVpnImage = gw.Spec.SslVpnImage
 		}
 		changed = true
 	}
 
-	if gw.Status.EnableIpsecVpn != gw.Spec.EnableIpsecVpn {
-		gw.Status.EnableIpsecVpn = gw.Spec.EnableIpsecVpn
-		if gw.Status.IpsecVpnImage != gw.Spec.IpsecVpnImage {
-			gw.Status.IpsecVpnImage = gw.Spec.IpsecVpnImage
+	if gw.Status.EnableIPSecVpn != gw.Spec.EnableIPSecVpn {
+		newGw.Status.EnableIPSecVpn = gw.Spec.EnableIPSecVpn
+		if gw.Status.IPSecVpnImage != gw.Spec.IPSecVpnImage {
+			newGw.Status.IPSecVpnImage = gw.Spec.IPSecVpnImage
 		}
 		changed = true
 	}
 
-	if gw.Status.EnableIpsecVpn && ipsecConnections != nil {
-		if !reflect.DeepEqual(gw.Spec.IpsecConnections, ipsecConnections) {
-			gw.Spec.IpsecConnections = ipsecConnections
-			gw.Status.IpsecConnections = ipsecConnections
+	if gw.Status.EnableIPSecVpn && ipsecConnections != nil {
+		if !reflect.DeepEqual(gw.Spec.IPSecConnections, ipsecConnections) {
+			newGw.Spec.IPSecConnections = ipsecConnections
+			newGw.Status.IPSecConnections = ipsecConnections
+			changed = true
 		}
-		changed = true
 	}
 
 	if !reflect.DeepEqual(gw.Spec.Selector, gw.Status.Selector) {
-		gw.Status.Selector = gw.Spec.Selector
+		newGw.Status.Selector = gw.Spec.Selector
 		changed = true
 	}
 	if !reflect.DeepEqual(gw.Spec.Tolerations, gw.Status.Tolerations) {
-		gw.Status.Tolerations = gw.Spec.Tolerations
+		newGw.Status.Tolerations = gw.Spec.Tolerations
 		changed = true
 	}
 	if !reflect.DeepEqual(gw.Spec.Affinity, gw.Status.Affinity) {
-		gw.Status.Affinity = gw.Spec.Affinity
+		newGw.Status.Affinity = gw.Spec.Affinity
 		changed = true
 	}
-	return changed
+
+	if !changed {
+		return nil
+	}
+	if err := r.Status().Update(context.Background(), newGw); err != nil {
+		r.Log.Error(err, "failed to update vpn gw status")
+		return err
+	}
+	return nil
 }
 
 func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
@@ -403,10 +472,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		Name:  KeepAlivedServer,
 		Image: ka.Spec.Image,
 		Resources: corev1.ResourceRequirements{
-			Requests: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-			},
 			Limits: corev1.ResourceList{
 				corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 				corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -419,8 +484,12 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				Value: ka.Spec.VipV4,
 			},
 			{
-				Name:  keepalivedVirtualRouterID,
+				Name:  KeepalivedVirtualRouterID,
 				Value: strconv.Itoa(ka.Status.RouterID),
+			},
+			{
+				Name:  keepalivedNicKey,
+				Value: ka.Spec.Nic,
 			},
 		},
 		ImagePullPolicy: corev1.PullIfNotPresent,
@@ -437,10 +506,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 		cmd := []string{SslVpnStsCMD}
-		if gw.Spec.WorkloadType == "static" {
-			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDsCMD}
-		}
 		sslVpnPort := r.SslVpnUDP
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = r.SslVpnTCP
@@ -469,10 +534,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -540,21 +601,16 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		volumes = append(volumes, dhSecretVolume)
 		containers = append(containers, sslContainer)
 	}
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// config ipsec vpn strongswan pod:
 		// port, proto
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-
+		cmd := []string{IPSecVpnStsCMD}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
-			return nil
-		}
-		IPSecBootPcPortInt32, err := getPortInt32(r.IPSecBootPcPort)
-		if err != nil {
-			r.Log.Error(err, "failed to convert ipsec bootpc port to int32")
 			return nil
 		}
 		IPSecNatPortInt32, err := getPortInt32(r.IPSecNatPort)
@@ -563,42 +619,33 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			return nil
 		}
 		ipsecContainer := corev1.Container{
-			Name:  IpsecVpnServer,
-			Image: gw.Spec.IpsecVpnImage,
-			// mount x.509 secret
+			Name:  IPSecVpnServer,
+			Image: gw.Spec.IPSecVpnImage,
 			VolumeMounts: []corev1.VolumeMount{
+				// mount x.509 secret
 				{
-					Name:      gw.Spec.IpsecSecret,
+					Name:      gw.Spec.IPSecSecret,
 					MountPath: r.IPSecVpnSecretPath,
 					ReadOnly:  true,
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IpsecVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
 					Name:          IPSecIsakmpPortKey,
-					Protocol:      corev1.Protocol(r.IPSecIsakmpPort),
-				},
-				{
-					ContainerPort: IPSecBootPcPortInt32,
-					Name:          IPSecBootPcPortKey,
-					Protocol:      corev1.Protocol(r.IPSecBootPcPort),
+					Protocol:      corev1.Protocol(IPSecProto),
 				},
 				{
 					ContainerPort: IPSecNatPortInt32,
 					Name:          IPSecNatPortKey,
-					Protocol:      corev1.Protocol(r.IPSecNatPort),
+					Protocol:      corev1.Protocol(IPSecProto),
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -609,10 +656,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		}
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
-			Name: gw.Spec.IpsecSecret,
+			Name: gw.Spec.IPSecSecret,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IpsecSecret,
+					SecretName: gw.Spec.IPSecSecret,
 					Optional:   &[]bool{true}[0],
 				},
 			},
@@ -708,17 +755,13 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 	containers := []corev1.Container{}
 	volumes := []corev1.Volume{}
 	if gw.Spec.EnableSslVpn {
-		// config ssl vpn openvpn pod：
+		// config ssl vpn openvpn pod:
 		// port, proto, cipher, auth, subnet
 		// volume: x.509 secret, dhparams secret
 		// env: proto, port, cipher, auth, subnet
 		// command: openvpn --config /etc/openvpn/server.conf
 
-		cmd := []string{SslVpnStsCMD}
-		if gw.Spec.WorkloadType == "static" {
-			// debug daemonset ssl vpn pod need sleep infinity
-			cmd = []string{SslVpnDsCMD}
-		}
+		cmd := []string{SslVpnDsCMD}
 		sslVpnPort := r.SslVpnUDP
 		if gw.Spec.SslVpnProto == "tcp" {
 			sslVpnPort = r.SslVpnTCP
@@ -739,7 +782,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					MountPath: r.K8sManifestsPath,
 					ReadOnly:  false,
 				},
-				// use hostpath to map /etc/openvpn to host
+				// use hostpath to copy /etc/openvpn to host
 				{
 					Name:      SslVpnCacheName,
 					MountPath: SslVpnHostCachePath,
@@ -759,10 +802,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -806,17 +845,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
-		k8sManifestsVolume := corev1.Volume{
-			Name: k8sManifests,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: r.K8sManifestsPath,
-					// the directory on host must be exist
-					Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
-				},
-			},
-		}
-		volumes = append(volumes, k8sManifestsVolume)
 		sslConfHostVolume := corev1.Volume{
 			Name: SslVpnCacheName,
 			VolumeSource: corev1.VolumeSource{
@@ -852,21 +880,17 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		volumes = append(volumes, dhSecretVolume)
 		containers = append(containers, sslContainer)
 	}
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// config ipsec vpn strongswan pod:
 		// port, proto
 		// volume: x.509 secret
 		// env: proto, port
 		// command: ipsec start
-
+		// ipsec vpn use sleep infinity to keep container running
+		cmd := []string{"sleep", "infinity"}
 		IPSecIsakmpPortInt32, err := getPortInt32(r.IPSecIsakmpPort)
 		if err != nil {
 			r.Log.Error(err, "failed to convert ipsec isakmp port to int32")
-			return nil
-		}
-		IPSecBootPcPortInt32, err := getPortInt32(r.IPSecBootPcPort)
-		if err != nil {
-			r.Log.Error(err, "failed to convert ipsec bootpc port to int32")
 			return nil
 		}
 		IPSecNatPortInt32, err := getPortInt32(r.IPSecNatPort)
@@ -876,36 +900,39 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		}
 
 		ipsecContainer := corev1.Container{
-			Name:  IpsecVpnServer,
-			Image: gw.Spec.IpsecVpnImage,
+			Name:  IPSecVpnServer,
+			Image: gw.Spec.IPSecVpnImage,
 			// mount x.509 secret
 			VolumeMounts: []corev1.VolumeMount{
+				// use k8s manifests to copy static pod yaml to host kubelet
 				{
-					Name:      gw.Spec.IpsecSecret,
+					Name:      k8sManifests,
+					MountPath: r.K8sManifestsPath,
+					ReadOnly:  false,
+				},
+				// use hostpath to map /etc/strongswan to host
+				{
+					Name:      IPSecVpnCacheName,
+					MountPath: IPSecVpnHostCachePath,
+					ReadOnly:  false,
+				},
+				{
+					Name:      gw.Spec.IPSecSecret,
 					MountPath: r.IPSecVpnSecretPath,
 					ReadOnly:  true,
 				},
 			},
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
 				},
 			},
-			Command: []string{IpsecVpnStartUpCMD},
+			Command: cmd,
 			Ports: []corev1.ContainerPort{
 				{
 					ContainerPort: IPSecIsakmpPortInt32,
 					Name:          IPSecIsakmpPortKey,
-					Protocol:      corev1.Protocol(IPSecProto),
-				},
-				{
-					ContainerPort: IPSecBootPcPortInt32,
-					Name:          IPSecBootPcPortKey,
 					Protocol:      corev1.Protocol(IPSecProto),
 				},
 				{
@@ -920,12 +947,23 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
+		ipsecConfHostVolume := corev1.Volume{
+			Name: IPSecVpnCacheName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: IPSecVpnHostCachePath,
+					// if the directory is not exist, create it
+					Type: &[]corev1.HostPathType{corev1.HostPathDirectoryOrCreate}[0],
+				},
+			},
+		}
+		volumes = append(volumes, ipsecConfHostVolume)
 		ipsecSecretVolume := corev1.Volume{
 			// define secrect volume
-			Name: gw.Spec.IpsecSecret,
+			Name: gw.Spec.IPSecSecret,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IpsecSecret,
+					SecretName: gw.Spec.IPSecSecret,
 					Optional:   &[]bool{true}[0],
 				},
 			},
@@ -933,16 +971,23 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
+	k8sManifestsVolume := corev1.Volume{
+		Name: k8sManifests,
+		VolumeSource: corev1.VolumeSource{
+			HostPath: &corev1.HostPathVolumeSource{
+				Path: r.K8sManifestsPath,
+				// the directory on host must be exist
+				Type: &[]corev1.HostPathType{corev1.HostPathDirectory}[0],
+			},
+		},
+	}
+	volumes = append(volumes, k8sManifestsVolume)
 	// need keepalived
 	if ka != nil {
 		keepalivedContainer := corev1.Container{
 			Name:  KeepAlivedServer,
 			Image: ka.Spec.Image,
 			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
-					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
-				},
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
 					corev1.ResourceMemory: resource.MustParse(gw.Spec.Memory),
@@ -955,8 +1000,12 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					Value: ka.Spec.VipV4,
 				},
 				{
-					Name:  keepalivedVirtualRouterID,
+					Name:  KeepalivedVirtualRouterID,
 					Value: strconv.Itoa(ka.Status.RouterID),
+				},
+				{
+					Name:  keepalivedNicKey,
+					Value: ka.Spec.Nic,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -1029,7 +1078,8 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	return map[string]string{
 		EnableSslVpnLabel:   strconv.FormatBool(gw.Spec.EnableSslVpn),
-		EnableIpsecVpnLabel: strconv.FormatBool(gw.Spec.EnableIpsecVpn),
+		EnableIPSecVpnLabel: strconv.FormatBool(gw.Spec.EnableIPSecVpn),
+		VpnGwLabel:          gw.Name,
 	}
 }
 
@@ -1042,11 +1092,12 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
 		} else {
-			r.Log.Error(err, "failed to get old statefulset")
+			r.Log.Error(err, "failed to get statefulset")
 			return err
 		}
 	}
 	newGw := gw.DeepCopy()
+	// create
 	if needToCreate {
 		// create statefulset
 		newSts := r.statefulSetForVpnGw(gw, ka, nil)
@@ -1057,7 +1108,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		}
 		time.Sleep(5 * time.Second)
 		return nil
-	} else if r.isChanged(newGw, nil) {
+	}
+	// update
+	if r.isChanged(newGw, nil) {
 		// update statefulset
 		newSts := r.statefulSetForVpnGw(gw, ka, oldSts.DeepCopy())
 		err = r.Update(context.Background(), newSts)
@@ -1068,6 +1121,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 		time.Sleep(5 * time.Second)
 		return nil
 	}
+	// no change
 	r.Log.Info("vpn gw statefulset not changed", "vpn gw", gw.Name)
 	return nil
 }
@@ -1082,13 +1136,13 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
 		} else {
-			r.Log.Error(err, "failed to get old daemonset")
+			r.Log.Error(err, "failed to get daemonset")
 			return err
 		}
 	}
 	newGw := gw.DeepCopy()
+	// create daemonset
 	if needToCreate {
-		// create daemonset
 		newSts := r.daemonsetForVpnGw(gw, ka, nil)
 		err = r.Create(context.Background(), newSts)
 		if err != nil {
@@ -1097,8 +1151,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		}
 		time.Sleep(5 * time.Second)
 		return nil
-	} else if r.isChanged(newGw, nil) {
-		// update daemonset
+	}
+	// update daemonset
+	if r.isChanged(newGw, nil) {
 		newSts := r.daemonsetForVpnGw(gw, ka, oldDs.DeepCopy())
 		err = r.Update(context.Background(), newSts)
 		if err != nil {
@@ -1108,6 +1163,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 		time.Sleep(5 * time.Second)
 		return nil
 	}
+	// no change
 	r.Log.Info("vpn gw daemonset not changed", "vpn gw", gw.Name)
 	return nil
 }
@@ -1130,12 +1186,12 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 	if err := r.validateVpnGw(gw); err != nil {
 		r.Log.Error(err, "failed to validate vpn gw")
-		// invalid spec no retry
+		// invalid spec, no retry
 		return SyncStateErrorNoRetry, err
 	}
 	var ka *vpngwv1.KeepAlived
 	if gw.Spec.Keepalived != "" {
-		ka := &vpngwv1.KeepAlived{
+		ka = &vpngwv1.KeepAlived{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gw.Spec.Keepalived,
 				Namespace: gw.Namespace,
@@ -1150,6 +1206,11 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			r.Log.Error(err, "failed to validate keepalived")
 			// invalid spec no retry
 			return SyncStateErrorNoRetry, err
+		}
+		if ka.Status.RouterID == 0 {
+			r.Log.Error(err, "keepalived router id not ready to use, please wait a while")
+			time.Sleep(1 * time.Second)
+			return SyncStateError, err
 		}
 	}
 	// create vpn gw or update
@@ -1168,7 +1229,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	}
 
 	var conns []string
-	if gw.Spec.EnableIpsecVpn {
+	if gw.Spec.EnableIPSecVpn {
 		// fetch ipsec connections
 		res, err := r.getIpsecConnections(context.Background(), gw)
 		if err != nil {
@@ -1191,30 +1252,18 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 				v.Spec.LocalCN, v.Spec.LocalPublicIp, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteCN, v.Spec.RemotePublicIp, v.Spec.RemotePrivateCidrs)
 		}
-		if connections != "" {
-			// get pod from statefulset
-			pod := &corev1.Pod{}
-			err = r.Get(context.Background(), types.NamespacedName{
-				Name:      gw.Name + "-0",
-				Namespace: gw.Namespace,
-			}, pod)
-
-			if err != nil {
-				r.Log.Error(err, "failed to get vpn gw pod")
-				time.Sleep(1 * time.Second)
-				return SyncStateError, err
-			} else if pod.Status.Phase != "Running" {
-				err = errors.New("pod is not running now")
-				r.Log.Error(err, "wait a while to refresh vpn gw ipsec connections")
-				time.Sleep(5 * time.Second)
-				return SyncStateError, err
-			}
-			r.Log.Info("found vpn gw pod", "pod", pod.Name)
+		if connections == "" {
+			r.Log.Info("no ipsec connections to refresh")
+			return SyncStateSuccess, nil
+		}
+		// get pods
+		podNames, podNotRunErr := r.getVpnGwPodNames(context.Background(), req.NamespacedName, gw)
+		for _, podName := range podNames {
 			// exec pod to run cmd to refresh ipsec connections
-			cmd := fmt.Sprintf(IpsecConnectionRefreshTemplate, connections)
-			r.Log.Info("start run cmd", "cmd", cmd)
+			cmd := fmt.Sprintf(IPSecConnectionRefreshTemplate, connections)
+			r.Log.Info("refresh ipsec connections start", "pod", podName, "cmd", cmd)
 			// refresh ipsec connections by exec pod
-			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, pod.Namespace, pod.Name, IpsecVpnServer, []string{"/bin/bash", "-c", cmd}...)
+			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, gw.Namespace, podName, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
 			if err != nil {
 				if len(errOutput) > 0 {
 					err = fmt.Errorf("failed to ExecuteCommandInContainer, errOutput: %v", errOutput)
@@ -1224,23 +1273,57 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 					err = fmt.Errorf("failed to ExecuteCommandInContainer, errOutput: %v", errOutput)
 					r.Log.Error(err, "failed to refresh vpn gw ipsec connections")
 				}
-				time.Sleep(2 * time.Second)
+				time.Sleep(5 * time.Second)
 				return SyncStateError, err
 			}
-			for _, conn := range *res {
-				conns = append(conns, conn.Name)
-			}
+			r.Log.Info("refresh ipsec connections ok", "pod", podName, "output", stdOutput)
+		}
+		if podNotRunErr != nil {
+			r.Log.Error(podNotRunErr, "pod not running now")
+			time.Sleep(5 * time.Second)
+			return SyncStateError, podNotRunErr
+		}
+		for _, conn := range *res {
+			conns = append(conns, conn.Name)
 		}
 	}
-	newGw := gw.DeepCopy()
-	if r.isChanged(newGw, conns) {
-		err = r.Status().Update(context.Background(), newGw)
-		if err != nil {
-			r.Log.Error(err, "failed to update vpn gw status")
-			return SyncStateError, err
-		}
+	if err := r.UpdateVpnGW(ctx, req, conns); err != nil {
+		r.Log.Error(err, "failed to update vpn gw")
+		return SyncStateError, err
 	}
 	return SyncStateSuccess, nil
+}
+
+func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.NamespacedName, gw *vpngwv1.VpnGw) ([]string, error) {
+	enableVPN := EnableSslVpnLabel
+	if gw.Spec.EnableIPSecVpn {
+		enableVPN = EnableIPSecVpnLabel
+	}
+	podList := &corev1.PodList{}
+	err := r.List(ctx, podList, client.InNamespace(name.Namespace), client.MatchingLabels{enableVPN: "true", VpnGwLabel: gw.Name})
+	if err != nil {
+		r.Log.Error(err, "failed to list pods", "namespace", name.Namespace)
+		return nil, err
+	}
+	podNames := []string{}
+	// check if all pods are running, return running pod names
+	badPodNames := []string{}
+	for _, pod := range podList.Items {
+		if pod.Status.Phase != "Running" {
+			err = fmt.Errorf("pod %s is not running now", pod.Name)
+			r.Log.Error(err, "wait a while to refresh vpn gw ipsec connections")
+			badPodNames = append(badPodNames, pod.Name)
+		}
+		podNames = append(podNames, pod.Name)
+	}
+	r.Log.Info("found running vpn gw pod", "pod", podNames)
+	if len(podNames) == 0 {
+		return nil, fmt.Errorf("gw %s has no running pod", gw.Name)
+	}
+	if len(badPodNames) > 0 {
+		return podNames, fmt.Errorf("pod %v is not running now", badPodNames)
+	}
+	return podNames, nil
 }
 
 func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedName) (*vpngwv1.VpnGw, error) {

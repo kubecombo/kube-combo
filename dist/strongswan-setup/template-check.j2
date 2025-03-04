@@ -2,15 +2,26 @@
 set -eux
 
 {% for conn in connections %}
-# --- check connection {{ conn.name }} remote public ip ---
-ping -n -c 1 {{ conn.remotePublicIp }} || true
+# ---loop check connection {{ conn.name }} remote public ip ---
+while ! ping -n -c 1 {{ conn.remotePublicIp }}; do
+    echo "Waiting for {{ conn.remotePublicIp }} to respond..."
+    sleep 5
+done
+
 {% endfor %}
+
+# loop check ss -tunlp | grep charon-systemd
+while ! ss -tunlp | grep charon-systemd; do
+    echo "Waiting for charon-systemd to start..."
+    sleep 5
+done
+
 
 /usr/sbin/swanctl --load-all
 
 swanctl --list-conns
 # after ping remote private cidr ip
-# this --list-sas will show the ESTABLISHED 
+# this --list-sas will show the ESTABLISHED
 /usr/sbin/swanctl --list-sas
 /usr/sbin/swanctl --stats
 

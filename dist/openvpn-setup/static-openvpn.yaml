@@ -6,28 +6,28 @@ metadata:
 spec:
   hostNetwork: true
   containers:
-  - name: openvpn-container
-    image: icoy/kube-combo-openvpn:v0.0.5
-    resources:
-      limits:
-        cpu: "1"
-        memory: 1024M
-    securityContext:
-      allowPrivilegeEscalation: true
-      privileged: true
-    command:
-    - /etc/host-init-openvpn/static-pod-start.sh
-    volumeMounts:
-    - name: openvpn-hostpath
-      mountPath: /etc/openvpn
-    - name: openvpn-cache
-      mountPath: /etc/host-init-openvpn
+    - name: openvpn-container
+      image: icoy/kube-combo-openvpn:v0.0.6
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1024M
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
+      command:
+        - /etc/host-init-openvpn/static-pod-start.sh
+      volumeMounts:
+        - name: openvpn-hostpath
+          mountPath: /etc/openvpn
+        - name: openvpn-cache
+          mountPath: /etc/host-init-openvpn
   volumes:
-  - name: openvpn-hostpath
-    hostPath:
-      path: /etc/openvpn
-      type: DirectoryOrCreate
-  - name: openvpn-cache
-    hostPath:
-      path: /etc/host-init-openvpn
-      type: Directory
+    - name: openvpn-hostpath
+      hostPath:
+        path: /etc/openvpn
+        type: DirectoryOrCreate
+    - name: openvpn-cache
+      hostPath:
+        path: /etc/host-init-openvpn
+        type: Directory
