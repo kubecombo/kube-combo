@@ -29,7 +29,7 @@ replicaCount: 1
 MASTER_NODES_LABEL: ""
 
 func:
-  ENABLE_SSL_VPN: true
+  ENABLE_SSL_VPN: false
   ENABLE_IPSEC_VPN: false
 
 sslvpn:
@@ -39,3 +39,4 @@ sslvpn:
   size: 2048
   encoding: PKCS1
   manifests: /etc/kubernetes/manifests
+  SSLVPN_NODES_LABEL: ""
