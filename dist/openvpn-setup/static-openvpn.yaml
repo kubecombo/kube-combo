@@ -6,7 +6,7 @@ metadata:
 spec:
   hostNetwork: true
   containers:
-    - name: openvpn-container
+    - name: openvpn
       image: icoy/kube-combo-openvpn:v0.0.6
       resources:
         limits:
