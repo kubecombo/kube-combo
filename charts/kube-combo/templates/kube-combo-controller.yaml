@@ -64,7 +64,7 @@ spec:
             drop:
             - ALL
       - args:
-        - --k8s-manifests-path={{ .Values.path.manifests }}
+        - --k8s-manifests-path={{ .Values.sslvpn.manifests }}
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
