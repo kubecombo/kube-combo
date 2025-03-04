@@ -22,6 +22,8 @@ spec:
           mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
+        - name: charon-socket
+          mountPath: /var/run
 
     - name: load
       image: icoy/kube-combo-strongswan:v0.0.6
@@ -39,6 +41,8 @@ spec:
           mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
+        - name: charon-socket
+          mountPath: /var/run
 
   volumes:
     - name: strongswan-hostpath
@@ -49,3 +53,5 @@ spec:
       hostPath:
         path: /etc/host-init-strongswan
         type: Directory
+    - name: charon-socket
+      emptyDir: {}
