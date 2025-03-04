@@ -3,6 +3,7 @@ set -eux
 # k8s daemonset use this script to start static pod on node
 
 # make it runable in any directory
+SSL_VPN_MANIFESTS_PATH=${SSL_VPN_MANIFESTS_PATH:-/etc/kubernetes/manifests}
 CONF_HOME=${CONF_HOME:-/etc/openvpn}
 SETUP_HOME="$CONF_HOME/setup"
 echo "debug setup openvpn in ${SETUP_HOME} .............."
@@ -40,8 +41,8 @@ rm -fr "/etc/host-init-openvpn/*"
 echo "show /etc/host-init-openvpn files .............."
 ls -lR "/etc/host-init-openvpn"
 
-echo "deploy static pod /etc/kubernetes/manifests .............."
-\cp "${SETUP_HOME}/static-openvpn.yaml" "/etc/kubernetes/manifests"
+echo "deploy static pod ${SSL_VPN_MANIFESTS_PATH} .............."
+\cp "${SETUP_HOME}/static-openvpn.yaml" "${SSL_VPN_MANIFESTS_PATH}"
 
 echo "k8s static pod should run /etc/host-init-openvpn/static-pod-start.sh .............."
 echo "k8s static pod will copy certs and config file from /etc/host-init-openvpn to pod /etc/openvpn .............."
