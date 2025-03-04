@@ -12,6 +12,7 @@ RUN apt-get update && \
         tree \
         iproute2 \
         inetutils-ping \
+        iputils-tracepath \
         arping \
         lsof \
         ncat \
