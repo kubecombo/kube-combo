@@ -69,11 +69,12 @@ const (
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
 	// vpn gw pod env
-	SslVpnProtoKey      = "SSL_VPN_PROTO"
-	SslVpnPortKey       = "SSL_VPN_PORT"
-	SslVpnCipherKey     = "SSL_VPN_CIPHER"
-	SslVpnAuthKey       = "SSL_VPN_AUTH"
-	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
+	SslVpnProtoKey         = "SSL_VPN_PROTO"
+	SslVpnPortKey          = "SSL_VPN_PORT"
+	SslVpnCipherKey        = "SSL_VPN_CIPHER"
+	SslVpnAuthKey          = "SSL_VPN_AUTH"
+	SslVpnSubnetCidrKey    = "SSL_VPN_SUBNET_CIDR"
+	SslVpnManifestsPathKey = "SSL_VPN_MANIFESTS_PATH"
 
 	// ipsec vpn strongswan
 	IPSecVpnServer = "ipsec-vpn"
@@ -570,6 +571,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					Name:  KeepalivedVipKey,
 					Value: ka.Spec.VipV4,
 				},
+				{
+					Name:  SslVpnManifestsPathKey,
+					Value: r.K8sManifestsPath,
+				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			SecurityContext: &corev1.SecurityContext{
@@ -837,6 +842,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				{
 					Name:  KeepalivedVipKey,
 					Value: v4Vip,
+				},
+				{
+					Name:  SslVpnManifestsPathKey,
+					Value: r.K8sManifestsPath,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
