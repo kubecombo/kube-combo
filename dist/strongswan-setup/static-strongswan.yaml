@@ -25,8 +25,7 @@ spec:
 
     - name: strongswan-check
       image: icoy/kube-combo-strongswan:v0.0.6
-      command: ["/bin/bash", "-c"]
-      args:
+      command:
         - /etc/host-init-strongswan/check
       volumeMounts:
         - name: strongswan-hostpath
