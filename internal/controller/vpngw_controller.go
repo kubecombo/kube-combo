@@ -75,6 +75,7 @@ const (
 	SslVpnAuthKey          = "SSL_VPN_AUTH"
 	SslVpnSubnetCidrKey    = "SSL_VPN_SUBNET_CIDR"
 	SslVpnManifestsPathKey = "SSL_VPN_MANIFESTS_PATH"
+	SslVpnImageKey         = "SSL_VPN_IMAGE"
 
 	// ipsec vpn strongswan
 	IPSecVpnServer = "ipsec-vpn"
@@ -575,6 +576,10 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					Name:  SslVpnManifestsPathKey,
 					Value: r.K8sManifestsPath,
 				},
+				{
+					Name:  SslVpnImageKey,
+					Value: gw.Spec.SslVpnImage,
+				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			SecurityContext: &corev1.SecurityContext{
@@ -846,6 +851,10 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 				{
 					Name:  SslVpnManifestsPathKey,
 					Value: r.K8sManifestsPath,
+				},
+				{
+					Name:  SslVpnImageKey,
+					Value: gw.Spec.SslVpnImage,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
