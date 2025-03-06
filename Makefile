@@ -140,7 +140,13 @@ docker-pull-base:
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
-	go build -o bin/manager cmd/main.go
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o bin/manager cmd/main.go
+
+.PHONY: build-arm
+build-arm: manifests generate fmt vet ## Build manager binary.
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o bin/manager cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -150,10 +156,12 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
-	# docker build -t ${IMG} .
+docker-build: test build ## Build docker image with the manager.
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
+.PHONY: docker-build-arm
+docker-build-arm: test build-arm ## Build docker image with the manager.
+	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
