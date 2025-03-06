@@ -16,6 +16,9 @@ while ! ss -tunlp | grep 4500; do
     sleep 5
 done
 
+# copy hosts
+bash "${CACHE_HOME}/copy-hosts.sh"
+
 /usr/sbin/swanctl --load-all
 
 swanctl --list-conns

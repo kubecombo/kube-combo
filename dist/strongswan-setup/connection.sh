@@ -108,6 +108,7 @@ function host-init-cache() {
 
 		\cp "${IPSEC_HOSTS}" "${CACHE_HOME}/"
 		\cp "${CHECK_SCRIPT}" "${CACHE_HOME}/"
+		\cp "copy-hosts.sh" "${CACHE_HOME}/"
 
 		# echo "show /etc/host-init-strongswan files .............."
 		# ls -lR "${CACHE_HOME}/"
