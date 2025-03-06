@@ -8,6 +8,8 @@ set -eux
 # 3. k8s static pod copy etc hosts from host-init to pod /etc/hosts
 # 4. start ipsecvpn server
 
+CACHE_HOME=${CACHE_HOME:-/etc/host-init-strongswan}
+
 # 3. copy hosts
 \cp "${CACHE_HOME}/hosts.ipsec" "/etc/"
 if [ ! -e "/etc/hosts.ori" ]; then
