@@ -35,7 +35,9 @@ spec:
         allowPrivilegeEscalation: true
         privileged: true
       command:
-        - /etc/host-init-strongswan/check
+        - sh
+        - -c
+        - "/etc/host-init-strongswan/check && sleep infinity"
       volumeMounts:
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
