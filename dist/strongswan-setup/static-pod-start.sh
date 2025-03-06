@@ -1,8 +1,10 @@
 #!/bin/bash
 set -eux
 # k8s static pod use this script to start ipsecvpn server on node
-# 1. k8s static pod copy file from host-init to pod /etc/ipsecvpn
-# 2. start ipsecvpn server
+# 1. k8s static pod copy ipsec certs from /etc/host-init-strongswan to pod /etc/ipsecvpn
+# 2. k8s static pod copy ipsec conf from /etc/host-init-strongswan to pod /etc/swanctl
+# 3. k8s static pod copy etc hosts from host-init to pod /etc/hosts
+# 4. start ipsecvpn server
 
 # make it runable in any directory
 CACHE_HOME=${CACHE_HOME:-/etc/host-init-strongswan}
@@ -38,16 +40,8 @@ rm -fr "/etc/swanctl/*"
 \cp "${CACHE_HOME}/swanctl.conf" "${CONF_HOME}/"
 # check script
 \cp "${CACHE_HOME}/check" "${CONF_HOME}/"
-
-# hosts
-\cp "${CACHE_HOME}/hosts.ipsec" "/etc/"
-if [ ! -e "/etc/hosts.ori" ]; then
-    # backup hosts
-    cp /etc/hosts /etc/hosts.ori
-fi
-cat /etc/hosts.ori >/etc/hosts
-cat /etc/hosts.ipsec >>/etc/hosts
-
+# copy hosts
+bash "${CACHE_HOME}/copy-hosts.sh"
 # debug config
 echo "cat ${CONF_HOME}/swanctl.conf ............"
 cat "${CONF_HOME}/swanctl.conf"

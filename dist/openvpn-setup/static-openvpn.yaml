@@ -6,7 +6,7 @@ metadata:
 spec:
   hostNetwork: true
   containers:
-    - name: openvpn-container
+    - name: openvpn
       image: SSL_VPN_IMAGE
       resources:
         limits:

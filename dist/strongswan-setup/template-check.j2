@@ -10,12 +10,14 @@ done
 
 {% endfor %}
 
-# loop check ss -tunlp | grep charon-systemd
-while ! ss -tunlp | grep charon-systemd; do
+# loop check ss -tunlp | grep 4500
+while ! ss -tunlp | grep 4500; do
     echo "Waiting for charon-systemd to start..."
     sleep 5
 done
 
+# copy hosts
+bash "/etc/host-init-strongswan/copy-hosts.sh"
 
 /usr/sbin/swanctl --load-all
 

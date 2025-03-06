@@ -6,7 +6,7 @@ metadata:
 spec:
   hostNetwork: true
   containers:
-    - name: strongswan-container
+    - name: strongswan
       image: icoy/kube-combo-strongswan:v0.0.6
       resources:
         limits:
@@ -18,27 +18,40 @@ spec:
       command:
         - /etc/host-init-strongswan/static-pod-start.sh
       volumeMounts:
-        - name: strongswan-hostpath
-          mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
+        - name: charon-socket
+          mountPath: /var/run
+        - name: etc-swanctl
+          mountPath: /etc/swanctl
 
-    - name: strongswan-check
+    - name: load
       image: icoy/kube-combo-strongswan:v0.0.6
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1024M
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
       command:
-        - /etc/host-init-strongswan/check
+        - sh
+        - -c
+        - "/etc/host-init-strongswan/check && sleep infinity"
       volumeMounts:
-        - name: strongswan-hostpath
-          mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
+        - name: charon-socket
+          mountPath: /var/run
+        - name: etc-swanctl
+          mountPath: /etc/swanctl
 
   volumes:
-    - name: strongswan-hostpath
-      hostPath:
-        path: /etc/strongswan
-        type: DirectoryOrCreate
     - name: strongswan-cache
       hostPath:
         path: /etc/host-init-strongswan
         type: Directory
+    - name: charon-socket
+      emptyDir: {}
+    - name: etc-swanctl
+      emptyDir: {}
