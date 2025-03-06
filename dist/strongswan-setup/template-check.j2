@@ -17,7 +17,7 @@ while ! ss -tunlp | grep 4500; do
 done
 
 # copy hosts
-bash "${CACHE_HOME}/copy-hosts.sh"
+bash "/etc/host-init-strongswan/copy-hosts.sh"
 
 /usr/sbin/swanctl --load-all
 
