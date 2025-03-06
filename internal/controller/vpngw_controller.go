@@ -928,7 +928,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					MountPath: r.K8sManifestsPath,
 					ReadOnly:  false,
 				},
-				// use hostpath to map /etc/strongswan to host
+				// use hostpath to map /etc/swanctl to host
 				{
 					Name:      IPSecVpnCacheName,
 					MountPath: IPSecVpnHostCachePath,

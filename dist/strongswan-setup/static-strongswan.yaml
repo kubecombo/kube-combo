@@ -18,12 +18,12 @@ spec:
       command:
         - /etc/host-init-strongswan/static-pod-start.sh
       volumeMounts:
-        - name: strongswan-hostpath
-          mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
         - name: charon-socket
           mountPath: /var/run
+        - name: etc-swanctl
+          mountPath: /etc/swanctl
 
     - name: load
       image: icoy/kube-combo-strongswan:v0.0.6
@@ -37,21 +37,19 @@ spec:
       command:
         - /etc/host-init-strongswan/check
       volumeMounts:
-        - name: strongswan-hostpath
-          mountPath: /etc/strongswan
         - name: strongswan-cache
           mountPath: /etc/host-init-strongswan
         - name: charon-socket
           mountPath: /var/run
+        - name: etc-swanctl
+          mountPath: /etc/swanctl
 
   volumes:
-    - name: strongswan-hostpath
-      hostPath:
-        path: /etc/strongswan
-        type: DirectoryOrCreate
     - name: strongswan-cache
       hostPath:
         path: /etc/host-init-strongswan
         type: Directory
     - name: charon-socket
+      emptyDir: {}
+    - name: etc-swanctl
       emptyDir: {}
