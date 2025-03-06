@@ -1,7 +1,5 @@
 #!/bin/bash
 set -eux
-#!/bin/bash
-set -eux
 # k8s static pod use this script to start ipsecvpn server on node
 # 1. k8s static pod copy ipsec certs from /etc/host-init-strongswan to pod /etc/ipsecvpn
 # 2. k8s static pod copy ipsec conf from /etc/host-init-strongswan to pod /etc/swanctl
