@@ -133,18 +133,13 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 ##@ Build
 
-.PHONY: docker-pull-base
-docker-pull-base:
-	docker pull golang:1.19
-	docker pull ubuntu:22.04
-
 .PHONY: build
-build: manifests generate fmt vet ## Build manager binary.
+build: manifests generate fmt vet ## Build manager amd64 binary.
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o bin/manager cmd/main.go
 
 .PHONY: build-arm
-build-arm: manifests generate fmt vet ## Build manager binary.
+build-arm: manifests generate fmt vet ## Build manager arm64 binary.
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o bin/manager cmd/main.go
 
@@ -156,11 +151,11 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
-docker-build: test build ## Build docker image with the manager.
+docker-build: test build ## Build docker amd64 image with the manager.
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-arm
-docker-build-arm: test build-arm ## Build docker image with the manager.
+docker-build-arm: test build-arm ## Build docker arm64 image with the manager.
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
@@ -168,42 +163,61 @@ docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
 .PHONY: docker-build-base
-docker-build-base:
+docker-build-base: ## Build docker base image for amd64.
 	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
+.PHONY: docker-build-base-arm
+docker-build-base-arm: ## Build docker base image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+
 .PHONY: docker-push-base
-docker-push-base:
+docker-push-base: ## Push docker base image
 	docker push ${BASE_IMG}
 
 .PHONY: docker-build-ssl-vpn
-docker-build-ssl-vpn:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} .
+docker-build-ssl-vpn: ## Build docker ssl-vpn image for amd64.
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-build-ssl-vpn-arm
+docker-build-ssl-vpn-arm: ## Build docker ssl-vpn image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-ssl-vpn
-docker-push-ssl-vpn:
+docker-push-ssl-vpn: ## Push docker ssl-vpn image
 	docker push ${SSL_VPN_IMG}
 
 .PHONY: docker-build-ipsec-vpn
-docker-build-ipsec-vpn:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
+docker-build-ipsec-vpn: ## Build docker ipsec-vpn image for amd64.
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-build-ipsec-vpn-arm
+docker-build-ipsec-vpn-arm: ## Build docker ipsec-vpn image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.strongSwan -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-ipsec-vpn
-docker-push-ipsec-vpn:
+docker-push-ipsec-vpn: ## Push docker ipsec-vpn image
 	docker push ${IPSEC_VPN_IMG}
 
 .PHONY: docker-build-keepalived
-docker-build-keepalived:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} .
+docker-build-keepalived: ## Build docker keepalived image for amd64.
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-build-keepalived
+docker-build-keepalived-arm: ## Build docker keepalived image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.keepalived -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-keepalived
-docker-push-keepalived:
+docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all
-docker-build-all: docker-build docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived
+docker-build-all: docker-build docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived ## Build all images for amd64.
+
+.PHONY: docker-build-all-arm
+docker-build-all-arm: docker-build-arm docker-build-base-arm docker-build-ssl-vpn-arm docker-build-ipsec-vpn-arm docker-build-keepalived-arm ## Build all images for arm64.
 
 .PHONY: docker-pull-all
-docker-pull-all:
+docker-pull-all: ## Pull docker images
 	docker pull ${BASE_IMG} && \
 	docker pull ${IMG} && \
 	docker pull ${SSL_VPN_IMG} && \
@@ -211,7 +225,7 @@ docker-pull-all:
 	docker pull ${KEEPALIVED_IMG}
 
 .PHONY: docker-push-all
-docker-push-all:
+docker-push-all: ## Push docker images
 	docker push ${BASE_IMG} && \
 	docker push ${IMG} && \
 	docker push ${SSL_VPN_IMG} && \
@@ -224,16 +238,17 @@ docker-push-all:
 # - have enable BuildKit, More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 # - be able to push the image for your registry (i.e. if you do not inform a valid value via IMG=<myregistry/image:<tag>> then the export will fail)
 # To properly provided solutions that supports more than one platform you should use this option.
-PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
-.PHONY: docker-buildx
-docker-buildx: test ## Build and push docker image for the manager for cross-platform support
-	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
-	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
-	- docker buildx create --name project-v3-builder
-	docker buildx use project-v3-builder
-	- docker buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
-	- docker buildx rm project-v3-builder
-	rm Dockerfile.cross
+
+# PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
+# .PHONY: docker-buildx
+# docker-buildx: test ## Build and push docker image for the manager for cross-platform support
+# 	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
+# 	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
+# 	- docker buildx create --name project-v3-builder
+# 	docker buildx use project-v3-builder
+# 	- docker buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
+# 	- docker buildx rm project-v3-builder
+# 	rm Dockerfile.cross
 
 ##@ Deployment
 
