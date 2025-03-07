@@ -119,6 +119,11 @@ type VpnGwSpec struct {
 
 	// +kubebuilder:validation:Optional
 	IPSecVpnImage string `json:"ipsecVpnImage"`
+
+	// ipsec use X.509 certificate for authentication or use pre-shared key
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=true
+	IPSecEnablePSK bool `json:"ipsecEnablePSK"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw
