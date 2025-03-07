@@ -1040,7 +1040,7 @@ spec:
                     ipsec vpn secret name, the secret should in the same namespace as the vpn gw
                   type: string
                 ipsecVpnImage:
-                  description: ipsec vpn server image, use Dockerfile.strongswan.ipsec
+                  description: ipsec vpn server image, use Dockerfile.strongswan
                   type: string
                 keepalived:
                   type: string

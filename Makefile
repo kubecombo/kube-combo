@@ -185,7 +185,7 @@ docker-push-ssl-vpn:
 
 .PHONY: docker-build-ipsec-vpn
 docker-build-ipsec-vpn:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan.ipsec -t ${IPSEC_VPN_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} .
 
 .PHONY: docker-push-ipsec-vpn
 docker-push-ipsec-vpn:
