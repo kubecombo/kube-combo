@@ -842,9 +842,10 @@ spec:
                   type: string
                 type: array
               ipsecEnablePSK:
-                default: true
-                description: ipsec use X.509 certificate for authentication or use
-                  pre-shared key
+                default: false
+                description: |-
+                  ipsec use X.509 certificate for authentication or use pre-shared key
+                  X.509 certificate is more secure
                 type: boolean
               ipsecSecret:
                 description: |-
