@@ -1,6 +1,6 @@
 connections {
 {% for conn in connections %}
-    net-net-{{ conn.name }} {
+    gw-gw-{{ conn.name }} {
         local {
             auth = {{ conn.auth }}
             certs = tls.crt
