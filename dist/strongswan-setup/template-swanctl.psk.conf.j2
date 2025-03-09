@@ -4,7 +4,7 @@ connections {
       remote_addrs = {{ conn.remotePublicIp }}
       local {
          auth = {{ conn.auth }}
-         id = {{ conn.localCN }
+         id = {{ conn.localCN }}
       }
       remote {
          auth = {{ conn.auth }}
@@ -31,7 +31,7 @@ connections {
 
 secrets {
    ike-1 {
-      id-1 = {{ conn.localCN }
+      id-1 = {{ conn.localCN }}
       secret = {{ conn.localPSK }}
    }
    ike-2 {
