@@ -121,8 +121,9 @@ type VpnGwSpec struct {
 	IPSecVpnImage string `json:"ipsecVpnImage"`
 
 	// ipsec use X.509 certificate for authentication or use pre-shared key
+	// X.509 certificate is more secure
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=true
+	// +kubebuilder:default:=false
 	IPSecEnablePSK bool `json:"ipsecEnablePSK"`
 }
 
