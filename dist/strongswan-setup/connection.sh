@@ -110,8 +110,8 @@ function refresh-psk() {
 		remoteCN=${conn[7]}
 		remotePublicIp=${conn[8]}
 		remotePrivateCidrs=${conn[9]}
-		localPSK=${conn[10]}
-		remotePSK=${conn[11]}
+		localPSK=$(echo "${conn[10]}" | base64 -d)
+		remotePSK=$(echo "${conn[11]}" | base64 -d)
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
