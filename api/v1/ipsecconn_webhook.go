@@ -53,8 +53,8 @@ func (r *IpsecConn) Default() {
 	if r.Spec.IkeVersion == "" {
 		r.Spec.IkeVersion = "2"
 	}
-	if r.Spec.Proposals == "" {
-		r.Spec.Proposals = "default"
+	if r.Spec.IKEProposals == "" {
+		r.Spec.IKEProposals = "default"
 	}
 }
 

@@ -53,15 +53,13 @@ type IpsecConnSpec struct {
 	// The special value default adds a default proposal of supported algorithms considered safe and is usually a good choice for interoperability. [default]
 
 	// +kubebuilder:validation:Required
-	Proposals string `json:"proposals"`
+	IKEProposals string `json:"ikeProposals"`
 
 	// CN is defined in x509 certificate
-
 	// +kubebuilder:validation:Required
 	LocalCN string `json:"localCN"`
 
 	// current public ipsec vpn gw ip
-
 	// +kubebuilder:validation:Required
 	LocalPublicIP string `json:"localPublicIP"`
 
@@ -72,7 +70,6 @@ type IpsecConnSpec struct {
 	RemoteCN string `json:"remoteCN"`
 
 	// remote public ipsec vpn gw ip
-
 	// +kubebuilder:validation:Required
 	RemotePublicIP string `json:"remotePublicIP"`
 
@@ -85,6 +82,9 @@ type IpsecConnSpec struct {
 
 	// +kubebuilder:validation:Optional
 	RemotePSK string `json:"remotePSK,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	ESPProposals string `json:"espProposals,omitempty"`
 }
 
 // // IpsecConnStatus defines the observed state of IpsecConn

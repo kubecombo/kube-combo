@@ -15,43 +15,36 @@ connections {
          net-net {
             local_ts = {{ conn.localPrivateCidrs }}
             remote_ts = {{ conn.remotePrivateCidrs }}
-
             updown = /usr/local/libexec/ipsec/_updown iptables
             rekey_time = 5400
             rekey_bytes = 500000000
             rekey_packets = 1000000
-            esp_proposals = {{ conn.proposals }}
+            esp_proposals = {{ conn.espProposals }}
          }
       }
       version = {{ conn.ikeVersion }}
       mobike = no
       reauth_time = 10800
-      proposals = {{ conn.proposals }}
+      proposals = {{ conn.ikeProposals }}
    }
 {% endfor %}
 }
-
 secrets {
 {% for conn in connections %}
 {% if loop.first %}
-
    ike-1 {
       id-1 = {{ conn.localCN }}
       secret = {{ conn.localPSK }}
    }
-
    ike-11 {
       id-11 = {{ conn.remoteCN }}
       secret = {{ conn.remotePSK }}
    }
-
 {% else %}
-
    ike-1{{ loop.index }} {
       id-1{{ loop.index }} = {{ conn.remoteCN }}
       secret = {{ conn.remotePSK }}
    }
-
 {% endif %}
 {% endfor %}
 }

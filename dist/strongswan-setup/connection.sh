@@ -103,7 +103,7 @@ function refresh-psk() {
 		name=${conn[0]}
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
-		proposal=${conn[3]}
+		ikeProposal=${conn[3]}
 		localCN=${conn[4]}
 		localPublicIp=${conn[5]}
 		localPrivateCidrs=${conn[6]}
@@ -112,11 +112,12 @@ function refresh-psk() {
 		remotePrivateCidrs=${conn[9]}
 		localPSK=$(echo "${conn[10]}" | base64 -d)
 		remotePSK=$(echo "${conn[11]}" | base64 -d)
+		espProposals=${conn[12]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
-			printf "    proposals: %s\n" "${proposal}"
+			printf "    ikeProposals: %s\n" "${ikeProposal}"
 			printf "    localCN: %s\n" "${localCN}"
 			printf "    localPublicIp: %s\n" "${localPublicIp}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
@@ -125,6 +126,7 @@ function refresh-psk() {
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 			printf "    localPSK: %s\n" "${localPSK}"
 			printf "    remotePSK: %s\n" "${remotePSK}"
+			printf "    espProposals: %s\n" "${espProposals}"
 		} >>"${CONNECTIONS_YAML}"
 	done
 	# 4. generate hosts and swanctl.conf
