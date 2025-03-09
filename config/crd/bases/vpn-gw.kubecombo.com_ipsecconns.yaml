@@ -78,7 +78,7 @@ spec:
                 type: string
               remoteCN:
                 type: string
-              remotePSk:
+              remotePSK:
                 type: string
               remotePrivateCidrs:
                 type: string

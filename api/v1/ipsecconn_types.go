@@ -84,7 +84,7 @@ type IpsecConnSpec struct {
 	LocalPSK string `json:"localPSK,omitempty"`
 
 	// +kubebuilder:validation:Optional
-	RemotePSK string `json:"remotePSk,omitempty"`
+	RemotePSK string `json:"remotePSK,omitempty"`
 }
 
 // // IpsecConnStatus defines the observed state of IpsecConn
