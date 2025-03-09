@@ -16,12 +16,12 @@ while ! ss -tunlp | grep 4500; do
     sleep 5
 done
 
-# copy hosts
-\cp -f copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
-bash "/etc/host-init-strongswan/copy-hosts.sh"
+if [ -d "/etc/host-init-strongswan" ]; then
+    \cp -f copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
+    bash "/etc/host-init-strongswan/copy-hosts.sh"
+fi
 
 /usr/sbin/swanctl --load-all
-
 swanctl --list-conns
 # after ping remote private cidr ip
 # this --list-sas will show the ESTABLISHED
