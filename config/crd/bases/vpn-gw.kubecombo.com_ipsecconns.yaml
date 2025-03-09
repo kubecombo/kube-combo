@@ -63,34 +63,46 @@ spec:
             properties:
               auth:
                 type: string
+              enablePSK:
+                default: false
+                description: |-
+                  ipsec use X.509 certificate for authentication or use pre-shared key
+                  X.509 certificate is more secure
+                type: boolean
               ikeVersion:
                 type: string
               localCN:
                 type: string
+              localPSK:
+                description: psk secret
+                type: string
               localPrivateCidrs:
                 type: string
-              localPublicIp:
+              localPublicIP:
                 type: string
               proposals:
                 type: string
               remoteCN:
                 type: string
+              remotePSk:
+                type: string
               remotePrivateCidrs:
                 type: string
-              remotePublicIp:
+              remotePublicIP:
                 type: string
               vpnGw:
                 type: string
             required:
             - auth
+            - enablePSK
             - ikeVersion
             - localCN
             - localPrivateCidrs
-            - localPublicIp
+            - localPublicIP
             - proposals
             - remoteCN
             - remotePrivateCidrs
-            - remotePublicIp
+            - remotePublicIP
             - vpnGw
             type: object
         type: object
