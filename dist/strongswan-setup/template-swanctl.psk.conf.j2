@@ -1,13 +1,13 @@
 connections {
     gw-gw-{{ conn.name }} {
-      local_addrs  = {{ conn.localOuterIP }}
-      remote_addrs = {{ conn.remoteOuterIP }}
+      local_addrs  = {{ conn.localPublicIp }}
+      remote_addrs = {{ conn.remotePublicIp }}
       local {
-         auth = psk
+         auth = {{ conn.auth }}
          id = {{ conn.localCN }
       }
       remote {
-         auth = psk
+         auth = {{ conn.auth }}
          id = {{ conn.remoteCN }}
       }
       children {

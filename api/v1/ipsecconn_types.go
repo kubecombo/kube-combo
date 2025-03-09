@@ -63,7 +63,7 @@ type IpsecConnSpec struct {
 	// current public ipsec vpn gw ip
 
 	// +kubebuilder:validation:Required
-	LocalPublicIp string `json:"localPublicIp"`
+	LocalPublicIP string `json:"localPublicIP"`
 
 	// +kubebuilder:validation:Required
 	LocalPrivateCidrs string `json:"localPrivateCidrs"`
@@ -74,10 +74,17 @@ type IpsecConnSpec struct {
 	// remote public ipsec vpn gw ip
 
 	// +kubebuilder:validation:Required
-	RemotePublicIp string `json:"remotePublicIp"`
+	RemotePublicIP string `json:"remotePublicIP"`
 
 	// +kubebuilder:validation:Required
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`
+
+	// psk secret
+	// +kubebuilder:validation:Optional
+	LocalPSK string `json:"localPSK,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	RemotePSK string `json:"remotePSk,omitempty"`
 }
 
 // // IpsecConnStatus defines the observed state of IpsecConn
