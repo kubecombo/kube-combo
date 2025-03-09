@@ -15,6 +15,8 @@ connections {
          net-net {
             local_ts = {{ conn.localPrivateCidrs }}
             remote_ts = {{ conn.remotePrivateCidrs }}
+            dpd_action = restart
+            start_action = start
             updown = /usr/lib/ipsec/_updown iptables
             rekey_time = 5400
             rekey_bytes = 500000000

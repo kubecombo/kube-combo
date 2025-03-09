@@ -73,7 +73,7 @@ spec:
                 description: CN is defined in x509 certificate
                 type: string
               localEIP:
-                description: current public ipsec vpn gw ip
+                description: current public ipsec vpn gw external ip
                 type: string
               localPSK:
                 description: psk secret
@@ -83,7 +83,7 @@ spec:
               remoteCN:
                 type: string
               remoteEIP:
-                description: remote public ipsec vpn gw ip
+                description: remote public ipsec vpn gw external ip
                 type: string
               remotePSK:
                 type: string
