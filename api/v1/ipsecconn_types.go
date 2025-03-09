@@ -79,6 +79,12 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`
 
+	// ipsec use X.509 certificate for authentication or use pre-shared key
+	// X.509 certificate is more secure
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
+	EnablePSK bool `json:"enablePSK"`
+
 	// psk secret
 	// +kubebuilder:validation:Optional
 	LocalPSK string `json:"localPSK,omitempty"`

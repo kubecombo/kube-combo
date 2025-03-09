@@ -1258,32 +1258,38 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		}
 		// format ipsec connections
 		connections := ""
+		ipsecEnablePSK := false
 		for _, v := range *res {
+			if v.Spec.EnablePSK {
+				ipsecEnablePSK = true
+			}
 			if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
 				r.Log.Error(err, "ignore invalid ipsec connection")
 				continue
 			}
 			if v.Spec.Auth == "" || v.Spec.IkeVersion == "" || v.Spec.Proposals == "" ||
-				v.Spec.LocalCN == "" || v.Spec.LocalPublicIp == "" || v.Spec.LocalPrivateCidrs == "" ||
-				v.Spec.RemoteCN == "" || v.Spec.RemotePublicIp == "" || v.Spec.RemotePrivateCidrs == "" {
+				v.Spec.LocalCN == "" || v.Spec.LocalPublicIP == "" || v.Spec.LocalPrivateCidrs == "" ||
+				v.Spec.RemoteCN == "" || v.Spec.RemotePublicIP == "" || v.Spec.RemotePrivateCidrs == "" {
 				r.Log.Error(err, "ignore invalid ipsec connection")
 			}
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s,", v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.Proposals,
-				v.Spec.LocalCN, v.Spec.LocalPublicIp, v.Spec.LocalPrivateCidrs,
-				v.Spec.RemoteCN, v.Spec.RemotePublicIp, v.Spec.RemotePrivateCidrs)
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s,", v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.Proposals,
+				v.Spec.LocalCN, v.Spec.LocalPublicIP, v.Spec.LocalPrivateCidrs,
+				v.Spec.RemoteCN, v.Spec.RemotePublicIP, v.Spec.RemotePrivateCidrs,
+				v.Spec.LocalPSK, v.Spec.RemotePSK)
 		}
 		if connections == "" {
 			r.Log.Info("no ipsec connections to refresh")
 			return SyncStateSuccess, nil
 		}
+		// exec pod to run cmd to refresh ipsec connections
+		cmd := fmt.Sprintf(IPSecRefreshConnectionX509Template, connections)
+		if ipsecEnablePSK {
+			cmd = fmt.Sprintf(IPSecRefreshConnectionPSKTemplate, connections)
+		}
+
 		// get pods
 		podNames, podNotRunErr := r.getVpnGwPodNames(context.Background(), req.NamespacedName, gw)
 		for _, podName := range podNames {
-			// exec pod to run cmd to refresh ipsec connections
-			cmd := fmt.Sprintf(IPSecRefreshConnectionX509Template, connections)
-			if gw.Spec.IPSecEnablePSK {
-				cmd = fmt.Sprintf(IPSecRefreshConnectionPSKTemplate, connections)
-			}
 			r.Log.Info("refresh ipsec connections start", "pod", podName, "cmd", cmd)
 			// refresh ipsec connections by exec pod
 			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, gw.Namespace, podName, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)

@@ -32,10 +32,10 @@ connections {
 secrets {
    ike-1 {
       id-1 = {{ conn.localCN }
-      secret = {{ conn.localSecret }}
+      secret = {{ conn.localPSK }}
    }
    ike-2 {
       id-2 = {{ conn.remoteCN }}
-      secret = {{ conn.remoteSecret }}
+      secret = {{ conn.remotePSK }}
    }
 }

@@ -110,6 +110,8 @@ function refresh-psk() {
 		remoteCN=${conn[7]}
 		remotePublicIp=${conn[8]}
 		remotePrivateCidrs=${conn[9]}
+		localPSK=${conn[10]}
+		remotePSK=${conn[11]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
@@ -121,6 +123,8 @@ function refresh-psk() {
 			printf "    remoteCN: %s\n" "${remoteCN}"
 			printf "    remotePublicIp: %s\n" "${remotePublicIp}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
+			printf "    localPSK: %s\n" "${localPSK}"
+			printf "    remotePSK: %s\n" "${remotePSK}"
 		} >>"${CONNECTIONS_YAML}"
 	done
 	# 4. generate hosts and swanctl.conf
