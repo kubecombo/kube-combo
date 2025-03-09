@@ -84,8 +84,10 @@ const (
 	IPSecVpnRemotePortKey = "ipsec-remote"
 
 	// statefulset ipsec vpn pod start up command
-	IPSecVpnStsCMD                 = "/usr/sbin/charon-systemd"
-	IPSecConnectionRefreshTemplate = "/connection.sh refresh %s"
+	IPSecVpnStsCMD = "/usr/sbin/charon-systemd"
+
+	IPSecRefreshConnectionX509Template = "/connection.sh refresh-x509 %s"
+	IPSecRefreshConnectionPSKTemplate  = "/connection.sh refresh-psk %s"
 
 	// cache path from ds ipsec vpn to k8s static pod ipsecvpn
 	IPSecVpnHostCachePath = "/etc/host-init-strongswan"
@@ -1278,7 +1280,10 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		podNames, podNotRunErr := r.getVpnGwPodNames(context.Background(), req.NamespacedName, gw)
 		for _, podName := range podNames {
 			// exec pod to run cmd to refresh ipsec connections
-			cmd := fmt.Sprintf(IPSecConnectionRefreshTemplate, connections)
+			cmd := fmt.Sprintf(IPSecRefreshConnectionX509Template, connections)
+			if gw.Spec.IPSecEnablePSK {
+				cmd = fmt.Sprintf(IPSecRefreshConnectionPSKTemplate, connections)
+			}
 			r.Log.Info("refresh ipsec connections start", "pod", podName, "cmd", cmd)
 			// refresh ipsec connections by exec pod
 			stdOutput, errOutput, err := ExecuteCommandInContainer(r.KubeClient, r.RestConfig, gw.Namespace, podName, IPSecVpnServer, []string{"/bin/bash", "-c", cmd}...)
