@@ -59,9 +59,9 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	LocalCN string `json:"localCN"`
 
-	// current public ipsec vpn gw ip
+	// current public ipsec vpn gw external ip
 	// +kubebuilder:validation:Required
-	LocalPublicIP string `json:"localPublicIP"`
+	LocalEIP string `json:"localEIP"`
 
 	// +kubebuilder:validation:Required
 	LocalPrivateCidrs string `json:"localPrivateCidrs"`
@@ -69,9 +69,9 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	RemoteCN string `json:"remoteCN"`
 
-	// remote public ipsec vpn gw ip
+	// remote public ipsec vpn gw external ip
 	// +kubebuilder:validation:Required
-	RemotePublicIP string `json:"remotePublicIP"`
+	RemoteEIP string `json:"remoteEIP"`
 
 	// +kubebuilder:validation:Required
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`

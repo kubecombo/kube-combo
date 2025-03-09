@@ -1210,16 +1210,16 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 			return "", SyncStateError, err
 		}
 		if v.Spec.Auth == "" || v.Spec.IkeVersion == "" || v.Spec.IKEProposals == "" ||
-			v.Spec.LocalCN == "" || v.Spec.LocalPublicIP == "" || v.Spec.LocalPrivateCidrs == "" ||
-			v.Spec.RemoteCN == "" || v.Spec.RemotePublicIP == "" || v.Spec.RemotePrivateCidrs == "" {
+			v.Spec.LocalCN == "" || v.Spec.LocalEIP == "" || v.Spec.LocalPrivateCidrs == "" ||
+			v.Spec.RemoteCN == "" || v.Spec.RemoteEIP == "" || v.Spec.RemotePrivateCidrs == "" {
 			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth, ikeVersion, proposals, localCN, localPublicIP, localPrivateCidrs, remoteCN, remotePublicIP, remotePrivateCidrs", gw.Name, v.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
 		connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s %s,",
 			v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
-			v.Spec.LocalCN, v.Spec.LocalPublicIP, v.Spec.LocalPrivateCidrs,
-			v.Spec.RemoteCN, v.Spec.RemotePublicIP, v.Spec.RemotePrivateCidrs,
+			v.Spec.LocalCN, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
+			v.Spec.RemoteCN, v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs,
 			v.Spec.LocalPSK, v.Spec.RemotePSK, v.Spec.ESPProposals)
 	}
 	return connections, SyncStateSuccess, nil

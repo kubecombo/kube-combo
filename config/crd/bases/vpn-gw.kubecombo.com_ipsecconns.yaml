@@ -72,22 +72,22 @@ spec:
               localCN:
                 description: CN is defined in x509 certificate
                 type: string
+              localEIP:
+                description: current public ipsec vpn gw ip
+                type: string
               localPSK:
                 description: psk secret
                 type: string
               localPrivateCidrs:
                 type: string
-              localPublicIP:
-                description: current public ipsec vpn gw ip
-                type: string
               remoteCN:
+                type: string
+              remoteEIP:
+                description: remote public ipsec vpn gw ip
                 type: string
               remotePSK:
                 type: string
               remotePrivateCidrs:
-                type: string
-              remotePublicIP:
-                description: remote public ipsec vpn gw ip
                 type: string
               vpnGw:
                 type: string
@@ -96,11 +96,11 @@ spec:
             - ikeProposals
             - ikeVersion
             - localCN
+            - localEIP
             - localPrivateCidrs
-            - localPublicIP
             - remoteCN
+            - remoteEIP
             - remotePrivateCidrs
-            - remotePublicIP
             - vpnGw
             type: object
         type: object
