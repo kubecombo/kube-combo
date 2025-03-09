@@ -1198,8 +1198,8 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
-			if v.Spec.ESPProposals != "" {
-				err := fmt.Errorf("vpn gw %s ipsec connection %s should not have esp proposals", gw.Name, v.Name)
+			if v.Spec.ESPProposals == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection should have esp proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
