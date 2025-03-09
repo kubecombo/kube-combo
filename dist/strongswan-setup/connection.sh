@@ -15,7 +15,6 @@ CONF=/etc/swanctl/swanctl.conf
 CONNECTIONS_YAML=connections.yaml
 IPSEC_HOSTS=/etc/hosts.ipsec
 TEMPLATE_HOSTS=template-hosts.j2
-TEMPLATE_SWANCTL_CONF=template-swanctl.conf.j2
 TEMPLATE_CHECK=template-check.j2
 CHECK_SCRIPT=check
 
@@ -24,21 +23,22 @@ function init() {
 	if [ ! -f hosts.j2 ]; then
 		cat "${TEMPLATE_HOSTS}" >>hosts.j2
 	fi
-	# prepare swanctl.conf.j2
-	if [ ! -f swanctl.conf.j2 ]; then
-		cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
-	fi
-
-	# configure ca
-	cp /etc/ipsec/certs/ca.crt /etc/swanctl/x509ca
-	cp /etc/ipsec/certs/tls.key /etc/swanctl/private
-	cp /etc/ipsec/certs/tls.crt /etc/swanctl/x509
 }
 
 function refresh-x509() {
 	# 1. init
 	init
-	# 2. refresh connections
+
+	# 2. prepare swanctl.conf.j2
+	TEMPLATE_SWANCTL_CONF=template-swanctl.x509.conf.j2
+	cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
+
+	# configure ca
+	cp /etc/ipsec/certs/ca.crt /etc/swanctl/x509ca
+	cp /etc/ipsec/certs/tls.key /etc/swanctl/private
+	cp /etc/ipsec/certs/tls.crt /etc/swanctl/x509
+
+	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
 	IFS=',' read -r -a array <<<"${connections}"
@@ -68,7 +68,7 @@ function refresh-x509() {
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 		} >>"${CONNECTIONS_YAML}"
 	done
-	# 3. generate hosts and swanctl.conf
+	# 4. generate hosts and swanctl.conf
 	# use j2 to generate hosts and swanctl.conf
 	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${IPSEC_HOSTS}"
 	if [ ! -e "/etc/hosts.ori" ]; then
@@ -88,7 +88,12 @@ function refresh-x509() {
 function refresh-psk() {
 	# 1. init
 	init
-	# 2. refresh connections
+
+	# 2. prepare swanctl.conf.j2
+	TEMPLATE_SWANCTL_CONF=template-swanctl.psk.conf.j2
+	cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
+
+	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
 	IFS=',' read -r -a array <<<"${connections}"
@@ -118,7 +123,7 @@ function refresh-psk() {
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 		} >>"${CONNECTIONS_YAML}"
 	done
-	# 3. generate hosts and swanctl.conf
+	# 4. generate hosts and swanctl.conf
 	# use j2 to generate hosts and swanctl.conf
 	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${IPSEC_HOSTS}"
 	if [ ! -e "/etc/hosts.ori" ]; then
