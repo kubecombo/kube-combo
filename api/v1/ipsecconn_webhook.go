@@ -153,19 +153,6 @@ func (r *IpsecConn) validateIpsecConn() error {
 		allErrs = append(allErrs, e)
 	}
 
-	if r.Spec.EnablePSK {
-		if r.Spec.LocalPSK == "" {
-			err := errors.New("ipsecConn local psk is required")
-			e := field.Invalid(field.NewPath("spec").Child("localPSK"), r.Spec.LocalPSK, err.Error())
-			allErrs = append(allErrs, e)
-		}
-		if r.Spec.RemotePSK == "" {
-			err := errors.New("ipsecConn remote psk is required")
-			e := field.Invalid(field.NewPath("spec").Child("remotePSk"), r.Spec.RemotePSK, err.Error())
-			allErrs = append(allErrs, e)
-		}
-	}
-
 	if len(allErrs) == 0 {
 		return nil
 	}

@@ -63,12 +63,6 @@ spec:
             properties:
               auth:
                 type: string
-              enablePSK:
-                default: false
-                description: |-
-                  ipsec use X.509 certificate for authentication or use pre-shared key
-                  X.509 certificate is more secure
-                type: boolean
               ikeVersion:
                 type: string
               localCN:
@@ -94,7 +88,6 @@ spec:
                 type: string
             required:
             - auth
-            - enablePSK
             - ikeVersion
             - localCN
             - localPrivateCidrs

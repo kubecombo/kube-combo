@@ -633,14 +633,6 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 		ipsecContainer := corev1.Container{
 			Name:  IPSecVpnServer,
 			Image: gw.Spec.IPSecVpnImage,
-			VolumeMounts: []corev1.VolumeMount{
-				// mount x.509 secret
-				{
-					Name:      gw.Spec.IPSecSecret,
-					MountPath: r.IPSecVpnSecretPath,
-					ReadOnly:  true,
-				},
-			},
 			Resources: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    resource.MustParse(gw.Spec.CPU),
@@ -666,17 +658,26 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 				AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 			},
 		}
-		ipsecSecretVolume := corev1.Volume{
-			// define secrect volume
-			Name: gw.Spec.IPSecSecret,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IPSecSecret,
-					Optional:   &[]bool{true}[0],
+		if !gw.Spec.IPSecEnablePSK {
+			// mount x.509 secret
+			ipsecSecretVolumeMount := corev1.VolumeMount{
+				Name:      gw.Spec.IPSecSecret,
+				MountPath: r.IPSecVpnSecretPath,
+				ReadOnly:  true,
+			}
+			ipsecContainer.VolumeMounts = append(ipsecContainer.VolumeMounts, ipsecSecretVolumeMount)
+			ipsecSecretVolume := corev1.Volume{
+				// define secrect volume
+				Name: gw.Spec.IPSecSecret,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: gw.Spec.IPSecSecret,
+						Optional:   &[]bool{true}[0],
+					},
 				},
-			},
+			}
+			volumes = append(volumes, ipsecSecretVolume)
 		}
-		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
 	containers = append(containers, keepalivedContainer)
@@ -1188,6 +1189,37 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 	return nil
 }
 
+func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1.IpsecConn) (string, SyncState, error) {
+	connections := ""
+	for _, v := range *conns {
+		if gw.Spec.IPSecEnablePSK {
+			if v.Spec.LocalPSK == "" || v.Spec.RemotePSK == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection should have psk", gw.Name)
+				r.Log.Error(err, "invalid ipsec connection")
+				return "", SyncStateError, err
+			}
+		}
+		if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s not belong to vpn gw", gw.Name, v.Name)
+			r.Log.Error(err, "ignore invalid ipsec connection")
+			return "", SyncStateError, err
+		}
+		if v.Spec.Auth == "" || v.Spec.IkeVersion == "" || v.Spec.Proposals == "" ||
+			v.Spec.LocalCN == "" || v.Spec.LocalPublicIP == "" || v.Spec.LocalPrivateCidrs == "" ||
+			v.Spec.RemoteCN == "" || v.Spec.RemotePublicIP == "" || v.Spec.RemotePrivateCidrs == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth, ikeVersion, proposals, localCN, localPublicIP, localPrivateCidrs, remoteCN, remotePublicIP, remotePrivateCidrs", gw.Name, v.Name)
+			r.Log.Error(err, "invalid ipsec connection")
+			return "", SyncStateError, err
+		}
+		connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s,",
+			v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.Proposals,
+			v.Spec.LocalCN, v.Spec.LocalPublicIP, v.Spec.LocalPrivateCidrs,
+			v.Spec.RemoteCN, v.Spec.RemotePublicIP, v.Spec.RemotePrivateCidrs,
+			v.Spec.LocalPSK, v.Spec.RemotePSK)
+	}
+	return connections, SyncStateSuccess, nil
+}
+
 func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.Request) (SyncState, error) {
 	// create vpn gw statefulset
 	namespacedName := req.NamespacedName.String()
@@ -1256,37 +1288,23 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 			r.Log.Error(err, "failed to list vpn gw ipsec connections")
 			return SyncStateError, err
 		}
-		// format ipsec connections
-		connections := ""
-		ipsecEnablePSK := false
-		for _, v := range *res {
-			if v.Spec.EnablePSK {
-				ipsecEnablePSK = true
-			}
-			if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
-				r.Log.Error(err, "ignore invalid ipsec connection")
-				continue
-			}
-			if v.Spec.Auth == "" || v.Spec.IkeVersion == "" || v.Spec.Proposals == "" ||
-				v.Spec.LocalCN == "" || v.Spec.LocalPublicIP == "" || v.Spec.LocalPrivateCidrs == "" ||
-				v.Spec.RemoteCN == "" || v.Spec.RemotePublicIP == "" || v.Spec.RemotePrivateCidrs == "" {
-				r.Log.Error(err, "ignore invalid ipsec connection")
-			}
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s,", v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.Proposals,
-				v.Spec.LocalCN, v.Spec.LocalPublicIP, v.Spec.LocalPrivateCidrs,
-				v.Spec.RemoteCN, v.Spec.RemotePublicIP, v.Spec.RemotePrivateCidrs,
-				v.Spec.LocalPSK, v.Spec.RemotePSK)
-		}
-		if connections == "" {
+		if len(*res) == 0 {
 			r.Log.Info("no ipsec connections to refresh")
 			return SyncStateSuccess, nil
 		}
-		// exec pod to run cmd to refresh ipsec connections
-		cmd := fmt.Sprintf(IPSecRefreshConnectionX509Template, connections)
-		if ipsecEnablePSK {
-			cmd = fmt.Sprintf(IPSecRefreshConnectionPSKTemplate, connections)
+
+		// format ipsec connections
+		connections, state, err := r.validateIPSecConns(gw, res)
+		if err != nil {
+			r.Log.Error(err, "failed to validate ipsec connections")
+			return state, err
 		}
 
+		// exec pod to run cmd to refresh ipsec connections
+		cmd := fmt.Sprintf(IPSecRefreshConnectionX509Template, connections)
+		if gw.Spec.IPSecEnablePSK {
+			cmd = fmt.Sprintf(IPSecRefreshConnectionPSKTemplate, connections)
+		}
 		// get pods
 		podNames, podNotRunErr := r.getVpnGwPodNames(context.Background(), req.NamespacedName, gw)
 		for _, podName := range podNames {

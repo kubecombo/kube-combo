@@ -841,6 +841,12 @@ spec:
                 items:
                   type: string
                 type: array
+              ipsecEnablePSK:
+                default: false
+                description: |-
+                  ipsec use X.509 certificate for authentication or use pre-shared key
+                  X.509 certificate is more secure
+                type: boolean
               ipsecSecret:
                 description: |-
                   ipsec use strongswan server
@@ -929,6 +935,7 @@ spec:
             - cpu
             - enableIpsecVpn
             - enableSslVpn
+            - ipsecEnablePSK
             - memory
             - replicas
             - workloadType
