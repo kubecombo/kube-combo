@@ -1,4 +1,5 @@
 connections {
+{% for conn in connections %}
     gw-gw-{{ conn.name }} {
       local_addrs  = {{ conn.localPublicIp }}
       remote_addrs = {{ conn.remotePublicIp }}
@@ -27,6 +28,7 @@ connections {
       reauth_time = 10800
       proposals = {{ conn.proposals }}
    }
+{% endfor %}
 }
 
 secrets {
