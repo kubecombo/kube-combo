@@ -38,6 +38,15 @@ jobs:
           VERSION=$(make print-version)
           make docker-build-base-${{ matrix.arch }}
           docker tag icoy/kube-combo-base:v$VERSION icoy/kube-combo-base:v$VERSION-${{ matrix.arch }}
+          docker save icoy/kube-combo-base:v$VERSION icoy/kube-combo-base:v$VERSION-${{ matrix.arch }} -o image-${{ matrix.arch }}.tar
+
+      - name: Upload image to artifact
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.arch }}-${{ matrix.branch }}
+          path: image-${{ matrix.arch }}.tar
+          retention-days: 7
   push:
     strategy:
       fail-fast: false
@@ -53,6 +62,24 @@ jobs:
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
         with:
           ref: ${{ matrix.branch }}
+
+      - name: Download image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-amd64-${{ matrix.branch }}
+
+      - name: Download image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-arm64-${{ matrix.branch }}
+
+      - name: Load Image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        run: |
+          docker load --input image-amd64.tar
+          docker load --input image-arm64.tar
 
       - name: Push
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
