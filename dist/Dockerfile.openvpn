@@ -1,4 +1,6 @@
-FROM icoy/kube-combo-base:v0.0.7
+# syntax = docker/dockerfile:experimental
+ARG BASE_TAG
+FROM icoy/kube-combo-base:$BASE_TAG
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
