@@ -7,12 +7,13 @@ set -eux
 # 4. start ipsecvpn server
 
 CACHE_HOME=${CACHE_HOME:-/etc/host-init-strongswan}
-
-# 3. copy hosts
-\cp "${CACHE_HOME}/hosts.ipsec" "/etc/"
 if [ ! -e "/etc/hosts.ori" ]; then
     # backup hosts
     cp /etc/hosts /etc/hosts.ori
 fi
-cat /etc/hosts.ori >/etc/hosts
-cat /etc/hosts.ipsec >>/etc/hosts
+# 3. copy hosts
+if [ -d "${CACHE_HOME}" ]; then
+    \cp "${CACHE_HOME}/hosts.ipsec" "/etc/"
+    cat /etc/hosts.ori >/etc/hosts
+    cat /etc/hosts.ipsec >>/etc/hosts
+fi

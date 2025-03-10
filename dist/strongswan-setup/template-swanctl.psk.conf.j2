@@ -1,0 +1,52 @@
+connections {
+{% for conn in connections %}
+    gw-gw-{{ conn.name }} {
+      local_addrs  = {{ conn.localPublicIp }}
+      remote_addrs = {{ conn.remotePublicIp }}
+      local {
+         auth = {{ conn.auth }}
+         id = {{ conn.localCN }}
+      }
+      remote {
+         auth = {{ conn.auth }}
+         id = {{ conn.remoteCN }}
+      }
+      children {
+         net-net {
+            local_ts = {{ conn.localPrivateCidrs }}
+            remote_ts = {{ conn.remotePrivateCidrs }}
+            dpd_action = restart
+            start_action = start
+            updown = /usr/lib/ipsec/_updown iptables
+            rekey_time = 5400
+            rekey_bytes = 500000000
+            rekey_packets = 1000000
+            esp_proposals = {{ conn.espProposals }}
+         }
+      }
+      version = {{ conn.ikeVersion }}
+      mobike = no
+      reauth_time = 10800
+      proposals = {{ conn.ikeProposals }}
+   }
+{% endfor %}
+}
+secrets {
+{% for conn in connections %}
+{% if loop.first %}
+   ike-1 {
+      id-1 = {{ conn.localCN }}
+      secret = {{ conn.localPSK }}
+   }
+   ike-11 {
+      id-11 = {{ conn.remoteCN }}
+      secret = {{ conn.remotePSK }}
+   }
+{% else %}
+   ike-1{{ loop.index }} {
+      id-1{{ loop.index }} = {{ conn.remoteCN }}
+      secret = {{ conn.remotePSK }}
+   }
+{% endif %}
+{% endfor %}
+}

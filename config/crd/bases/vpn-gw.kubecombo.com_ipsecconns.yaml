@@ -63,34 +63,44 @@ spec:
             properties:
               auth:
                 type: string
+              espProposals:
+                type: string
+              ikeProposals:
+                type: string
               ikeVersion:
                 type: string
               localCN:
+                description: CN is defined in x509 certificate
+                type: string
+              localEIP:
+                description: current public ipsec vpn gw external ip
+                type: string
+              localPSK:
+                description: psk secret
                 type: string
               localPrivateCidrs:
                 type: string
-              localPublicIp:
-                type: string
-              proposals:
-                type: string
               remoteCN:
                 type: string
-              remotePrivateCidrs:
+              remoteEIP:
+                description: remote public ipsec vpn gw external ip
                 type: string
-              remotePublicIp:
+              remotePSK:
+                type: string
+              remotePrivateCidrs:
                 type: string
               vpnGw:
                 type: string
             required:
             - auth
+            - ikeProposals
             - ikeVersion
             - localCN
+            - localEIP
             - localPrivateCidrs
-            - localPublicIp
-            - proposals
             - remoteCN
+            - remoteEIP
             - remotePrivateCidrs
-            - remotePublicIp
             - vpnGw
             type: object
         type: object
