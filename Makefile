@@ -191,11 +191,11 @@ docker-push-ssl-vpn: ## Push docker ssl-vpn image
 
 .PHONY: docker-build-ipsec-vpn-amd64
 docker-build-ipsec-vpn-amd64: ## Build docker ipsec-vpn image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-build-ipsec-vpn-arm64
 docker-build-ipsec-vpn-arm64: ## Build docker ipsec-vpn image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.strongSwan -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-ipsec-vpn
 docker-push-ipsec-vpn: ## Push docker ipsec-vpn image
@@ -203,11 +203,11 @@ docker-push-ipsec-vpn: ## Push docker ipsec-vpn image
 
 .PHONY: docker-build-keepalived-amd64
 docker-build-keepalived-amd64: ## Build docker keepalived image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-build-keepalived-arm64
 docker-build-keepalived-arm64: ## Build docker keepalived image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.keepalived -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-keepalived
 docker-push-keepalived: ## Push docker keepalived image
