@@ -11,11 +11,13 @@ RUN apt-get update && apt-get install -y \
     libstrongswan \
     libstrongswan-extra-plugins \
     libstrongswan-standard-plugins \
-    && rm -f /etc/ipsec.conf \
-    && rm -f /etc/swanctl/swanctl.conf \
     && apt-get clean \
     && apt-get autoremove \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /etc/ipsec.conf \
+    && rm -f /etc/swanctl/swanctl.conf \
+    && rm -f /etc/swanctl/conf.d/* \
+    && cp -r /etc/swanctl /etc/swanctl-bak
 
 EXPOSE 500/udp 4500/udp
 
