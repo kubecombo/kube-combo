@@ -100,7 +100,7 @@ jobs:
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
         run: |
           VERSION=$(make print-version)
-          make docker-build-openvpn-${{ matrix.arch }}
+          make docker-build-ssl-vpn-${{ matrix.arch }}
           docker tag icoy/kube-combo-openvpn:v$VERSION icoy/kube-combo-openvpn:v$VERSION-${{ matrix.arch }}
           docker save icoy/kube-combo-openvpn:v$VERSION icoy/kube-combo-openvpn:v$VERSION-${{ matrix.arch }} -o image-openvpn-${{ matrix.arch }}.tar
 
