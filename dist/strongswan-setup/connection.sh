@@ -48,7 +48,7 @@ function refresh-x509() {
 		name=${conn[0]}
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
-		proposal=${conn[3]}
+		ikeProposals=${conn[3]}
 		localCN=${conn[4]}
 		localPublicIp=${conn[5]}
 		localPrivateCidrs=${conn[6]}
@@ -59,7 +59,7 @@ function refresh-x509() {
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
-			printf "    proposals: %s\n" "${proposal}"
+			printf "    ikeProposals: %s\n" "${ikeProposals}"
 			printf "    localCN: %s\n" "${localCN}"
 			printf "    localPublicIp: %s\n" "${localPublicIp}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
@@ -103,7 +103,7 @@ function refresh-psk() {
 		name=${conn[0]}
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
-		ikeProposal=${conn[3]}
+		ikeProposals=${conn[3]}
 		localCN=${conn[4]}
 		localPublicIp=${conn[5]}
 		localPrivateCidrs=${conn[6]}
@@ -117,7 +117,7 @@ function refresh-psk() {
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
-			printf "    ikeProposals: %s\n" "${ikeProposal}"
+			printf "    ikeProposals: %s\n" "${ikeProposals}"
 			printf "    localCN: %s\n" "${localCN}"
 			printf "    localPublicIp: %s\n" "${localPublicIp}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"

@@ -33,6 +33,9 @@ done
 # clean up old ipsecvpn certs and conf cache to use new in /etc/host-init-strongswan
 rm -fr "/etc/swanctl/*"
 
+# swanctl --load-all will check all files in /etc/swanctl
+\cp -r /etc/swanctl-bak/* "${CONF_HOME}/"
+
 # certs and conf
 \cp -r "${CACHE_HOME}/private" "${CONF_HOME}/"
 \cp -r "${CACHE_HOME}/x509" "${CONF_HOME}/"

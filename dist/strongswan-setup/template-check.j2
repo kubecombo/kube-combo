@@ -17,8 +17,10 @@ while ! ss -tunlp | grep 4500; do
 done
 
 if [ -d "/etc/host-init-strongswan" ]; then
-    \cp -f copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
-    bash "/etc/host-init-strongswan/copy-hosts.sh"
+    if [ ! -f "/etc/host-init-strongswan/copy-hosts.sh" ]; then
+        \cp -f /copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
+        bash "/etc/host-init-strongswan/copy-hosts.sh"
+    fi
 fi
 
 /usr/sbin/swanctl --load-all
