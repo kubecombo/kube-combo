@@ -116,7 +116,7 @@ jobs:
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
         run: |
           VERSION=$(make print-version)
-          make docker-build-strongswan-${{ matrix.arch }}
+          make docker-build-ipsec-vpn-${{ matrix.arch }}
           docker tag icoy/kube-combo-strongswan:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }}
           docker save icoy/kube-combo-strongswan:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }} -o image-strongswan-${{ matrix.arch }}.tar
 
