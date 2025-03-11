@@ -654,7 +654,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 			},
 		}
 		if !gw.Spec.IPSecEnablePSK {
-			// mount x.509 secret
+			// psk or x.509 secret
 			ipsecSecretVolumeMount := corev1.VolumeMount{
 				Name:      gw.Spec.IPSecSecret,
 				MountPath: r.IPSecVpnSecretPath,
@@ -932,11 +932,6 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					MountPath: IPSecVpnHostCachePath,
 					ReadOnly:  false,
 				},
-				{
-					Name:      gw.Spec.IPSecSecret,
-					MountPath: r.IPSecVpnSecretPath,
-					ReadOnly:  true,
-				},
 			},
 			Resources: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -974,17 +969,26 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 			},
 		}
 		volumes = append(volumes, ipsecConfHostVolume)
-		ipsecSecretVolume := corev1.Volume{
-			// define secrect volume
-			Name: gw.Spec.IPSecSecret,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: gw.Spec.IPSecSecret,
-					Optional:   &[]bool{true}[0],
+		if !gw.Spec.IPSecEnablePSK {
+			// psk or x.509 secret
+			ipsecSecretVolumeMount := corev1.VolumeMount{
+				Name:      gw.Spec.IPSecSecret,
+				MountPath: r.IPSecVpnSecretPath,
+				ReadOnly:  true,
+			}
+			ipsecContainer.VolumeMounts = append(ipsecContainer.VolumeMounts, ipsecSecretVolumeMount)
+			ipsecSecretVolume := corev1.Volume{
+				// define secrect volume
+				Name: gw.Spec.IPSecSecret,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: gw.Spec.IPSecSecret,
+						Optional:   &[]bool{true}[0],
+					},
 				},
-			},
+			}
+			volumes = append(volumes, ipsecSecretVolume)
 		}
-		volumes = append(volumes, ipsecSecretVolume)
 		containers = append(containers, ipsecContainer)
 	}
 	k8sManifestsVolume := corev1.Volume{
