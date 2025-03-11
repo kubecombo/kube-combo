@@ -1,4 +1,4 @@
-name: Build arm64 Image
+name: Build arm64
 on:
   pull_request:
     branches:
