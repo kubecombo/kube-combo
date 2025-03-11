@@ -32,3 +32,6 @@ swanctl --list-conns
 
 ip xfrm state
 ip xfrm policy
+
+# if ip xfrm state |policy is empty, then run this command to debug
+## swanctl --initiate --child net-net  gw-gw-mars-moon
