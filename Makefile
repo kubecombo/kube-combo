@@ -214,10 +214,10 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived ## Build all images for amd64.
+docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 ## Build all images for amd64.
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm docker-build-ssl-vpn-arm docker-build-ipsec-vpn-arm docker-build-keepalived-arm ## Build all images for arm64.
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 ## Build all images for arm64.
 
 .PHONY: docker-pull-all
 docker-pull-all: ## Pull docker images
