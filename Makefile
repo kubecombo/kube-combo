@@ -154,11 +154,11 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build-amd64
-docker-build-amd64: test build ## Build docker amd64 image with the manager.
+docker-build-amd64: test build-amd64 ## Build docker amd64 image with the manager.
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-arm64
-docker-build-arm64: test build-arm ## Build docker arm64 image with the manager.
+docker-build-arm64: test build-arm64 ## Build docker arm64 image with the manager.
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
@@ -214,10 +214,10 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived ## Build all images for amd64.
+docker-build-all-amd64: docker-build-amd64 docker-build-base docker-build-ssl-vpn docker-build-ipsec-vpn docker-build-keepalived ## Build all images for amd64.
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm docker-build-base-arm docker-build-ssl-vpn-arm docker-build-ipsec-vpn-arm docker-build-keepalived-arm ## Build all images for arm64.
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm docker-build-ssl-vpn-arm docker-build-ipsec-vpn-arm docker-build-keepalived-arm ## Build all images for arm64.
 
 .PHONY: docker-pull-all
 docker-pull-all: ## Pull docker images
