@@ -23,7 +23,7 @@ jobs:
         run: |
           TAG=$(make print-version)
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker pull icoy/kube-combo-controller:$TAG-amd64
-          docker pull icoy/kube-combo-controller:$TAG-arm64
+          docker pull icoy/kube-combo-controller:v$TAG-amd64
+          docker pull icoy/kube-combo-controller:v$TAG-arm64
           docker manifest create icoy/kube-combo-controller:v$TAG icoy/kube-combo-controller:v$TAG-amd64 icoy/kube-combo-controller:v$TAG-arm64
           docker manifest push icoy/kube-combo-controller:v$TAG
