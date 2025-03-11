@@ -177,11 +177,6 @@ func (r *VpnGw) validateVpnGw() error {
 	}
 
 	if r.Spec.EnableIPSecVpn {
-		if r.Spec.IPSecSecret == "" {
-			err := errors.New("ipsec vpn secret is required")
-			e := field.Invalid(field.NewPath("spec").Child("ipsecSecret"), r.Spec.IPSecSecret, err.Error())
-			allErrs = append(allErrs, e)
-		}
 		if r.Spec.IPSecVpnImage == "" {
 			err := errors.New("ipsec vpn image is required")
 			e := field.Invalid(field.NewPath("spec").Child("ipsecVpnImage"), r.Spec.IPSecVpnImage, err.Error())

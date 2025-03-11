@@ -287,11 +287,6 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 	}
 
 	if gw.Spec.EnableIPSecVpn {
-		if gw.Spec.IPSecSecret == "" {
-			err := errors.New("ipsec vpn secret is required")
-			r.Log.Error(err, "should set ipsec vpn secret")
-			return err
-		}
 		if gw.Spec.IPSecVpnImage == "" {
 			err := errors.New("ipsec vpn image is required")
 			r.Log.Error(err, "should set ipsec vpn image")
