@@ -53,9 +53,9 @@ spec:
   dnsNames:
     - ovpnsrv.vpn.gw.com
   privateKey:
-    algorithm: RSA
-    size: 2048
-    encoding: PKCS1
+    algorithm: {{ .Values.sslvpn.algorithm }}
+    size: {{ .Values.sslvpn.size }}
+    encoding: {{ .Values.sslvpn.encoding }}
   issuerRef:
     name: ssl-vpn-gw-ca-issuer
     kind: Issuer
@@ -76,9 +76,9 @@ spec:
   dnsNames:
     - ovpncli.vpn.gw.com
   privateKey:
-    algorithm: RSA
-    size: 2048
-    encoding: PKCS1
+    algorithm: {{ .Values.sslvpn.algorithm }}
+    size: {{ .Values.sslvpn.size }}
+    encoding: {{ .Values.sslvpn.encoding }}
   issuerRef:
     name: ssl-vpn-gw-ca-issuer
     kind: Issuer
@@ -114,15 +114,13 @@ spec:
         {{- end }}
       {{- end }}
     {{- end }}
-  tolerations:
-  affinity:
   enableSslVpn: true
   sslVpnSecret: ovpnsrv
   dhSecret: ssl-vpn-dh-pem
   sslVpnImage: {{ .Values.global.registry.address }}/{{ .Values.global.images.openvpn.repository }}:{{ .Values.global.images.openvpn.tag }}
-  sslVpnCipher: AES-256-GCM
-  sslVpnAuth: SHA1
-  sslVpnProto: udp
+  sslVpnCipher: {{ .Values.sslvpn.sslVpnCipher }}
+  sslVpnAuth: {{ .Values.sslvpn.sslVpnAuth }}
+  sslVpnProto: {{ .Values.sslvpn.sslVpnProto }}
   sslVpnSubnetCidr: {{ .Values.sslvpn.sslVpnSubnetCidr }}
   enableIpsecVpn: false
   ipsecSecret: ""
