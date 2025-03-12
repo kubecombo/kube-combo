@@ -12,6 +12,15 @@ spec:
   workloadType: static
   cpu: "1"
   memory: "1024M"
+  selector:
+    - "kubernetes.io/os: linux"
+    {{- if .Values.ipsecvpn.IPSECVPN_NODES_LABEL }}
+      {{- with splitList "=" .Values.ipsecvpn.IPSECVPN_NODES_LABEL }}
+        {{- if eq (len .) 2 }}
+    - "{{ index . 0 }}: {{ index . 1 }}"
+        {{- end }}
+      {{- end }}
+    {{- end }}
   ipsecEnablePSK: true
   enableIpsecVpn: true
   ipsecVpnImage: {{ .Values.global.registry.address }}/{{ .Values.global.images.strongswan.repository }}:{{ .Values.global.images.strongswan.tag }}

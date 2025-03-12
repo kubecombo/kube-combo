@@ -58,3 +58,4 @@ ipsecvpn:
   remotePSK: MTIzCg==
   remoteEIP: 172.19.0.101
   remotePrivateCidrs: 10.1.0.0/24
+  IPSECVPN_NODES_LABEL: ""
