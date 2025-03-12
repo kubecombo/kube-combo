@@ -18,6 +18,9 @@ TEMPLATE_HOSTS=template-hosts.j2
 TEMPLATE_CHECK=template-check.j2
 CHECK_SCRIPT=check
 
+# IPSEC_VPN_IMAGE set the static pod image
+K8S_MANIFESTS_PATH=${K8S_MANIFESTS_PATH:-/etc/kubernetes/manifests}
+
 function init() {
 	# prepare hosts.j2
 	if [ ! -f hosts.j2 ]; then
@@ -180,8 +183,9 @@ function host-init-cache() {
 		# echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
 		# cat /etc/host-init-strongswan/static-pod-start.sh
 
-		# echo "deploy static pod /etc/kubernetes/manifests .............."
-		\cp "/static-strongswan.yaml" "/etc/kubernetes/manifests"
+		echo "deploy static pod ${K8S_MANIFESTS_PATH} .............."
+		sed 's|IPSEC_VPN_IMAGE|'"${IPSEC_VPN_IMAGE}"'|' -i "/static-strongswan.yaml"
+		\cp "/static-strongswan.yaml" "${K8S_MANIFESTS_PATH}"
 	else
 		# only run /usr/sbin/swanctl --load-all while /usr/sbin/charon-systemd is running, or
 		# /usr/sbin/swanctl --load-all

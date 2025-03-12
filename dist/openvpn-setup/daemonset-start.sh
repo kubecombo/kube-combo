@@ -4,7 +4,7 @@ set -eux
 
 # make it runable in any directory
 # SSL_VPN_IMAGE set the static pod image
-SSL_VPN_MANIFESTS_PATH=${SSL_VPN_MANIFESTS_PATH:-/etc/kubernetes/manifests}
+K8S_MANIFESTS_PATH=${K8S_MANIFESTS_PATH:-/etc/kubernetes/manifests}
 CONF_HOME=${CONF_HOME:-/etc/openvpn}
 SETUP_HOME="$CONF_HOME/setup"
 echo "debug setup openvpn in ${SETUP_HOME} .............."
@@ -42,10 +42,10 @@ rm -fr "/etc/host-init-openvpn/*"
 echo "show /etc/host-init-openvpn files .............."
 ls -lR "/etc/host-init-openvpn"
 
-echo "deploy static pod ${SSL_VPN_MANIFESTS_PATH} .............."
+echo "deploy static pod ${K8S_MANIFESTS_PATH} .............."
 # format openvpn static pod yaml
 sed 's|SSL_VPN_IMAGE|'"${SSL_VPN_IMAGE}"'|' -i "${SETUP_HOME}/static-openvpn.yaml"
-\cp "${SETUP_HOME}/static-openvpn.yaml" "${SSL_VPN_MANIFESTS_PATH}"
+\cp "${SETUP_HOME}/static-openvpn.yaml" "${K8S_MANIFESTS_PATH}"
 
 echo "k8s static pod should run /etc/host-init-openvpn/static-pod-start.sh .............."
 echo "k8s static pod will copy certs and config file from /etc/host-init-openvpn to pod /etc/openvpn .............."
