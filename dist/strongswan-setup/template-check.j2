@@ -23,6 +23,8 @@ if [ -d "/etc/host-init-strongswan" ]; then
     fi
 fi
 
+## debug
+### swanctl --reload-settings
 /usr/sbin/swanctl --load-all
 swanctl --list-conns
 # after ping remote private cidr ip
@@ -33,5 +35,6 @@ swanctl --list-conns
 ip xfrm state
 ip xfrm policy
 
-# if ip xfrm state |policy is empty, then run this command to debug
-## swanctl --initiate --child net-net  gw-gw-mars-moon
+## debug
+### if ip xfrm state |policy is empty, then run this command to debug
+### swanctl --initiate --child net-net  gw-gw-mars-moon

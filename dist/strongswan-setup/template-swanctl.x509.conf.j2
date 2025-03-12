@@ -19,6 +19,8 @@ connections {
             }
         }
         version = {{ conn.ikeVersion }}
+        mobike = yes
+        reauth_time = 10800
         proposals = {{ conn.ikeProposals }}
     }
 {% endfor %}
