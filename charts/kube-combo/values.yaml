@@ -9,10 +9,13 @@ global:
   images:
     kubecombo:
       repository: kube-combo-controller
-      tag: v0.0.5
+      tag: v0.0.8
     openvpn:
       repository: kube-combo-openvpn
-      tag: v0.0.5
+      tag: v0.0.8
+    strongswan:
+      repository: kube-combo-strongswan
+      tag: v0.0.8
 
 kubebuilder:
   registry:
@@ -35,8 +38,24 @@ func:
 
 sslvpn:
   sslVpnSubnetCidr: 169.254.220.0/24
+  sslVpnCipher: AES-256-GCM
+  sslVpnAuth: SHA1
+  sslVpnProto: udp
   dhPemData: "LS0tLS1CRUdJTiBESCBQQVJBTUVURVJTLS0tLS0KTUlJQkNBS0NBUUVBMEMvaVE2WmlabURTd0t6WUhRcFpaYURkVDZNeE1MbjB2VFlyMk51dlR5QnFONzlDeU03VwpsZUxPTFlLazh2WTVmVFJSbXE1dUxiZm1IQjEwUno5Ym8xYjI3MG1SOXptZ0tvbkY1TEUwdGRvZE43bU9jOG4zCnJXb2h2K3JaRDlSc2tRR0gyUExQaHRnUm9HZG41Q1Y4TXVUWXNJOXhVMktiNkExd1grbjg1eHJHRnptN1JzQWYKR0tTWWF5YzJXeUVWSWVKUEd4K0xib3VHRytZZUlWTGZEbDV0eG81Q0RxSUtoZ3Y4Qm1VVDJCWVVkdDFRcTRjcQp0Q25iYkNLc2ZlajgvR1orOEd2Qk1uRTFFUDNPLytXUGtISDFJbk4rWHRuQmo4K3R2U1Y5QTg4NzUzMFhBc05OCitzWXRlNGVvSUpCOHh5cFFmeWF5N0tKTkZ2KzRDZ2FoRHdJQkFnPT0KLS0tLS1FTkQgREggUEFSQU1FVEVSUy0tLS0tCg=="
   algorithm: RSA
   size: 2048
   encoding: PKCS1
   SSLVPN_NODES_LABEL: ""
+
+ipsecvpn:
+  auth: psk
+  espProposals: 3des-modp2048
+  ikeProposals: 3des-sha256-modp204
+  ikeVersion: "1"
+  localEIP: 172.19.0.103
+  localPrivateCidrs: 172.21.0.0/16
+  localPSK: Nzg5Cg==
+  remotePSK: MTIzCg==
+  remoteEIP: 172.19.0.101
+  remotePrivateCidrs: 10.1.0.0/24
+  IPSECVPN_NODES_LABEL: ""
