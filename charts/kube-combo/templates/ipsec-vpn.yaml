@@ -23,7 +23,7 @@ spec:
     {{- end }}
   ipsecEnablePSK: true
   enableIpsecVpn: true
-  ipsecVpnImage: {{ .Values.global.registry.address }}/{{ .Values.global.images.strongswan.repository }}:{{ .Values.global.images.strongswan.tag }}
+  ipsecVpnImage: {{.Values.global.registry.address}}/{{.Values.global.images.strongswan.repository}}:{{.Values.global.images.strongswan.tag}}
 ---
 kind: IpsecConn
 apiVersion: vpn-gw.kubecombo.com/v1
@@ -37,17 +37,17 @@ spec:
   vpnGw: mars
   # pubkey use cert-manager x509 ca, support ipv4 ipv6
   # psk use pre shared key, ipv4 only
-  auth: {{ .Values.ipsecvpn.auth }}
-  espProposals: {{ .Values.ipsecvpn.espProposals }}
-  ikeProposals: {{ .Values.ipsecvpn.ikeProposals }}
+  auth: {{.Values.ipsecvpn.auth}}
+  espProposals: {{.Values.ipsecvpn.espProposals}}
+  ikeProposals: {{.Values.ipsecvpn.ikeProposals}}
   # ike version 0, 1, 2
-  ikeVersion: {{ .Values.ipsecvpn.ikeVersion }}
+  ikeVersion: "{{.Values.ipsecvpn.ikeVersion}}"
   localCN: mars.vpn.gw.com
-  localEIP: {{ .Values.ipsecvpn.localEIP }}
-  localPrivateCidrs: {{ .Values.ipsecvpn.localPrivateCidrs }}
-  localPSK: {{ .Values.ipsecvpn.localPSK }}
-  remotePSK: {{ .Values.ipsecvpn.remotePSK }}
+  localEIP: {{.Values.ipsecvpn.localEIP}}
+  localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
+  localPSK: {{.Values.ipsecvpn.localPSK}}
+  remotePSK: {{.Values.ipsecvpn.remotePSK}}
   remoteCN: moon.vpn.gw.com
-  remoteEIP: {{ .Values.ipsecvpn.remoteEIP }}
-  remotePrivateCidrs: {{ .Values.ipsecvpn.remotePrivateCidrs }}
+  remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
+  remotePrivateCidrs: {{.Values.ipsecvpn.remotePrivateCidrs}}
 {{- end }}
