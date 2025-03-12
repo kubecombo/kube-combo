@@ -2,6 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
+  manifestsPath: /etc/kubernetes/manifests
   registry:
     address: docker.io/icoy
     imagePullSecrets: []
@@ -38,5 +39,4 @@ sslvpn:
   algorithm: RSA
   size: 2048
   encoding: PKCS1
-  manifests: /etc/kubernetes/manifests
   SSLVPN_NODES_LABEL: ""

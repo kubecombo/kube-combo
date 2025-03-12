@@ -68,14 +68,15 @@ const (
 
 	EnableSslVpnLabel = "enable-ssl-vpn"
 
+	k8sManifestsPathKey = "K8S_MANIFESTS_PATH"
+
 	// vpn gw pod env
-	SslVpnProtoKey         = "SSL_VPN_PROTO"
-	SslVpnPortKey          = "SSL_VPN_PORT"
-	SslVpnCipherKey        = "SSL_VPN_CIPHER"
-	SslVpnAuthKey          = "SSL_VPN_AUTH"
-	SslVpnSubnetCidrKey    = "SSL_VPN_SUBNET_CIDR"
-	SslVpnManifestsPathKey = "SSL_VPN_MANIFESTS_PATH"
-	SslVpnImageKey         = "SSL_VPN_IMAGE"
+	SslVpnProtoKey      = "SSL_VPN_PROTO"
+	SslVpnPortKey       = "SSL_VPN_PORT"
+	SslVpnCipherKey     = "SSL_VPN_CIPHER"
+	SslVpnAuthKey       = "SSL_VPN_AUTH"
+	SslVpnSubnetCidrKey = "SSL_VPN_SUBNET_CIDR"
+	SslVpnImageKey      = "SSL_VPN_IMAGE"
 
 	// ipsec vpn strongswan
 	IPSecVpnServer = "ipsec-vpn"
@@ -101,6 +102,7 @@ const (
 
 	IPSecProto = "UDP"
 
+	IPSecVpnImageKey = "IPSEC_VPN_IMAGE"
 	// IPSecRemoteAddrsKey = "IPSEC_REMOTE_ADDRS"
 	// IPSecRemoteTsKey    = "IPSEC_REMOTE_TS"
 )
@@ -570,7 +572,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					Value: ka.Spec.VipV4,
 				},
 				{
-					Name:  SslVpnManifestsPathKey,
+					Name:  k8sManifestsPathKey,
 					Value: r.K8sManifestsPath,
 				},
 				{
@@ -645,6 +647,16 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 					ContainerPort: IPSecNatPortInt32,
 					Name:          IPSecNatPortKey,
 					Protocol:      corev1.Protocol(IPSecProto),
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					Name:  k8sManifestsPathKey,
+					Value: r.K8sManifestsPath,
+				},
+				{
+					Name:  IPSecVpnImageKey,
+					Value: gw.Spec.IPSecVpnImage,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
@@ -847,7 +859,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					Value: v4Vip,
 				},
 				{
-					Name:  SslVpnManifestsPathKey,
+					Name:  k8sManifestsPathKey,
 					Value: r.K8sManifestsPath,
 				},
 				{
@@ -950,6 +962,16 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 					ContainerPort: IPSecNatPortInt32,
 					Name:          IPSecNatPortKey,
 					Protocol:      corev1.Protocol(IPSecProto),
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					Name:  k8sManifestsPathKey,
+					Value: r.K8sManifestsPath,
+				},
+				{
+					Name:  IPSecVpnImageKey,
+					Value: gw.Spec.IPSecVpnImage,
 				},
 			},
 			ImagePullPolicy: corev1.PullIfNotPresent,
