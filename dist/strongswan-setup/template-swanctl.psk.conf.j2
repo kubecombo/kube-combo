@@ -1,8 +1,16 @@
 connections {
 {% for conn in connections %}
     gw-gw-{{ conn.name }} {
-      local_addrs  = {{ conn.localPublicIp }}
-      remote_addrs = {{ conn.remotePublicIp }}
+      version = {{ conn.ikeVersion }}
+      local_addrs  = {{ conn.localPublicIP }}
+      remote_addrs = {{ conn.remotePublicIP }}
+      dpd_delay = 60
+      rekey_time = 84600
+      over_time = 1800
+      proposals = {{ conn.ikeProposals }}
+      encap = yes
+      mobike = yes
+
       local {
          auth = {{ conn.auth }}
          id = {{ conn.localCN }}
@@ -15,19 +23,16 @@ connections {
          net-net {
             local_ts = {{ conn.localPrivateCidrs }}
             remote_ts = {{ conn.remotePrivateCidrs }}
+            esp_proposals = {{ conn.espProposals }}
+            updown = /usr/lib/ipsec/_updown iptables
+            mode = tunnel
+            rekey_time = 85500
+            life_time = 86400
             dpd_action = restart
             start_action = start
-            updown = /usr/lib/ipsec/_updown iptables
-            rekey_time = 5400
-            rekey_bytes = 500000000
-            rekey_packets = 1000000
-            esp_proposals = {{ conn.espProposals }}
+            close_action = start
          }
       }
-      version = {{ conn.ikeVersion }}
-      mobike = yes
-      reauth_time = 10800
-      proposals = {{ conn.ikeProposals }}
    }
 {% endfor %}
 }
