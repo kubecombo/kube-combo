@@ -59,6 +59,10 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Optional
 	LocalCN string `json:"localCN"`
 
+	// current public ipsec vpn gw internal keepalived virtual ip
+	// +kubebuilder:validation:Required
+	LocalVIP string `json:"localVIP"`
+
 	// current public ipsec vpn gw external ip
 	// +kubebuilder:validation:Required
 	LocalEIP string `json:"localEIP"`
@@ -97,6 +101,7 @@ type IpsecConnSpec struct {
 // //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
 //+kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
+//+kubebuilder:printcolumn:name="LocalVIP",type=string,JSONPath=`.spec.localVIP`
 //+kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`
 //+kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
 //+kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`

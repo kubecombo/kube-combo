@@ -1,8 +1,8 @@
 connections {
 {% for conn in connections %}
-    gw-gw-{{ conn.name }} {
+    {{ conn.name }} {
       version = {{ conn.ikeVersion }}
-      local_addrs  = {{ conn.localEIP }}
+      local_addrs  = {{ conn.localVIP }}
       remote_addrs = {{ conn.remoteEIP }}
       dpd_delay = 60
       rekey_time = 84600
@@ -39,17 +39,14 @@ connections {
 secrets {
 {% for conn in connections %}
 {% if loop.first %}
-   ike-1 {
-      id-1 = {{ conn.localEIP }}
+   ike-{{ conn.name }} {
       secret = {{ conn.localPSK }}
    }
-   ike-11 {
-      id-11 = {{ conn.remoteEIP }}
+   ike-remote {
       secret = {{ conn.remotePSK }}
    }
 {% else %}
-   ike-1{{ loop.index }} {
-      id-1{{ loop.index }} = {{ conn.remoteEIP }}
+   ike-{{ conn.name }} {
       secret = {{ conn.remotePSK }}
    }
 {% endif %}

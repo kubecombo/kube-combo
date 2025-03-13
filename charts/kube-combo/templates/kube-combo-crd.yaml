@@ -20,6 +20,9 @@ spec:
         - jsonPath: .spec.localEIP
           name: localEIP
           type: string
+        - jsonPath: .spec.localVIP
+          name: localVIP
+          type: string
         - jsonPath: .spec.remoteEIP
           name: RemoteEIP
           type: string
@@ -70,6 +73,8 @@ spec:
                   type: string
                 localEIP:
                   type: string
+                localVIP:
+                  type: string
                 proposals:
                   type: string
                 remoteCN:
@@ -85,6 +90,7 @@ spec:
                 - ikeVersion
                 - localPrivateCidrs
                 - localEIP
+                - localVIP
                 - proposals
                 - remotePrivateCidrs
                 - remoteEIP

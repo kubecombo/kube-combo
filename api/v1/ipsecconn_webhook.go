@@ -141,6 +141,12 @@ func (r *IpsecConn) validateIpsecConn() error {
 		allErrs = append(allErrs, e)
 	}
 
+	if r.Spec.LocalVIP == "" {
+		err := errors.New("ipsecConn localVIP is required")
+		e := field.Invalid(field.NewPath("spec").Child("localVIP"), r.Spec.LocalVIP, err.Error())
+		allErrs = append(allErrs, e)
+	}
+
 	if r.Spec.LocalEIP == "" {
 		err := errors.New("ipsecConn localEIP is required")
 		e := field.Invalid(field.NewPath("spec").Child("localEIP"), r.Spec.LocalEIP, err.Error())

@@ -104,18 +104,20 @@ function refresh-psk() {
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
 		ikeProposals=${conn[3]}
-		localEIP=${conn[4]}
-		localPrivateCidrs=${conn[5]}
-		remoteEIP=${conn[6]}
-		remotePrivateCidrs=${conn[7]}
-		localPSK=$(echo "${conn[8]}" | base64 -d)
-		remotePSK=$(echo "${conn[9]}" | base64 -d)
-		espProposals=${conn[10]}
+		localVIP=${conn[4]}
+		localEIP=${conn[5]}
+		localPrivateCidrs=${conn[6]}
+		remoteEIP=${conn[7]}
+		remotePrivateCidrs=${conn[8]}
+		localPSK=$(echo "${conn[9]}" | base64 -d)
+		remotePSK=$(echo "${conn[10]}" | base64 -d)
+		espProposals=${conn[11]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
 			printf "    ikeProposals: %s\n" "${ikeProposals}"
+			printf "    localVIP: %s\n" "${localVIP}"
 			printf "    localEIP: %s\n" "${localEIP}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteEIP: %s\n" "${remoteEIP}"
