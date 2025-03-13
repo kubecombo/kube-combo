@@ -79,7 +79,7 @@ spec:
                   type: string
                 localVIP:
                   type: string
-                localPSK:
+                defualtPSK:
                   description: psk secret
                   type: string
                 localPrivateCidrs:
@@ -88,8 +88,6 @@ spec:
                   type: string
                 remoteEIP:
                   description: remote public ipsec vpn gw external ip
-                  type: string
-                remotePSK:
                   type: string
                 remotePrivateCidrs:
                   type: string

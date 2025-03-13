@@ -45,8 +45,7 @@ spec:
   localCN: mars.vpn.gw.com
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
-  localPSK: {{.Values.ipsecvpn.localPSK}}
-  remotePSK: {{.Values.ipsecvpn.remotePSK}}
+  defualtPSK: {{.Values.ipsecvpn.defualtPSK}}
   remoteCN: moon.vpn.gw.com
   remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
   remotePrivateCidrs: {{.Values.ipsecvpn.remotePrivateCidrs}}

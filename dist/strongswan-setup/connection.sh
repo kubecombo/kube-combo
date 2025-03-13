@@ -96,6 +96,7 @@ function refresh-psk() {
 	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
+	DefualtPSK=""
 	IFS=',' read -r -a array <<<"${connections}"
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
@@ -109,8 +110,7 @@ function refresh-psk() {
 		localPrivateCidrs=${conn[6]}
 		remoteEIP=${conn[7]}
 		remotePrivateCidrs=${conn[8]}
-		localPSK=$(echo "${conn[9]}" | base64 -d)
-		remotePSK=$(echo "${conn[10]}" | base64 -d)
+		DefualtPSK=$(echo "${conn[9]}" | base64 -d)
 		espProposals=${conn[11]}
 		{
 			printf "  - name: %s\n" "${name}"
@@ -122,11 +122,11 @@ function refresh-psk() {
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
-			printf "    localPSK: %s\n" "${localPSK}"
-			printf "    remotePSK: %s\n" "${remotePSK}"
 			printf "    espProposals: %s\n" "${espProposals}"
 		} >>"${CONNECTIONS_YAML}"
 	done
+	printf "  DefualtPSK: %s\n" "${defualtPSK}"
+
 
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"

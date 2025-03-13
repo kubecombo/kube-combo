@@ -37,12 +37,9 @@ connections {
 {% endfor %}
 }
 secrets {
-{% for conn in connections %}
-{% if conn.localPSK == conn.remotePSK %}
-   ike-{{ conn.name }} {
-      secret = {{ conn.localPSK }}
+   ike-1 {
+      secret = {{ connections.DefualtPSK }}
    }
-{% endfor %}
 }
 
 logging {
