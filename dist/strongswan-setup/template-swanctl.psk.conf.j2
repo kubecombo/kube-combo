@@ -44,7 +44,7 @@ secrets {
    }
 {% else %}
    ike-{{ conn.name }} {
-      id{{ loop.index }}1 = {{ conn.localIP }}
+      id{{ loop.index }}1 = {{ conn.localVIP }}
       id{{ loop.index }}2 = {{ conn.localEIP }}
       secret = {{ conn.localPSK }}
    }
