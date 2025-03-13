@@ -38,18 +38,18 @@ connections {
 }
 secrets {
 {% for conn in connections %}
-{% if loop.first %}
+{% if conn.localPSK == conn.remotePSK %}
    ike-{{ conn.name }} {
-      id-{{ conn.name }} = {{ conn.localEIP }}
       secret = {{ conn.localPSK }}
-   }
-   ike-remote {
-      id-remote = {{ conn.remoteEIP }}
-      secret = {{ conn.remotePSK }}
    }
 {% else %}
    ike-{{ conn.name }} {
-      id-{{ conn.name }} = {{ conn.remoteEIP }}
+      id{{ loop.index }}1 = {{ conn.localIP }}
+      id{{ loop.index }}2 = {{ conn.localEIP }}
+      secret = {{ conn.localPSK }}
+   }
+   ike-far{{ conn.name }} {
+      id-f{{ loop.index }}1 = {{ conn.remoteEIP }}
       secret = {{ conn.remotePSK }}
    }
 {% endif %}
