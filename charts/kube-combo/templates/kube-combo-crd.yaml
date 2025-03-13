@@ -102,7 +102,6 @@ spec:
                 - localPrivateCidrs
                 - localVIP
                 - localEIP
-                - proposals
                 - remoteEIP
                 - remotePrivateCidrs
                 - vpnGw
