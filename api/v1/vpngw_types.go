@@ -125,6 +125,10 @@ type VpnGwSpec struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=false
 	IPSecEnablePSK bool `json:"ipsecEnablePSK"`
+
+	// only support one global default PSK is enough for most cases
+	// +kubebuilder:validation:Optional
+	DefaultPSK string `json:"defaultPSK,omitempty"`
 }
 
 // VpnGwStatus defines the observed state of VpnGw

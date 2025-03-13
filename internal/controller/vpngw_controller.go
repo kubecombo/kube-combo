@@ -1214,8 +1214,8 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 	connections := ""
 	for _, v := range *conns {
 		if gw.Spec.IPSecEnablePSK {
-			if v.Spec.DefaultPSK == "" {
-				err := fmt.Errorf("vpn gw %s ipsec connection should have psk", gw.Name)
+			if gw.Spec.DefaultPSK == "" {
+				err := fmt.Errorf("vpn gw %s should have one default psk", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
@@ -1289,7 +1289,7 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
 				v.Spec.LocalVIP, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs,
-				v.Spec.DefaultPSK, v.Spec.ESPProposals)
+				gw.Spec.DefaultPSK, v.Spec.ESPProposals)
 		}
 	}
 	return connections, SyncStateSuccess, nil
