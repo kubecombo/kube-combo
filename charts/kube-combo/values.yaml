@@ -52,6 +52,7 @@ ipsecvpn:
   espProposals: 3des-modp2048
   ikeProposals: 3des-sha256-modp204
   ikeVersion: "1"
+  localVIP: 100.65.150.181
   localEIP: 172.19.0.103
   localPrivateCidrs: 172.21.0.0/16
   localPSK: Nzg5Cg==
