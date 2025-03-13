@@ -55,8 +55,8 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	IKEProposals string `json:"ikeProposals"`
 
-	// CN is defined in x509 certificate
-	// +kubebuilder:validation:Required
+	// CN is defined in x509 certificate, PSK not required
+	// +kubebuilder:validation:Optional
 	LocalCN string `json:"localCN"`
 
 	// current public ipsec vpn gw external ip
@@ -66,7 +66,7 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	LocalPrivateCidrs string `json:"localPrivateCidrs"`
 
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	RemoteCN string `json:"remoteCN"`
 
 	// remote public ipsec vpn gw external ip
@@ -101,8 +101,6 @@ type IpsecConnSpec struct {
 //+kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
 //+kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`
 //+kubebuilder:printcolumn:name="RemotePrivateCidrs",type=string,JSONPath=`.spec.remotePrivateCidrs`
-//+kubebuilder:printcolumn:name="LocalCN",type=string,JSONPath=`.spec.localCN`
-//+kubebuilder:printcolumn:name="RemoteCN",type=string,JSONPath=`.spec.remoteCN`
 
 // IpsecConn is the Schema for the ipsecconns API
 type IpsecConn struct {

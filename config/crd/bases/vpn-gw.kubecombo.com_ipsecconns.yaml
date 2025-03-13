@@ -30,12 +30,6 @@ spec:
     - jsonPath: .spec.remotePrivateCidrs
       name: RemotePrivateCidrs
       type: string
-    - jsonPath: .spec.localCN
-      name: LocalCN
-      type: string
-    - jsonPath: .spec.remoteCN
-      name: RemoteCN
-      type: string
     name: v1
     schema:
       openAPIV3Schema:
@@ -70,7 +64,7 @@ spec:
               ikeVersion:
                 type: string
               localCN:
-                description: CN is defined in x509 certificate
+                description: CN is defined in x509 certificate, PSK not required
                 type: string
               localEIP:
                 description: current public ipsec vpn gw external ip
@@ -95,10 +89,8 @@ spec:
             - auth
             - ikeProposals
             - ikeVersion
-            - localCN
             - localEIP
             - localPrivateCidrs
-            - remoteCN
             - remoteEIP
             - remotePrivateCidrs
             - vpnGw

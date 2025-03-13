@@ -83,11 +83,9 @@ spec:
               required:
                 - auth
                 - ikeVersion
-                - localCN
                 - localPrivateCidrs
                 - localEIP
                 - proposals
-                - remoteCN
                 - remotePrivateCidrs
                 - remoteEIP
                 - vpnGw

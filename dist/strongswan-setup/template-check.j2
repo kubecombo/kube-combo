@@ -16,13 +16,6 @@ while ! ss -tunlp | grep 4500; do
     sleep 5
 done
 
-if [ -d "/etc/host-init-strongswan" ]; then
-    if [ ! -f "/etc/host-init-strongswan/copy-hosts.sh" ]; then
-        \cp -f /copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
-        bash "/etc/host-init-strongswan/copy-hosts.sh"
-    fi
-fi
-
 ## debug
 ### swanctl --reload-settings
 /usr/sbin/swanctl --load-all
