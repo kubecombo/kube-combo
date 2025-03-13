@@ -53,10 +53,10 @@ function refresh-x509() {
 		ikeVersion=${conn[2]}
 		ikeProposals=${conn[3]}
 		localCN=${conn[4]}
-		localPublicIp=${conn[5]}
+		localEIP=${conn[5]}
 		localPrivateCidrs=${conn[6]}
 		remoteCN=${conn[7]}
-		remotePublicIp=${conn[8]}
+		remoteEIP=${conn[8]}
 		remotePrivateCidrs=${conn[9]}
 		{
 			printf "  - name: %s\n" "${name}"
@@ -64,10 +64,10 @@ function refresh-x509() {
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
 			printf "    ikeProposals: %s\n" "${ikeProposals}"
 			printf "    localCN: %s\n" "${localCN}"
-			printf "    localPublicIp: %s\n" "${localPublicIp}"
+			printf "    localEIP: %s\n" "${localEIP}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteCN: %s\n" "${remoteCN}"
-			printf "    remotePublicIp: %s\n" "${remotePublicIp}"
+			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 		} >>"${CONNECTIONS_YAML}"
 	done
@@ -89,9 +89,6 @@ function refresh-x509() {
 }
 
 function refresh-psk() {
-	# 1. init
-	init
-
 	# 2. prepare swanctl.conf.j2
 	TEMPLATE_SWANCTL_CONF=template-swanctl.psk.conf.j2
 	cp "${TEMPLATE_SWANCTL_CONF}" swanctl.conf.j2
@@ -107,44 +104,33 @@ function refresh-psk() {
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
 		ikeProposals=${conn[3]}
-		localCN=${conn[4]}
-		localPublicIp=${conn[5]}
+		localVIP=${conn[4]}
+		localEIP=${conn[5]}
 		localPrivateCidrs=${conn[6]}
-		remoteCN=${conn[7]}
-		remotePublicIp=${conn[8]}
-		remotePrivateCidrs=${conn[9]}
-		localPSK=$(echo "${conn[10]}" | base64 -d)
-		remotePSK=$(echo "${conn[11]}" | base64 -d)
-		espProposals=${conn[12]}
+		remoteEIP=${conn[7]}
+		remotePrivateCidrs=${conn[8]}
+		localPSK=$(echo "${conn[9]}" | base64 -d)
+		remotePSK=$(echo "${conn[10]}" | base64 -d)
+		espProposals=${conn[11]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
 			printf "    ikeProposals: %s\n" "${ikeProposals}"
-			printf "    localCN: %s\n" "${localCN}"
-			printf "    localPublicIp: %s\n" "${localPublicIp}"
+			printf "    localVIP: %s\n" "${localVIP}"
+			printf "    localEIP: %s\n" "${localEIP}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
-			printf "    remoteCN: %s\n" "${remoteCN}"
-			printf "    remotePublicIp: %s\n" "${remotePublicIp}"
+			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 			printf "    localPSK: %s\n" "${localPSK}"
 			printf "    remotePSK: %s\n" "${remotePSK}"
 			printf "    espProposals: %s\n" "${espProposals}"
 		} >>"${CONNECTIONS_YAML}"
 	done
-	# 4. generate hosts and swanctl.conf
-	# use j2 to generate hosts and swanctl.conf
-	j2 hosts.j2 "${CONNECTIONS_YAML}" -o "${IPSEC_HOSTS}"
-	if [ ! -e "/etc/hosts.ori" ]; then
-		# backup hosts
-		cp /etc/hosts /etc/hosts.ori
-	fi
-	cat /etc/hosts.ori >/etc/hosts
-	cat "${IPSEC_HOSTS}" >>/etc/hosts
-	j2 swanctl.conf.j2 "${CONNECTIONS_YAML}" -o "${CONF}"
+
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
-
+	j2 swanctl.conf.j2 "${CONNECTIONS_YAML}" -o "${CONF}"
 	# 5. /etc/host-init-strongswan for static pod
 	host-init-cache
 }
@@ -170,10 +156,7 @@ function host-init-cache() {
 
 		\cp "${CONF_HOME}/swanctl.conf" "${CACHE_HOME}/"
 
-		\cp "${IPSEC_HOSTS}" "${CACHE_HOME}/"
 		\cp "${CHECK_SCRIPT}" "${CACHE_HOME}/"
-		\cp "copy-hosts.sh" "${CACHE_HOME}/"
-
 		# echo "show /etc/host-init-strongswan files .............."
 		# ls -lR "${CACHE_HOME}/"
 

@@ -17,11 +17,14 @@ spec:
         - jsonPath: .spec.vpnGw
           name: VpnGw
           type: string
-        - jsonPath: .spec.localPublicIp
-          name: LocalPublicIp
+        - jsonPath: .spec.localEIP
+          name: localEIP
           type: string
-        - jsonPath: .spec.remotePublicIp
-          name: RemotePublicIp
+        - jsonPath: .spec.localVIP
+          name: localVIP
+          type: string
+        - jsonPath: .spec.remoteEIP
+          name: RemoteEIP
           type: string
         - jsonPath: .spec.localPrivateCidrs
           name: LocalPrivateCidrs
@@ -74,6 +77,8 @@ spec:
                 localEIP:
                   description: current public ipsec vpn gw external ip
                   type: string
+                localVIP:
+                  type: string
                 localPSK:
                   description: psk secret
                   type: string
@@ -94,10 +99,10 @@ spec:
                 - auth
                 - ikeProposals
                 - ikeVersion
-                - localCN
-                - localEIP
                 - localPrivateCidrs
-                - remoteCN
+                - localVIP
+                - localEIP
+                - proposals
                 - remoteEIP
                 - remotePrivateCidrs
                 - vpnGw

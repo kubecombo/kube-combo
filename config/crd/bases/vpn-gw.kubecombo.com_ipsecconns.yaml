@@ -18,23 +18,20 @@ spec:
     - jsonPath: .spec.vpnGw
       name: VpnGw
       type: string
-    - jsonPath: .spec.localPublicIp
-      name: LocalPublicIp
+    - jsonPath: .spec.localVIP
+      name: LocalVIP
       type: string
-    - jsonPath: .spec.remotePublicIp
-      name: RemotePublicIp
+    - jsonPath: .spec.localEIP
+      name: LocalEIP
+      type: string
+    - jsonPath: .spec.remoteEIP
+      name: RemoteEIP
       type: string
     - jsonPath: .spec.localPrivateCidrs
       name: LocalPrivateCidrs
       type: string
     - jsonPath: .spec.remotePrivateCidrs
       name: RemotePrivateCidrs
-      type: string
-    - jsonPath: .spec.localCN
-      name: LocalCN
-      type: string
-    - jsonPath: .spec.remoteCN
-      name: RemoteCN
       type: string
     name: v1
     schema:
@@ -70,7 +67,7 @@ spec:
               ikeVersion:
                 type: string
               localCN:
-                description: CN is defined in x509 certificate
+                description: CN is defined in x509 certificate, PSK not required
                 type: string
               localEIP:
                 description: current public ipsec vpn gw external ip
@@ -79,6 +76,10 @@ spec:
                 description: psk secret
                 type: string
               localPrivateCidrs:
+                type: string
+              localVIP:
+                description: current public ipsec vpn gw internal keepalived virtual
+                  ip
                 type: string
               remoteCN:
                 type: string
@@ -95,10 +96,9 @@ spec:
             - auth
             - ikeProposals
             - ikeVersion
-            - localCN
             - localEIP
             - localPrivateCidrs
-            - remoteCN
+            - localVIP
             - remoteEIP
             - remotePrivateCidrs
             - vpnGw

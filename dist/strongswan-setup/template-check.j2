@@ -3,8 +3,8 @@ set -eux
 
 {% for conn in connections %}
 # ---loop check connection {{ conn.name }} remote public ip ---
-while ! ping -n -c 1 {{ conn.remotePublicIp }}; do
-    echo "Waiting for {{ conn.remotePublicIp }} to respond..."
+while ! ping -n -c 1 {{ conn.remoteEIP }}; do
+    echo "Waiting for {{ conn.remoteEIP }} to respond..."
     sleep 5
 done
 
@@ -15,13 +15,6 @@ while ! ss -tunlp | grep 4500; do
     echo "Waiting for charon-systemd to start..."
     sleep 5
 done
-
-if [ -d "/etc/host-init-strongswan" ]; then
-    if [ ! -f "/etc/host-init-strongswan/copy-hosts.sh" ]; then
-        \cp -f /copy-hosts.sh /etc/host-init-strongswan/copy-hosts.sh
-        bash "/etc/host-init-strongswan/copy-hosts.sh"
-    fi
-fi
 
 ## debug
 ### swanctl --reload-settings

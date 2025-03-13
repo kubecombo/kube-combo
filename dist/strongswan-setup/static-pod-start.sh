@@ -43,8 +43,6 @@ rm -fr "/etc/swanctl/*"
 \cp "${CACHE_HOME}/swanctl.conf" "${CONF_HOME}/"
 # check script
 \cp "${CACHE_HOME}/check" "${CONF_HOME}/"
-# copy hosts
-bash "${CACHE_HOME}/copy-hosts.sh"
 # debug config
 echo "cat ${CONF_HOME}/swanctl.conf ............"
 cat "${CONF_HOME}/swanctl.conf"

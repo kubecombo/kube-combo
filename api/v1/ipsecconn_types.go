@@ -55,9 +55,13 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	IKEProposals string `json:"ikeProposals"`
 
-	// CN is defined in x509 certificate
-	// +kubebuilder:validation:Required
+	// CN is defined in x509 certificate, PSK not required
+	// +kubebuilder:validation:Optional
 	LocalCN string `json:"localCN"`
+
+	// current public ipsec vpn gw internal keepalived virtual ip
+	// +kubebuilder:validation:Required
+	LocalVIP string `json:"localVIP"`
 
 	// current public ipsec vpn gw external ip
 	// +kubebuilder:validation:Required
@@ -66,7 +70,7 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	LocalPrivateCidrs string `json:"localPrivateCidrs"`
 
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	RemoteCN string `json:"remoteCN"`
 
 	// remote public ipsec vpn gw external ip
@@ -97,12 +101,11 @@ type IpsecConnSpec struct {
 // //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
 //+kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
-//+kubebuilder:printcolumn:name="LocalPublicIp",type=string,JSONPath=`.spec.localPublicIp`
-//+kubebuilder:printcolumn:name="RemotePublicIp",type=string,JSONPath=`.spec.remotePublicIp`
+//+kubebuilder:printcolumn:name="LocalVIP",type=string,JSONPath=`.spec.localVIP`
+//+kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`
+//+kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
 //+kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`
 //+kubebuilder:printcolumn:name="RemotePrivateCidrs",type=string,JSONPath=`.spec.remotePrivateCidrs`
-//+kubebuilder:printcolumn:name="LocalCN",type=string,JSONPath=`.spec.localCN`
-//+kubebuilder:printcolumn:name="RemoteCN",type=string,JSONPath=`.spec.remoteCN`
 
 // IpsecConn is the Schema for the ipsecconns API
 type IpsecConn struct {

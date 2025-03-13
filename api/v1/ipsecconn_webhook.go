@@ -131,7 +131,7 @@ func (r *IpsecConn) validateIpsecConn() error {
 
 	if r.Spec.RemoteEIP == "" {
 		err := errors.New("ipsecConn remote public ip is required")
-		e := field.Invalid(field.NewPath("spec").Child("localPublicIp"), r.Spec.RemoteEIP, err.Error())
+		e := field.Invalid(field.NewPath("spec").Child("localEIP"), r.Spec.RemoteEIP, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
@@ -141,9 +141,15 @@ func (r *IpsecConn) validateIpsecConn() error {
 		allErrs = append(allErrs, e)
 	}
 
+	if r.Spec.LocalVIP == "" {
+		err := errors.New("ipsecConn localVIP is required")
+		e := field.Invalid(field.NewPath("spec").Child("localVIP"), r.Spec.LocalVIP, err.Error())
+		allErrs = append(allErrs, e)
+	}
+
 	if r.Spec.LocalEIP == "" {
-		err := errors.New("ipsecConn localPublicIp is required")
-		e := field.Invalid(field.NewPath("spec").Child("localPublicIp"), r.Spec.LocalEIP, err.Error())
+		err := errors.New("ipsecConn localEIP is required")
+		e := field.Invalid(field.NewPath("spec").Child("localEIP"), r.Spec.LocalEIP, err.Error())
 		allErrs = append(allErrs, e)
 	}
 
