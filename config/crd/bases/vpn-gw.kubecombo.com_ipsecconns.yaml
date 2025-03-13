@@ -72,9 +72,6 @@ spec:
               localEIP:
                 description: current public ipsec vpn gw external ip
                 type: string
-              defualtPSK:
-                description: psk secret
-                type: string
               localPrivateCidrs:
                 type: string
               localVIP:

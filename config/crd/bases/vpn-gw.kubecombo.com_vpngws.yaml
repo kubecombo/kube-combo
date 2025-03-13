@@ -825,6 +825,10 @@ spec:
                 type: object
               cpu:
                 type: string
+              defaultPSK:
+                description: only support one global default PSK is enough for most
+                  cases
+                type: string
               dhSecret:
                 description: ssl vpn dh secret name, the secret should in the same
                   namespace as the vpn gw
