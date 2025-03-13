@@ -37,26 +37,11 @@ connections {
 {% endfor %}
 }
 secrets {
-{% set globalkey = False %}
 {% for conn in connections %}
 {% if conn.localPSK == conn.remotePSK %}
    ike-{{ conn.name }} {
       secret = {{ conn.localPSK }}
    }
-   {% set globalkey = True %}
-{% else %}
-   {% if not globalkey %}
-   ike-{{ conn.name }} {
-      id{{ loop.index }}1 = {{ conn.localVIP }}
-      id{{ loop.index }}2 = {{ conn.localEIP }}
-      secret = {{ conn.localPSK }}
-   }
-   ike-far{{ conn.name }} {
-      id-f{{ loop.index }}1 = {{ conn.remoteEIP }}
-      secret = {{ conn.remotePSK }}
-   }
-   {% endif %}
-{% endif %}
 {% endfor %}
 }
 
