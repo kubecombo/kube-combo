@@ -1233,7 +1233,7 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 		if v.Spec.Auth == "" || v.Spec.IkeVersion == "" || v.Spec.IKEProposals == "" ||
 			v.Spec.LocalCN == "" || v.Spec.LocalEIP == "" || v.Spec.LocalPrivateCidrs == "" ||
 			v.Spec.RemoteCN == "" || v.Spec.RemoteEIP == "" || v.Spec.RemotePrivateCidrs == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth, ikeVersion, proposals, localCN, localPublicIP, localPrivateCidrs, remoteCN, remotePublicIP, remotePrivateCidrs", gw.Name, v.Name)
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth, ikeVersion, proposals, localCN, localEIP, localPrivateCidrs, remoteCN, remoteEIP, remotePrivateCidrs", gw.Name, v.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}

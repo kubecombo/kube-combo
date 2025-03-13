@@ -97,8 +97,8 @@ type IpsecConnSpec struct {
 // //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
 //+kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
-//+kubebuilder:printcolumn:name="LocalPublicIp",type=string,JSONPath=`.spec.localPublicIp`
-//+kubebuilder:printcolumn:name="RemotePublicIp",type=string,JSONPath=`.spec.remotePublicIp`
+//+kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`
+//+kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
 //+kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`
 //+kubebuilder:printcolumn:name="RemotePrivateCidrs",type=string,JSONPath=`.spec.remotePrivateCidrs`
 //+kubebuilder:printcolumn:name="LocalCN",type=string,JSONPath=`.spec.localCN`

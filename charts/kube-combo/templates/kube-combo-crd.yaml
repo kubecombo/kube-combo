@@ -17,8 +17,8 @@ spec:
         - jsonPath: .spec.vpnGw
           name: VpnGw
           type: string
-        - jsonPath: .spec.localPublicIp
-          name: LocalPublicIp
+        - jsonPath: .spec.localPublicIP
+          name: localPublicIP
           type: string
         - jsonPath: .spec.remotePublicIp
           name: RemotePublicIp
@@ -68,7 +68,7 @@ spec:
                   type: string
                 localPrivateCidrs:
                   type: string
-                localPublicIp:
+                localPublicIP:
                   type: string
                 proposals:
                   type: string
@@ -85,7 +85,7 @@ spec:
                 - ikeVersion
                 - localCN
                 - localPrivateCidrs
-                - localPublicIp
+                - localPublicIP
                 - proposals
                 - remoteCN
                 - remotePrivateCidrs

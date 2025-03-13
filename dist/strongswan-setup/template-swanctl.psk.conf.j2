@@ -2,8 +2,8 @@ connections {
 {% for conn in connections %}
     gw-gw-{{ conn.name }} {
       version = {{ conn.ikeVersion }}
-      local_addrs  = {{ conn.localPublicIP }}
-      remote_addrs = {{ conn.remotePublicIP }}
+      local_addrs  = {{ conn.localEIP }}
+      remote_addrs = {{ conn.remoteEIP }}
       dpd_delay = 60
       rekey_time = 84600
       over_time = 1800

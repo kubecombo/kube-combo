@@ -18,11 +18,11 @@ spec:
     - jsonPath: .spec.vpnGw
       name: VpnGw
       type: string
-    - jsonPath: .spec.localPublicIp
-      name: LocalPublicIp
+    - jsonPath: .spec.localEIP
+      name: LocalEIP
       type: string
-    - jsonPath: .spec.remotePublicIp
-      name: RemotePublicIp
+    - jsonPath: .spec.remoteEIP
+      name: RemoteEIP
       type: string
     - jsonPath: .spec.localPrivateCidrs
       name: LocalPrivateCidrs

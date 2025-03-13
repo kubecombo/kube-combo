@@ -53,10 +53,10 @@ function refresh-x509() {
 		ikeVersion=${conn[2]}
 		ikeProposals=${conn[3]}
 		localCN=${conn[4]}
-		localPublicIP=${conn[5]}
+		localEIP=${conn[5]}
 		localPrivateCidrs=${conn[6]}
 		remoteCN=${conn[7]}
-		remotePublicIP=${conn[8]}
+		remoteEIP=${conn[8]}
 		remotePrivateCidrs=${conn[9]}
 		{
 			printf "  - name: %s\n" "${name}"
@@ -64,10 +64,10 @@ function refresh-x509() {
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
 			printf "    ikeProposals: %s\n" "${ikeProposals}"
 			printf "    localCN: %s\n" "${localCN}"
-			printf "    localPublicIP: %s\n" "${localPublicIP}"
+			printf "    localEIP: %s\n" "${localEIP}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteCN: %s\n" "${remoteCN}"
-			printf "    remotePublicIP: %s\n" "${remotePublicIP}"
+			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 		} >>"${CONNECTIONS_YAML}"
 	done
@@ -108,10 +108,10 @@ function refresh-psk() {
 		ikeVersion=${conn[2]}
 		ikeProposals=${conn[3]}
 		localCN=${conn[4]}
-		localPublicIP=${conn[5]}
+		localEIP=${conn[5]}
 		localPrivateCidrs=${conn[6]}
 		remoteCN=${conn[7]}
-		remotePublicIP=${conn[8]}
+		remoteEIP=${conn[8]}
 		remotePrivateCidrs=${conn[9]}
 		localPSK=$(echo "${conn[10]}" | base64 -d)
 		remotePSK=$(echo "${conn[11]}" | base64 -d)
@@ -122,10 +122,10 @@ function refresh-psk() {
 			printf "    ikeVersion: %s\n" "${ikeVersion}"
 			printf "    ikeProposals: %s\n" "${ikeProposals}"
 			printf "    localCN: %s\n" "${localCN}"
-			printf "    localPublicIP: %s\n" "${localPublicIP}"
+			printf "    localEIP: %s\n" "${localEIP}"
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteCN: %s\n" "${remoteCN}"
-			printf "    remotePublicIP: %s\n" "${remotePublicIP}"
+			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 			printf "    localPSK: %s\n" "${localPSK}"
 			printf "    remotePSK: %s\n" "${remotePSK}"
