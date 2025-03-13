@@ -18,6 +18,9 @@ spec:
     - jsonPath: .spec.vpnGw
       name: VpnGw
       type: string
+    - jsonPath: .spec.localVIP
+      name: LocalVIP
+      type: string
     - jsonPath: .spec.localEIP
       name: LocalEIP
       type: string
@@ -74,6 +77,10 @@ spec:
                 type: string
               localPrivateCidrs:
                 type: string
+              localVIP:
+                description: current public ipsec vpn gw internal keepalived virtual
+                  ip
+                type: string
               remoteCN:
                 type: string
               remoteEIP:
@@ -91,6 +98,7 @@ spec:
             - ikeVersion
             - localEIP
             - localPrivateCidrs
+            - localVIP
             - remoteEIP
             - remotePrivateCidrs
             - vpnGw
