@@ -3,8 +3,8 @@ set -eux
 
 {% for conn in connections %}
 # ---loop check connection {{ conn.name }} remote public ip ---
-while ! ping -n -c 1 {{ conn.remotePublicIp }}; do
-    echo "Waiting for {{ conn.remotePublicIp }} to respond..."
+while ! ping -n -c 1 {{ conn.remoteEIP }}; do
+    echo "Waiting for {{ conn.remoteEIP }} to respond..."
     sleep 5
 done
 
