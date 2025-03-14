@@ -111,7 +111,7 @@ function refresh-psk() {
 		remoteEIP=${conn[7]}
 		remotePrivateCidrs=${conn[8]}
 		DefualtPSK=$(echo "${conn[9]}" | base64 -d)
-		espProposals=${conn[11]}
+		espProposals=${conn[10]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
