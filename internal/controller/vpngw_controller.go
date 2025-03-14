@@ -1224,6 +1224,11 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
+			if v.Spec.IKEProposals == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection should have ike proposals", gw.Name)
+				r.Log.Error(err, "invalid ipsec connection")
+				return "", SyncStateError, err
+			}
 		}
 		if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
 			err := fmt.Errorf("vpn gw %s ipsec connection %s not belong to vpn gw", gw.Name, v.Name)
