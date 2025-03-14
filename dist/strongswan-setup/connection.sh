@@ -125,7 +125,7 @@ function refresh-psk() {
 			printf "    espProposals: %s\n" "${espProposals}"
 		} >>"${CONNECTIONS_YAML}"
 	done
-	printf "  DefaultPSK: %s\n" "${DefaultPSK}" >>"${CONNECTIONS_YAML}"
+	printf "DefaultPSK: %s\n" "${DefaultPSK}" >>"${CONNECTIONS_YAML}"
 
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
