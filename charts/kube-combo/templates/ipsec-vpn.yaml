@@ -42,10 +42,10 @@ spec:
   ikeProposals: {{.Values.ipsecvpn.ikeProposals}}
   # ike version 0, 1, 2
   ikeVersion: "{{.Values.ipsecvpn.ikeVersion}}"
-  localCN: mars.vpn.gw.com
+  localVIP: {{.Values.ipsecvpn.localVIP}}
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
-  DefaultPSK: {{.Values.ipsecvpn.DefaultPSK}}
+  defaultPSK: {{.Values.ipsecvpn.defaultPSK}}
   remoteCN: moon.vpn.gw.com
   remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
   remotePrivateCidrs: {{.Values.ipsecvpn.remotePrivateCidrs}}
