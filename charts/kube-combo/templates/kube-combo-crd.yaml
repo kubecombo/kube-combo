@@ -71,11 +71,6 @@ spec:
                 localEIP:
                   description: current public ipsec vpn gw external ip
                   type: string
-                localVIP:
-                  type: string
-                defaultPSK:
-                  description: psk secret
-                  type: string
                 localPrivateCidrs:
                   type: string
                 localVIP:
@@ -1115,6 +1110,11 @@ spec:
                       type: object
                   type: object
                 cpu:
+                  type: string
+                defaultPSK:
+                  description:
+                    only support one global default PSK is enough for most
+                    cases
                   type: string
                 dhSecret:
                   description:
