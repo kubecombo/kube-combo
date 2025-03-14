@@ -17,6 +17,7 @@ IPSEC_HOSTS=/etc/hosts.ipsec
 TEMPLATE_HOSTS=template-hosts.j2
 TEMPLATE_CHECK=template-check.j2
 CHECK_SCRIPT=check
+DefualtPSK=""
 
 # IPSEC_VPN_IMAGE set the static pod image
 K8S_MANIFESTS_PATH=${K8S_MANIFESTS_PATH:-/etc/kubernetes/manifests}
@@ -96,7 +97,6 @@ function refresh-psk() {
 	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
-	DefualtPSK=""
 	IFS=',' read -r -a array <<<"${connections}"
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
