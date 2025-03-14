@@ -1211,14 +1211,14 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 }
 
 func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1.IpsecConn) (string, SyncState, error) {
+	if gw.Spec.IPSecEnablePSK && gw.Spec.DefaultPSK == "" {
+		err := fmt.Errorf("vpn gw %s should have one default psk", gw.Name)
+		r.Log.Error(err, "invalid ipsec connection")
+		return "", SyncStateError, err
+	}
 	connections := ""
 	for _, v := range *conns {
 		if gw.Spec.IPSecEnablePSK {
-			if gw.Spec.DefaultPSK == "" {
-				err := fmt.Errorf("vpn gw %s should have one default psk", gw.Name)
-				r.Log.Error(err, "invalid ipsec connection")
-				return "", SyncStateError, err
-			}
 			if v.Spec.ESPProposals == "" {
 				err := fmt.Errorf("vpn gw %s ipsec connection should have esp proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
