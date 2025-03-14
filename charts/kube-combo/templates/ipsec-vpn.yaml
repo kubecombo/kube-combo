@@ -21,8 +21,9 @@ spec:
         {{- end }}
       {{- end }}
     {{- end }}
-  ipsecEnablePSK: true
   enableIpsecVpn: true
+  ipsecEnablePSK: true
+  defaultPSK: {{.Values.ipsecvpn.defaultPSK}}
   ipsecVpnImage: {{.Values.global.registry.address}}/{{.Values.global.images.strongswan.repository}}:{{.Values.global.images.strongswan.tag}}
 ---
 kind: IpsecConn
@@ -37,16 +38,14 @@ spec:
   vpnGw: mars
   # pubkey use cert-manager x509 ca, support ipv4 ipv6
   # psk use pre shared key, ipv4 only
-  auth: {{.Values.ipsecvpn.auth}}
+  auth: psk
   espProposals: {{.Values.ipsecvpn.espProposals}}
   ikeProposals: {{.Values.ipsecvpn.ikeProposals}}
   # ike version 0, 1, 2
-  ikeVersion: "{{.Values.ipsecvpn.ikeVersion}}"
+  ikeVersion: "2"
   localVIP: {{.Values.ipsecvpn.localVIP}}
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
-  defaultPSK: {{.Values.ipsecvpn.defaultPSK}}
-  remoteCN: moon.vpn.gw.com
   remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
   remotePrivateCidrs: {{.Values.ipsecvpn.remotePrivateCidrs}}
 {{- end }}
