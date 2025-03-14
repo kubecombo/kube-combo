@@ -127,7 +127,6 @@ function refresh-psk() {
 	done
 	printf "  DefualtPSK: %s\n" "${defualtPSK}"
 
-
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
 	j2 swanctl.conf.j2 "${CONNECTIONS_YAML}" -o "${CONF}"
