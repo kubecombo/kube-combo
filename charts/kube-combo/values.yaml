@@ -54,7 +54,7 @@ ipsecvpn:
   ikeVersion: "1"
   localEIP: 172.19.0.103
   localPrivateCidrs: 172.21.0.0/16
-  defualtPSK: Nzg5Cg==
+  DefaultPSK: Nzg5Cg==
   remoteEIP: 172.19.0.101
   remotePrivateCidrs: 10.1.0.0/24
   IPSECVPN_NODES_LABEL: ""

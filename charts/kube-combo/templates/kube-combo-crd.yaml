@@ -79,7 +79,7 @@ spec:
                   type: string
                 localVIP:
                   type: string
-                defualtPSK:
+                DefaultPSK:
                   description: psk secret
                   type: string
                 localPrivateCidrs:
