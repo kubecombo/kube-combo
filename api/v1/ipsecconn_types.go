@@ -80,13 +80,6 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	RemotePrivateCidrs string `json:"remotePrivateCidrs"`
 
-	// psk secret
-	// +kubebuilder:validation:Optional
-	LocalPSK string `json:"localPSK,omitempty"`
-
-	// +kubebuilder:validation:Optional
-	RemotePSK string `json:"remotePSK,omitempty"`
-
 	// +kubebuilder:validation:Optional
 	ESPProposals string `json:"espProposals,omitempty"`
 }

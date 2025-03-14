@@ -17,6 +17,7 @@ IPSEC_HOSTS=/etc/hosts.ipsec
 TEMPLATE_HOSTS=template-hosts.j2
 TEMPLATE_CHECK=template-check.j2
 CHECK_SCRIPT=check
+DefaultPSK=""
 
 # IPSEC_VPN_IMAGE set the static pod image
 K8S_MANIFESTS_PATH=${K8S_MANIFESTS_PATH:-/etc/kubernetes/manifests}
@@ -109,9 +110,8 @@ function refresh-psk() {
 		localPrivateCidrs=${conn[6]}
 		remoteEIP=${conn[7]}
 		remotePrivateCidrs=${conn[8]}
-		localPSK=$(echo "${conn[9]}" | base64 -d)
-		remotePSK=$(echo "${conn[10]}" | base64 -d)
-		espProposals=${conn[11]}
+		DefaultPSK=$(echo "${conn[9]}" | base64 -d)
+		espProposals=${conn[10]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
@@ -122,11 +122,10 @@ function refresh-psk() {
 			printf "    localPrivateCidrs: %s\n" "${localPrivateCidrs}"
 			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
-			printf "    localPSK: %s\n" "${localPSK}"
-			printf "    remotePSK: %s\n" "${remotePSK}"
 			printf "    espProposals: %s\n" "${espProposals}"
 		} >>"${CONNECTIONS_YAML}"
 	done
+	printf "DefaultPSK: %s\n" "${DefaultPSK}" >>"${CONNECTIONS_YAML}"
 
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"

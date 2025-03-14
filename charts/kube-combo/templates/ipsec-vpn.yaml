@@ -45,8 +45,8 @@ spec:
   localVIP: {{.Values.ipsecvpn.localVIP}}
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
-  localPSK: {{.Values.ipsecvpn.localPSK}}
-  remotePSK: {{.Values.ipsecvpn.remotePSK}}
+  defaultPSK: {{.Values.ipsecvpn.defaultPSK}}
+  remoteCN: moon.vpn.gw.com
   remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
   remotePrivateCidrs: {{.Values.ipsecvpn.remotePrivateCidrs}}
 {{- end }}

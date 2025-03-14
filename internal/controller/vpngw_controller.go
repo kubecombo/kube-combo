@@ -1211,16 +1211,21 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 }
 
 func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1.IpsecConn) (string, SyncState, error) {
+	if gw.Spec.IPSecEnablePSK && gw.Spec.DefaultPSK == "" {
+		err := fmt.Errorf("vpn gw %s should have one default psk", gw.Name)
+		r.Log.Error(err, "invalid ipsec connection")
+		return "", SyncStateError, err
+	}
 	connections := ""
 	for _, v := range *conns {
 		if gw.Spec.IPSecEnablePSK {
-			if v.Spec.LocalPSK == "" || v.Spec.RemotePSK == "" {
-				err := fmt.Errorf("vpn gw %s ipsec connection should have psk", gw.Name)
+			if v.Spec.ESPProposals == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection should have esp proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
-			if v.Spec.ESPProposals == "" {
-				err := fmt.Errorf("vpn gw %s ipsec connection should have esp proposals", gw.Name)
+			if v.Spec.IKEProposals == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection should have ike proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
@@ -1285,11 +1290,11 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				v.Spec.RemoteCN, v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs)
 		} else {
 			// psk
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s,",
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s,",
 				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
 				v.Spec.LocalVIP, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs,
-				v.Spec.LocalPSK, v.Spec.RemotePSK, v.Spec.ESPProposals)
+				gw.Spec.DefaultPSK, v.Spec.ESPProposals)
 		}
 	}
 	return connections, SyncStateSuccess, nil
