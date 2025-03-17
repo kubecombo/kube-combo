@@ -1362,15 +1362,17 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 
 	var conns []string
 	if gw.Spec.EnableIPSecVpn {
-		// fetch ipsec connections
+		// refresh ipsec connections
 		res, err := r.getIpsecConnections(context.Background(), gw)
 		if err != nil {
 			r.Log.Error(err, "failed to list vpn gw ipsec connections")
 			return SyncStateError, err
 		}
 		if len(*res) == 0 {
-			r.Log.Info("no ipsec connections to refresh")
-			return SyncStateSuccess, nil
+			err := fmt.Errorf("vpn gw %s has no ipsec connections", gw.Name)
+			r.Log.Error(err, "no ipsec connections, wait a while to refresh")
+			time.Sleep(5 * time.Second)
+			return SyncStateError, err
 		}
 
 		// format ipsec connections
