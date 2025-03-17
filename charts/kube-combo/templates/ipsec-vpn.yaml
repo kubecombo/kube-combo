@@ -38,11 +38,11 @@ spec:
   vpnGw: mars
   # pubkey use cert-manager x509 ca, support ipv4 ipv6
   # psk use pre shared key, ipv4 only
-  auth: psk
+  auth: {{.Values.ipsecvpn.auth}}
   espProposals: {{.Values.ipsecvpn.espProposals}}
   ikeProposals: {{.Values.ipsecvpn.ikeProposals}}
   # ike version 0, 1, 2
-  ikeVersion: "2"
+  ikeVersion: "{{.Values.ipsecvpn.ikeVersion}}"
   localVIP: {{.Values.ipsecvpn.localVIP}}
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
