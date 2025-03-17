@@ -5,20 +5,17 @@ set -eux
 # k8s static pod copy file from host-init to pod /etc/openvpn
 # and start openvpn server
 
-while [ ! -f "/etc/host-init-openvpn/openvpn.conf" ]
-do
+while [ ! -f "/etc/host-init-openvpn/openvpn.conf" ]; do
     sleep 1
     echo "waiting for /etc/host-init-openvpn/openvpn.conf ............"
 done
 
-while [ ! -d "/etc/host-init-openvpn/certs" ]
-do
+while [ ! -d "/etc/host-init-openvpn/certs" ]; do
     sleep 1
     echo "waiting for /etc/host-init-openvpn/certs ............"
 done
 
-while [ ! -f "/etc/host-init-openvpn/dh.pem" ]
-do
+while [ ! -f "/etc/host-init-openvpn/dh.pem" ]; do
     sleep 1
     echo "waiting for /etc/host-init-openvpn/dh.pem ............"
 done
