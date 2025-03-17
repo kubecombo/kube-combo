@@ -71,7 +71,7 @@ spec:
           args:
             - --leader-elect
           # image: controller:latest
-          image: icoy/kube-combo-controller:v0.0.8
+          image: icoy/kube-combo-controller:v0.0.9
           name: manager
           securityContext:
             allowPrivilegeEscalation: false
