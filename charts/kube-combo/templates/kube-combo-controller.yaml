@@ -2,11 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/component: manager
-    app.kubernetes.io/created-by: kube-combo
-    app.kubernetes.io/instance: controller-manager
-    app.kubernetes.io/name: deployment
-    app.kubernetes.io/part-of: kube-combo
     control-plane: controller-manager
   name: kube-combo-controller-manager
   namespace: {{.Values.namespace}}
