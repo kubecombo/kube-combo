@@ -48,12 +48,13 @@ sslvpn:
   SSLVPN_NODES_LABEL: ""
 
 ipsecvpn:
-  espProposals: 3des-modp2048
-  ikeProposals: 3des-sha256-modp204
+  auth: psk
+  espProposals: aes256-sha256-modp1536
+  ikeProposals: aes256-sha256-modp1536
+  ikeVersion: 2
   localVIP: 100.65.150.181
   localEIP: 172.19.0.103
   localPrivateCidrs: 172.21.0.0/16
-  defaultPSK: Nzg5Cg==
   remoteEIP: 172.19.0.101
   remotePrivateCidrs: 10.1.0.0/24
   IPSECVPN_NODES_LABEL: ""
