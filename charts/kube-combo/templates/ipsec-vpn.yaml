@@ -6,7 +6,7 @@ metadata:
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "2"
-  name: mars
+  name: strongswan
   namespace: {{.Values.namespace}}
 spec:
   workloadType: static
@@ -35,7 +35,7 @@ metadata:
   name: mars-moon
   namespace: {{.Values.namespace}}
 spec:
-  vpnGw: mars
+  vpnGw: strongswan
   # pubkey use cert-manager x509 ca, support ipv4 ipv6
   # psk use pre shared key, ipv4 only
   auth: {{.Values.ipsecvpn.auth}}
