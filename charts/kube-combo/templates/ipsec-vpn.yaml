@@ -5,7 +5,7 @@ apiVersion: vpn-gw.kubecombo.com/v1
 metadata:
   annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-weight": "2"
   name: mars
   namespace: {{.Values.namespace}}
 spec:
