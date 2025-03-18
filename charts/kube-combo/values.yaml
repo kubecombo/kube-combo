@@ -48,6 +48,7 @@ sslvpn:
   SSLVPN_NODES_LABEL: ""
 
 ipsecvpn:
+  defaultPSK: ""
   auth: psk
   espProposals: aes256-sha256-modp1536
   ikeProposals: aes256-sha256-modp1536
