@@ -3,6 +3,8 @@ kind: Pod
 metadata:
   name: openvpn
   namespace: kube-system
+  labels:
+    eki-plus/vpn.type: ssl
 spec:
   hostNetwork: true
   containers:
