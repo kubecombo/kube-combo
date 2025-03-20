@@ -31,3 +31,19 @@ ip xfrm policy
 ## debug
 ### if ip xfrm state |policy is empty, then run this command to debug
 ### swanctl --initiate --child net-net  mars-moon
+
+# loop check and setup ipsec connection
+
+while true; do
+    if /usr/sbin/swanctl --list-sas | grep -q established; then
+        echo "Connection established, sleeping for 5 seconds and checking again..."
+        sleep 5
+    else
+        echo "Connection not established, initiating..."
+        set +e
+        {% for conn in connections %}
+        /usr/sbin/swanctl --initiate --child {{ conn.name }} || exit 0
+        {% endfor %}
+        sleep 5
+    fi
+done
