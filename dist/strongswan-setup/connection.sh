@@ -45,7 +45,7 @@ function refresh-x509() {
 	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
-	IFS=',' read -r -a array <<<"${connections}"
+	IFS=';' read -r -a array <<<"${connections}"
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
 		IFS=' ' read -r -a conn <<<"${connection}"
@@ -97,7 +97,7 @@ function refresh-psk() {
 	# 3. refresh connections
 	# format connections into connection.yaml
 	printf "connections: \n" >"${CONNECTIONS_YAML}"
-	IFS=',' read -r -a array <<<"${connections}"
+	IFS=';' read -r -a array <<<"${connections}"
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
 		IFS=' ' read -r -a conn <<<"${connection}"
