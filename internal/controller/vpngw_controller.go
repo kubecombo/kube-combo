@@ -1284,13 +1284,13 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 			}
 		}
 		if v.Spec.Auth == "pubkey" {
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s,",
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s;",
 				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
 				v.Spec.LocalCN, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteCN, v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs)
 		} else {
 			// psk
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s,",
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s;",
 				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
 				v.Spec.LocalVIP, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
 				v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs,
