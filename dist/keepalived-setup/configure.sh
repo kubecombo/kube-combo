@@ -20,25 +20,38 @@ if [ -z "$KEEPALIVED_NIC" ]; then
     exit 1
 fi
 
-# # get vip mask from eth0
-# intAndIP="$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $5 "-" $7}')"
-# int="${intAndIP%-*}"
-# ip="${intAndIP#*-}"
-# cidr="$(ip addr show dev "$int" | awk -vip="$ip" '($2 ~ ip) {print $2}')"
-# mask="${cidr#*/}"
-# if [ -z "$mask" ]; then
-#     echo "KA_VIP_MASK is empty."
-#     exit 1
-# fi
+printf "instances: \n" >"${CONNECTIONS_YAML}"
 
-printf "KA_VIP: %s\n" "${KEEPALIVED_VIP}" >"${VALUES_YAML}"
-# printf "KA_VIP_MASK: %s\n" "${mask}" >> $VALUES_YAML
-printf "KA_VRID: %s\n" "${KEEPALIVED_VIRTUAL_ROUTER_ID}" >>"${VALUES_YAML}"
-printf "KA_NIC: %s\n" "${KEEPALIVED_NIC}" >>"${VALUES_YAML}"
+# This priority value must be within the range of 0 to 255
+# random generate a priority value
+priority=$(shuf -i 0-255 -n 1)
 
-random_number=$((RANDOM % 99 + 1))
-printf "KA_PRIORITY: %s\n" "${random_number}" >>"${VALUES_YAML}"
+# example KEEPALIVED_NIC="eth0,eth1"
+# example KEEPALIVED_VIP="192.168.0.100,192.168.1.100"
+nic1, nic2 = $(echo "${KEEPALIVED_NIC}" | tr "," "\n")
+vip1, vip2 = $(echo "${KEEPALIVED_VIP}" | tr "," "\n")
+router_id1 = $(echo "${KEEPALIVED_VIRTUAL_ROUTER_ID}" | tr "," "\n")
+router_id2 = router_id1 + 1
 
+if [ ! -z "$vip1" ]; then
+    echo "prepare vip ${vip1} nic ${nic1} ..."
+    printf "  - name: %s\n" "${nic1}" >>"${VALUES_YAML}"
+    printf "    vip: %s\n" "${vip1}" >>"${VALUES_YAML}"
+    printf "    nic: %s\n" "${nic1}" >>"${VALUES_YAML}"
+    printf "    router_id: %s\n" "${router_id1}" >>"${VALUES_YAML}"
+    printf "    priority: %s\n" "${priority}" >>"${VALUES_YAML}"
+fi
+
+if [ ! -z "$vip2" ]; then
+    echo "prepare vip ${vip2} nic ${nic2} ..."
+    printf "  - name: %s\n" "${nic2}" >>"${VALUES_YAML}"
+    printf "    vip: %s\n" "${vip2}" >>"${VALUES_YAML}"
+    printf "    nic: %s\n" "${nic2}" >>"${VALUES_YAML}"
+    printf "    router_id: %s\n" "${router_id2}" >>"${VALUES_YAML}"
+    printf "    priority: %s\n" "${priority}" >>"${VALUES_YAML}"
+fi
+
+echo "cat ${VALUES_YAML}..."
 cat "${VALUES_YAML}"
 
 echo "prepare keepalived.conf..."
