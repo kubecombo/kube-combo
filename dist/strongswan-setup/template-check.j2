@@ -1,13 +1,16 @@
 #!/bin/bash
 set -eux
-
 {% for conn in connections %}
 # ---loop check connection {{ conn.name }} remote public ip ---
 while ! ping -n -c 1 {{ conn.remoteEIP }}; do
-    echo "Waiting for {{ conn.remoteEIP }} to respond..."
+    echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
     sleep 5
 done
 
+while ! ping -n -c 1 {{ conn.localVIP }}; do
+    echo "Waiting for local vip {{ conn.localVIP }} to respond..."
+    sleep 5
+done
 {% endfor %}
 
 # loop check ss -tunlp | grep 4500
@@ -33,18 +36,20 @@ ip xfrm policy
 ### swanctl --initiate --child net-net  mars-moon
 
 # loop check and setup ipsec connection
-
+# set up only when keepalived set the vip in local node
+set +e
 while true; do
-    if ! /usr/sbin/swanctl --list-sas | grep -q established; then
-        echo "Connection not established, initiating..."
-        set +e
+{% for conn in connections %}
+    if ip a | grep {{ conn.localVIP }}; then
+        echo "node has ipsec vip {{ conn.localVIP }}, initiating..."
         /usr/sbin/swanctl --load-all
         {% for conn in connections %}
         /usr/sbin/swanctl --initiate --child net-net {{ conn.name }}
         {% endfor %}
         sleep 5
     else
-        echo "Connection established, sleeping for 5 seconds and checking again..."
+        echo "node has no ipsec vip {{ conn.localVIP }}, sleeping and checking later......"
         sleep 5
     fi
+{% endfor %}
 done
