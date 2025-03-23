@@ -35,7 +35,7 @@ ip xfrm policy
 # loop check and setup ipsec connection
 
 while true; do
-    if /usr/sbin/swanctl --list-sas | grep -q established; then
+    if ! /usr/sbin/swanctl --list-sas | grep -q established; then
         echo "Connection not established, initiating..."
         set +e
         /usr/sbin/swanctl --load-all
