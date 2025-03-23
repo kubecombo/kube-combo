@@ -29,10 +29,10 @@ priority=$(shuf -i 0-255 -n 1)
 
 # example KEEPALIVED_NIC="eth0,eth1"
 # example KEEPALIVED_VIP="192.168.0.100,192.168.1.100"
-nic1, nic2 = $(echo "${KEEPALIVED_NIC}" | tr "," "\n")
-vip1, vip2 = $(echo "${KEEPALIVED_VIP}" | tr "," "\n")
-router_id1 = $(echo "${KEEPALIVED_VIRTUAL_ROUTER_ID}" | tr "," "\n")
-router_id2 = router_id1 + 1
+read nic1 nic2 <<< $(echo "${KEEPALIVED_NIC}" | tr "," " ")
+read vip1 vip2 <<< $(echo "${KEEPALIVED_VIP}" | tr "," " ")
+read router_id1 <<< $(echo "${KEEPALIVED_VIRTUAL_ROUTER_ID}" | tr "," " ")
+router_id2=$((router_id1 + 1))
 
 if [ ! -z "$vip1" ]; then
     echo "prepare vip ${vip1} nic ${nic1} ..."
