@@ -3,19 +3,19 @@
 # keepalived virtual_server 配置部分原生支持 lvs lb 的配置，关于 lb 及其健康检查可以通过 jinja2 include 的方式引入
 
 {% for instance in instances %}
-vrrp_instance {{ instance.name }} {
+vrrp_instance vi{{ instance.priority }} {
     state BACKUP
     nopreempt
-    interface {{ nic }}
-    virtual_router_id {{ router_id }}
-    priority {{ priority }}
+    interface {{ instance.nic }}
+    virtual_router_id {{ instance.router_id }}
+    priority {{ instance.priority }}
     advert_int 1
     authentication {
         auth_type PASS
         auth_pass kubecombo
     }
     virtual_ipaddress {
-        {{ vip }} dev {{ nic }}
+        {{ instance.vip }} dev {{ instance.nic }}
     }
 }
 {% endfor %}
