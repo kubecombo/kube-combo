@@ -40,7 +40,7 @@ while true; do
         set +e
         /usr/sbin/swanctl --load-all
         {% for conn in connections %}
-        /usr/sbin/swanctl --initiate --child {{ conn.name }}
+        /usr/sbin/swanctl --initiate --child net-net {{ conn.name }}
         {% endfor %}
         sleep 5
     else
