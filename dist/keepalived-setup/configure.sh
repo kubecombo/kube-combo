@@ -20,7 +20,8 @@ if [ -z "$KEEPALIVED_NIC" ]; then
     exit 1
 fi
 
-printf "instances: \n" >"${CONNECTIONS_YAML}"
+# prepare values.yaml
+printf "instances: \n" >"${VALUES_YAML}"
 
 # This priority value must be within the range of 0 to 255
 # random generate a priority value
