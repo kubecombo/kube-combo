@@ -1,19 +1,16 @@
 #!/bin/bash
 set -eux
-LOCALEIP=""
 {% for conn in connections %}
 # ---loop check connection {{ conn.name }} remote public ip ---
 while ! ping -n -c 1 {{ conn.remoteEIP }}; do
     echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
-    LOCALEIP={{ conn.localEIP }}
     sleep 5
 done
 
-while ! ping -n -c 1 "${LOCALEIP}"; do
-    echo "Waiting for local eip ${LOCALEIP} to respond..."
+while ! ping -n -c 1 {{ conn.localVIP }}; do
+    echo "Waiting for local vip {{ conn.localVIP }} to respond..."
     sleep 5
 done
-
 {% endfor %}
 
 # loop check ss -tunlp | grep 4500
@@ -42,15 +39,17 @@ ip xfrm policy
 # loop check and setup ipsec connection
 set +e
 while true; do
-    if ip a | grep "${LOCALEIP}; then
-        echo "node has ipsec eip ${LOCALEIP}, initiating..."
+{% for conn in connections %}
+    if ip a | grep {{ conn.localVIP }}; then
+        echo "node has ipsec vip {{ conn.localVIP }}, initiating..."
         /usr/sbin/swanctl --load-all
         {% for conn in connections %}
         /usr/sbin/swanctl --initiate --child net-net {{ conn.name }}
         {% endfor %}
         sleep 5
     else
-        echo "node has no ipsec eip ${LOCALEIP}, sleeping and checking later......"
+        echo "node has no ipsec vip {{ conn.localVIP }}, sleeping and checking later......"
         sleep 5
     fi
+{% endfor %}
 done
