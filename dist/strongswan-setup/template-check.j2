@@ -35,8 +35,8 @@ ip xfrm policy
 ### if ip xfrm state |policy is empty, then run this command to debug
 ### swanctl --initiate --child net-net  mars-moon
 
-# only keepalived set the eip in local node, set up the ipsec
 # loop check and setup ipsec connection
+# set up only when keepalived set the vip in local node
 set +e
 while true; do
 {% for conn in connections %}
