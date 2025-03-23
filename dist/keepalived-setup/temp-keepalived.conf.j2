@@ -1,19 +1,21 @@
-# 该主模版仅维护 keepalived 的基础配置，如需使用 lvs lb 功能，需要在该模版的基础上进行扩展
-# keepalived virtual_server 配置部分原生支持 lvs lb 的配置，关于 lb 及其健康检查可以通过jinja2 include 的方式引入
 
-vrrp_instance vi {
+# 该模版仅维护 keepalived 的基础配置，如需使用 lvs lb 功能，需要在该模版的基础上进行扩展
+# keepalived virtual_server 配置部分原生支持 lvs lb 的配置，关于 lb 及其健康检查可以通过 jinja2 include 的方式引入
+
+{% for instance in instances %}
+vrrp_instance vi{{ instance.router_id }} {
     state BACKUP
     nopreempt
-    interface {{ KA_NIC }}
-    virtual_router_id {{ KA_VRID }}
-    priority {{ KA_PRIORITY }}
+    interface {{ instance.nic }}
+    virtual_router_id {{ instance.router_id }}
+    priority {{ instance.priority }}
     advert_int 1
-
     authentication {
         auth_type PASS
-        auth_pass kubecomb
+        auth_pass kubecombo
     }
     virtual_ipaddress {
-        {{ KA_VIP }} dev {{ KA_NIC }}
+        {{ instance.vip }} dev {{ instance.nic }}
     }
 }
+{% endfor %}

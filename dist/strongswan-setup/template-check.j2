@@ -35,12 +35,12 @@ ip xfrm policy
 # loop check and setup ipsec connection
 
 while true; do
-    if /usr/sbin/swanctl --list-sas | grep -q established; then
+    if ! /usr/sbin/swanctl --list-sas | grep -q established; then
         echo "Connection not established, initiating..."
         set +e
         /usr/sbin/swanctl --load-all
         {% for conn in connections %}
-        /usr/sbin/swanctl --initiate --child {{ conn.name }}
+        /usr/sbin/swanctl --initiate --child net-net {{ conn.name }}
         {% endfor %}
         sleep 5
     else
