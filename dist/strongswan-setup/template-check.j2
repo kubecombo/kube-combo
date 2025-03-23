@@ -1,10 +1,16 @@
 #!/bin/bash
 set -eux
-
+LOCALEIP=""
 {% for conn in connections %}
 # ---loop check connection {{ conn.name }} remote public ip ---
 while ! ping -n -c 1 {{ conn.remoteEIP }}; do
-    echo "Waiting for {{ conn.remoteEIP }} to respond..."
+    echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
+    LOCALEIP={{ conn.localEIP }}
+    sleep 5
+done
+
+while ! ping -n -c 1 "${LOCALEIP}"; do
+    echo "Waiting for local eip ${LOCALEIP} to respond..."
     sleep 5
 done
 
@@ -32,19 +38,19 @@ ip xfrm policy
 ### if ip xfrm state |policy is empty, then run this command to debug
 ### swanctl --initiate --child net-net  mars-moon
 
+# only keepalived set the eip in local node, set up the ipsec
 # loop check and setup ipsec connection
-
+set +e
 while true; do
-    if ! /usr/sbin/swanctl --list-sas | grep -q established; then
-        echo "Connection not established, initiating..."
-        set +e
+    if ip a | grep "${LOCALEIP}; then
+        echo "node has ipsec eip ${LOCALEIP}, initiating..."
         /usr/sbin/swanctl --load-all
         {% for conn in connections %}
         /usr/sbin/swanctl --initiate --child net-net {{ conn.name }}
         {% endfor %}
         sleep 5
     else
-        echo "Connection established, sleeping for 5 seconds and checking again..."
+        echo "node has no ipsec eip ${LOCALEIP}, sleeping and checking later......"
         sleep 5
     fi
 done
