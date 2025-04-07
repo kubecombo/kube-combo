@@ -5,8 +5,8 @@ FROM icoy/kube-combo-base:$BASE_TAG
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
-    strongswan-swanctl \
-    charon-systemd \
+    strongswan-starter \
+    strongswan-charon \
     libcharon-extauth-plugins \
     libcharon-extra-plugins \
     libstrongswan \
