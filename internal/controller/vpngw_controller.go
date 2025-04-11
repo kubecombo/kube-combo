@@ -1293,33 +1293,26 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-
+		// use ":" to split connection
 		if con.Spec.Auth == "pubkey" {
 			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s:",
 				con.Name, con.Spec.Auth, con.Spec.IkeVersion, con.Spec.IKEProposals,
 				con.Spec.LocalCN, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
 				con.Spec.RemoteCN, con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
 			)
-			continue
 		}
 		if con.Spec.Auth == "psk" {
-			if con.Spec.LocalGateway != "" && con.Spec.LocalGatewayNic == "" {
-				connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s %s:",
-					con.Name, con.Spec.Auth, con.Spec.IkeVersion, con.Spec.IKEProposals,
-					con.Spec.LocalVIP, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
-					con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
-					gw.Spec.DefaultPSK, con.Spec.ESPProposals,
-					con.Spec.LocalGateway, con.Spec.LocalGatewayNic,
-				)
-				continue
-			}
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s:",
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s",
 				con.Name, con.Spec.Auth, con.Spec.IkeVersion, con.Spec.IKEProposals,
 				con.Spec.LocalVIP, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
 				con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
 				gw.Spec.DefaultPSK, con.Spec.ESPProposals,
 			)
-			continue
+			if con.Spec.LocalGateway != "" && con.Spec.LocalGatewayNic == "" {
+				connections += fmt.Sprintf(" %s %s:", con.Spec.LocalGateway, con.Spec.LocalGatewayNic)
+			} else {
+				connections += ":"
+			}
 		}
 	}
 	if connections == "" {
