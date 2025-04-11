@@ -15,7 +15,7 @@ done
 {% if conn.localGatewayNic is defined %}
 
 # 1. make sure ipsec gateway nic is exist and disable rp_filter
-echo "disable ipsec gateway nic {{ IPSEC_GATEWAY_NIC }} rp_filter"
+echo "disable ipsec gateway nic {{ conn.localGatewayNic }} rp_filter"
 ip a | grep -q {{ conn.localGatewayNic }}
 sysctl -w "net.ipv4.conf.{{ conn.localGatewayNic }}.rp_filter=0"
 
