@@ -112,6 +112,8 @@ function refresh-psk() {
 		remotePrivateCidrs=${conn[8]}
 		DefaultPSK=$(echo "${conn[9]}" | base64 -d)
 		espProposals=${conn[10]}
+		localVipGateway=${conn[11]}
+		localGatewayNic=${conn[12]}
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
@@ -123,6 +125,8 @@ function refresh-psk() {
 			printf "    remoteEIP: %s\n" "${remoteEIP}"
 			printf "    remotePrivateCidrs: %s\n" "${remotePrivateCidrs}"
 			printf "    espProposals: %s\n" "${espProposals}"
+			printf "    localVipGateway: %s\n" "${localVipGateway}"
+			printf "    localGatewayNic: %s\n" "${localGatewayNic}"
 		} >>"${CONNECTIONS_YAML}"
 	done
 	printf "DefaultPSK: %s\n" "${DefaultPSK}" >>"${CONNECTIONS_YAML}"

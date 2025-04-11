@@ -63,6 +63,23 @@ type IpsecConnSpec struct {
 	// +kubebuilder:validation:Required
 	LocalVIP string `json:"localVIP"`
 
+	// multi nic env case
+	// if the vip gw nic is not use default nic
+	// avoid source in souce out problem
+	// auto add static route for ipsec tunnel
+	// +kubebuilder:validation:Optional
+	LocalVipGateway string `json:"localVipGateway"`
+
+	// multi nic env case
+	// if the vip gw nic is not use default nic
+	// avoid source in souce out problem
+	// ipsec gw vip nic which may need to disable rp_filter in some linux, 0 or 2 for vpn|lb
+	// ipsec gw nic vip always maintained by keepalived
+	// only one nic should be enough for ipsec gw
+	// +kubebuilder:default:="bond0.12345"
+	// +kubebuilder:validation:Optional
+	LocalGatewayNic string `json:"localGatewayNic"`
+
 	// current public ipsec vpn gw external ip
 	// +kubebuilder:validation:Required
 	LocalEIP string `json:"localEIP"`

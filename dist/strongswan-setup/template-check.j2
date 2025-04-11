@@ -11,6 +11,33 @@ while ! ping -n -c 1 {{ conn.localVIP }}; do
     echo "Waiting for local vip {{ conn.localVIP }} to respond..."
     sleep 5
 done
+
+{% if conn.LocalGatewayNic is defined %}
+
+# 1. make sure ipsec gateway nic is exist and disable rp_filter
+echo "disable ipsec gateway nic {{ IPSEC_GATEWAY_NIC }} rp_filter"
+ip a | grep -q {{ conn.LocalGatewayNic }}
+sysctl -w "net.ipv4.conf.${IPSEC_GATEWAY_NIC}.rp_filter=0"
+
+# 2. make sure ipsec remote eip route is exist
+ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.LocalGatewayNic }}
+
+# 3. make sure ipsec remote cidr route is exist
+remoteTs={{ conn.remoteTs }}
+remotes=($(echo $remotes | tr ',' ' '))
+for remoteCidr in "${remotes[@]}"; do
+    ip route replace "$remoteCidr" via {{ conn.localVipGateway }} dev {{ conn.LocalGatewayNic }}
+done
+
+# 4. make sure ipsec local cidr route is exist
+localTs={{ conn.localTs }}
+locals=($(echo $locals | tr ',' ' '))
+for localCidr in "${locals[@]}"; do
+    ip route replace "$localCidr" via {{ conn.localVipGateway }} dev {{ conn.LocalGatewayNic }}
+done
+
+{% endif %}
+
 {% endfor %}
 
 # loop check ss -tunlp | grep 4500
