@@ -101,6 +101,7 @@ function refresh-psk() {
 	for connection in "${array[@]}"; do
 		# echo "show connection: ${connection}"
 		IFS=' ' read -r -a conn <<<"${connection}"
+		length=${#conn[@]}  # 13
 		name=${conn[0]}
 		auth=${conn[1]}
 		ikeVersion=${conn[2]}
@@ -112,8 +113,12 @@ function refresh-psk() {
 		remotePrivateCidrs=${conn[8]}
 		DefaultPSK=$(echo "${conn[9]}" | base64 -d)
 		espProposals=${conn[10]}
-		localVipGateway=${conn[11]}
-		localGatewayNic=${conn[12]}
+		localVipGateway=""
+		localGatewayNic=""
+		if [ ${length} -eq 13 ]; then
+			localVipGateway=${conn[11]}
+			localGatewayNic=${conn[12]}
+		fi
 		{
 			printf "  - name: %s\n" "${name}"
 			printf "    auth: %s\n" "${auth}"
@@ -130,6 +135,9 @@ function refresh-psk() {
 		} >>"${CONNECTIONS_YAML}"
 	done
 	printf "DefaultPSK: %s\n" "${DefaultPSK}" >>"${CONNECTIONS_YAML}"
+
+	echo "show ${CONNECTIONS_YAML} .............."
+	cat "${CONNECTIONS_YAML}"
 
 	j2 "${TEMPLATE_CHECK}" "${CONNECTIONS_YAML}" -o "${CHECK_SCRIPT}"
 	chmod +x "${CHECK_SCRIPT}"
