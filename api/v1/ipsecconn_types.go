@@ -78,7 +78,6 @@ type IpsecConnSpec struct {
 	// avoid source in souce out problem
 	// ipsec gw vip nic which may need to disable rp_filter in some linux, 0 or 2 for vpn|lb
 	// only one nic should be enough for ipsec gw
-	// +kubebuilder:default:="bond0.12345"
 	// +kubebuilder:validation:Optional
 	LocalGatewayNic string `json:"localGatewayNic"`
 
