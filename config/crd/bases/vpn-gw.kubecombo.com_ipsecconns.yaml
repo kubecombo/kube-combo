@@ -82,7 +82,6 @@ spec:
                   auto add static route for ipsec tunnel
                 type: string
               localGatewayNic:
-                default: bond0.12345
                 description: |-
                   local vip gateway nic
                   set it in multi nic env case
