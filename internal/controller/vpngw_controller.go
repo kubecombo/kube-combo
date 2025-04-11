@@ -1284,7 +1284,7 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 		}
 		// should set local vip and gateway
 		// host network pod may use keepalived out of kubecombo
-		if con.Spec.LocalVipGateway == "" {
+		if con.Spec.LocalGateway == "" {
 			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localVipGateway", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 		}
@@ -1306,7 +1306,7 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				con.Spec.LocalVIP, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
 				con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
 				gw.Spec.DefaultPSK, con.Spec.ESPProposals,
-				con.Spec.LocalVipGateway, con.Spec.LocalGatewayNic)
+				con.Spec.LocalGateway, con.Spec.LocalGatewayNic)
 		}
 	}
 	return connections, SyncStateSuccess, nil
