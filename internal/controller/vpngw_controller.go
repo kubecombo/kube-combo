@@ -26,8 +26,11 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -41,10 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
-
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -1217,84 +1216,97 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 		return "", SyncStateError, err
 	}
 	connections := ""
-	for _, v := range *conns {
+	for _, con := range *conns {
 		if gw.Spec.IPSecEnablePSK {
-			if v.Spec.ESPProposals == "" {
+			if con.Spec.ESPProposals == "" {
 				err := fmt.Errorf("vpn gw %s ipsec connection should have esp proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
-			if v.Spec.IKEProposals == "" {
+			if con.Spec.IKEProposals == "" {
 				err := fmt.Errorf("vpn gw %s ipsec connection should have ike proposals", gw.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
 		}
-		if v.Spec.VpnGw == "" || v.Spec.VpnGw != gw.Name {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s not belong to vpn gw", gw.Name, v.Name)
+		if con.Spec.VpnGw == "" || con.Spec.VpnGw != gw.Name {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s not belong to vpn gw", gw.Name, con.Name)
 			r.Log.Error(err, "ignore invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.Auth == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth", gw.Name, v.Name)
+		if con.Spec.Auth == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have auth", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.IkeVersion == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have ikeVersion", gw.Name, v.Name)
+		if con.Spec.IkeVersion == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have ikeVersion", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.IKEProposals == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have proposals", gw.Name, v.Name)
+		if con.Spec.IKEProposals == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have proposals", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.LocalVIP == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have LocalVIP", gw.Name, v.Name)
+		if con.Spec.LocalVIP == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have LocalVIP", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.LocalEIP == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localEIP", gw.Name, v.Name)
+		if con.Spec.LocalEIP == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localEIP", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.LocalPrivateCidrs == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localPrivateCidrs", gw.Name, v.Name)
+		if con.Spec.LocalPrivateCidrs == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localPrivateCidrs", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.RemoteEIP == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have remoteEIP", gw.Name, v.Name)
+		if con.Spec.RemoteEIP == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have remoteEIP", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
-		if v.Spec.RemotePrivateCidrs == "" {
-			err := fmt.Errorf("vpn gw %s ipsec connection %s should have remotePrivateCidrs", gw.Name, v.Name)
+		if con.Spec.RemotePrivateCidrs == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have remotePrivateCidrs", gw.Name, con.Name)
 			r.Log.Error(err, "invalid ipsec connection")
 			return "", SyncStateError, err
 		}
 
-		if v.Spec.Auth == "pubkey" {
-			if v.Spec.RemoteCN == "" || v.Spec.LocalCN == "" {
-				err := fmt.Errorf("vpn gw %s ipsec connection %s should have remoteCN, localCN", gw.Name, v.Name)
+		if con.Spec.Auth == "pubkey" {
+			if con.Spec.RemoteCN == "" || con.Spec.LocalCN == "" {
+				err := fmt.Errorf("vpn gw %s ipsec connection %s should have remoteCN, localCN", gw.Name, con.Name)
 				r.Log.Error(err, "invalid ipsec connection")
 				return "", SyncStateError, err
 			}
 		}
-		if v.Spec.Auth == "pubkey" {
+		// should set local vip and gateway
+		// host network pod may use keepalived out of kubecombo
+		if con.Spec.LocalVipGateway == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localVipGateway", gw.Name, con.Name)
+			r.Log.Error(err, "invalid ipsec connection")
+		}
+		if con.Spec.LocalGatewayNic == "" {
+			err := fmt.Errorf("vpn gw %s ipsec connection %s should have localGatewayNic", gw.Name, con.Name)
+			r.Log.Error(err, "invalid ipsec connection")
+			return "", SyncStateError, err
+		}
+
+		if con.Spec.Auth == "pubkey" {
 			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s:",
-				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
-				v.Spec.LocalCN, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
-				v.Spec.RemoteCN, v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs)
+				con.Name, con.Spec.Auth, con.Spec.IkeVersion, con.Spec.IKEProposals,
+				con.Spec.LocalCN, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
+				con.Spec.RemoteCN, con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs)
 		} else {
 			// psk
-			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s:",
-				v.Name, v.Spec.Auth, v.Spec.IkeVersion, v.Spec.IKEProposals,
-				v.Spec.LocalVIP, v.Spec.LocalEIP, v.Spec.LocalPrivateCidrs,
-				v.Spec.RemoteEIP, v.Spec.RemotePrivateCidrs,
-				gw.Spec.DefaultPSK, v.Spec.ESPProposals)
+			connections += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s %s %s %s:",
+				con.Name, con.Spec.Auth, con.Spec.IkeVersion, con.Spec.IKEProposals,
+				con.Spec.LocalVIP, con.Spec.LocalEIP, con.Spec.LocalPrivateCidrs,
+				con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
+				gw.Spec.DefaultPSK, con.Spec.ESPProposals,
+				con.Spec.LocalVipGateway, con.Spec.LocalGatewayNic)
 		}
 	}
 	return connections, SyncStateSuccess, nil
