@@ -19,14 +19,13 @@ echo "disable ipsec gateway nic {{ conn.localGatewayNic }} rp_filter"
 ip a | grep -q {{ conn.localGatewayNic }}
 sysctl -w "net.ipv4.conf.{{ conn.localGatewayNic }}.rp_filter=0"
 
-# 2. make sure ipsec remote eip route is exist
+# 2. make sure ipsec remote eip is accessable
+## use arping to check if the remoteEIP is reachable
 set +e
-alreadyExist=$(ip route show | grep "{{ conn.remoteEIP }}")
+arping -C 1 {{ conn.remoteEIP }}
 set -e
-if [[ -n "$alreadyExist" ]]; then
-    echo "ip route {{ conn.remoteEIP }} already exist, skip"
-else
-    echo "ip route {{ conn.remoteEIP }} not exist, add it"
+if [[ $? -ne 0 ]]; then
+    echo "arping {{ conn.remoteEIP }} failed, add ip route {{ conn.remoteEIP }}"
     ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
 fi
 
