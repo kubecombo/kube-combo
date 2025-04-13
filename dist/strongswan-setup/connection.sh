@@ -12,7 +12,8 @@ set -eux
 
 # make it runable in any directory
 CONF=/etc/swanctl/swanctl.conf
-CONNECTIONS_YAML=/etc/host-init-strongswan/connections.yaml
+#CONNECTIONS_YAML=/etc/host-init-strongswan/connections.yaml
+CONNECTIONS_YAML=/connections.yaml
 IPSEC_HOSTS=/etc/hosts.ipsec
 TEMPLATE_HOSTS=template-hosts.j2
 TEMPLATE_CHECK=template-check.j2
