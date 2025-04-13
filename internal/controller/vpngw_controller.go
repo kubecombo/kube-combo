@@ -1291,14 +1291,14 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 			)
 		}
 		if con.Spec.Auth == "psk" {
-			if gw.Spec.WorkloadType != "statefulset" {
-				// host network pod may use keepalived out of kubecombo
+			if gw.Spec.WorkloadType == "static" {
+				// host network static pod may use keepalived out of kubecombo
 				// should set local vip and gateway
-				if con.Spec.LocalGateway == "" {
+				if con.Spec.LocalGateway == "" && con.Spec.LocalGatewayNic != "" {
 					err := fmt.Errorf("vpn gw %s ipsec connection %s should have localVipGateway", gw.Name, con.Name)
 					r.Log.Error(err, "invalid ipsec connection")
 				}
-				if con.Spec.LocalGatewayNic == "" {
+				if con.Spec.LocalGateway != "" && con.Spec.LocalGatewayNic == "" {
 					err := fmt.Errorf("vpn gw %s ipsec connection %s should have localGatewayNic", gw.Name, con.Name)
 					r.Log.Error(err, "invalid ipsec connection")
 					return "", SyncStateError, err
@@ -1310,7 +1310,7 @@ func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1
 				con.Spec.RemoteEIP, con.Spec.RemotePrivateCidrs,
 				gw.Spec.DefaultPSK, con.Spec.ESPProposals,
 			)
-			if con.Spec.LocalGateway != "" && con.Spec.LocalGatewayNic == "" {
+			if con.Spec.LocalGateway != "" && con.Spec.LocalGatewayNic != "" {
 				connections += fmt.Sprintf(" %s %s:", con.Spec.LocalGateway, con.Spec.LocalGatewayNic)
 			} else {
 				connections += ":"
