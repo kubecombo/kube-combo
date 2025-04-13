@@ -24,14 +24,14 @@ ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn
 
 # 3. make sure ipsec remote cidr route is exist
 remoteTs={{ conn.remotePrivateCidrs }}
-remotes=($(echo $remotes | tr ',' ' '))
+remotes=($(echo "${remoteTs}" | tr ',' ' '))
 for remoteCidr in "${remotes[@]}"; do
     ip route replace "$remoteCidr" via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
 done
 
 # 4. make sure ipsec local cidr route is exist
 localTs={{ conn.localPrivateCidrs }}
-locals=($(echo $locals | tr ',' ' '))
+locals=($(echo "${localTs}" | tr ',' ' '))
 for localCidr in "${locals[@]}"; do
     ip route replace "$localCidr" via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
 done
