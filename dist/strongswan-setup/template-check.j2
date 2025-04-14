@@ -27,11 +27,11 @@ sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
 ## use arping to check if the remoteEIP is reachable
 set +e
 arping -C 1 {{ conn.remoteEIP }}
-set -e
 if [[ $? -ne 0 ]]; then
     echo "arping {{ conn.remoteEIP }} failed, add ip route {{ conn.remoteEIP }}"
     ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
 fi
+set -e
 
 # 3. make sure ipsec remote cidr route is exist
 remoteTs={{ conn.remotePrivateCidrs }}
