@@ -71,6 +71,24 @@ spec:
                 localEIP:
                   description: current public ipsec vpn gw external ip
                   type: string
+                localGateway:
+                  description: |-
+                    local vip gateway
+                    set it in multi nic env case
+                    if the vip gw nic is not use default nic
+                    avoid source in souce out problem
+                    ipsec gw nic vip always maintained by keepalived
+                    auto add static route for ipsec tunnel
+                  type: string
+                localGatewayNic:
+                  description: |-
+                    local vip gateway nic
+                    set it in multi nic env case
+                    if the vip gw nic is not use default nic
+                    avoid source in souce out problem
+                    ipsec gw vip nic which may need to disable rp_filter in some linux, 0 or 2 for vpn|lb
+                    only one nic should be enough for ipsec gw
+                  type: string
                 localPrivateCidrs:
                   type: string
                 localVIP:
