@@ -17,7 +17,10 @@ done
 # 1. make sure ipsec gateway nic is exist and disable rp_filter
 echo "disable ipsec gateway nic {{ conn.localGatewayNic }} rp_filter"
 ip a | grep -q {{ conn.localGatewayNic }}
-sysctl -w "net.ipv4.conf.{{ conn.localGatewayNic }}.rp_filter=0"
+localGatewayNic={{ conn.localGatewayNic }}
+# format bond0.1234 to bond0/1234
+sysctlNic="${localGatewayNic/.//}"
+sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
 
 # 2. make sure ipsec remote eip is accessable
 ## use arping to check if the remoteEIP is reachable
