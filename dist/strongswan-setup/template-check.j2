@@ -20,6 +20,7 @@ ip a | grep -q {{ conn.localGatewayNic }}
 localGatewayNic={{ conn.localGatewayNic }}
 # format bond0.1234 to bond0/1234
 sysctlNic="${localGatewayNic/.//}"
+echo "sysctl set nic: ${sysctlNic}"
 sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
 
 # 2. make sure ipsec remote eip is accessable
