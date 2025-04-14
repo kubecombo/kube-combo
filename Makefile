@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=xxx)
 # - use environment variables to overwrite this value (e.g export VERSION=xxx)
-VERSION ?= 0.0.9
+VERSION ?= 1.0.0
 
 print-version:
 	@echo $(VERSION)
