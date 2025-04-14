@@ -44,6 +44,8 @@ spec:
   # ike version 0, 1, 2
   ikeVersion: "{{.Values.ipsecvpn.ikeVersion}}"
   localVIP: {{.Values.ipsecvpn.localVIP}}
+  localGateway: {{.Values.ipsecvpn.localGateway}}
+  localGatewayNic: {{.Values.ipsecvpn.localGatewayNic}}
   localEIP: {{.Values.ipsecvpn.localEIP}}
   localPrivateCidrs: {{.Values.ipsecvpn.localPrivateCidrs}}
   remoteEIP: {{.Values.ipsecvpn.remoteEIP}}
