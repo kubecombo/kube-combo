@@ -54,6 +54,8 @@ ipsecvpn:
   ikeProposals: aes256-sha256-modp1536
   ikeVersion: 2
   localVIP: 100.65.150.181
+  localGateway: 100.65.150.1
+  localGatewayNic: eth0
   localEIP: 172.19.0.103
   localPrivateCidrs: 172.21.0.0/16
   remoteEIP: 172.19.0.101
