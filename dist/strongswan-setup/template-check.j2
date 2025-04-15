@@ -1,29 +1,8 @@
 #!/bin/bash
 set -eux
 {% for conn in connections %}
-# ---loop check connection {{ conn.name }} remote public ip ---
-while ! ping -n -c 1 {{ conn.remoteEIP }}; do
-    echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
-    sleep 5
-done
 
-while ! ping -n -c 1 {{ conn.localVIP }}; do
-    echo "Waiting for local vip {{ conn.localVIP }} to respond..."
-    sleep 5
-done
-
-{% if conn.localGatewayNic is defined %}
-
-# 1. make sure ipsec gateway nic is exist and disable rp_filter
-echo "disable ipsec gateway nic {{ conn.localGatewayNic }} rp_filter"
-ip a | grep -q {{ conn.localGatewayNic }}
-localGatewayNic={{ conn.localGatewayNic }}
-# format bond0.1234 to bond0/1234
-sysctlNic="${localGatewayNic/.//}"
-echo "sysctl set nic: ${sysctlNic}"
-sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
-
-# 2. make sure ipsec remote eip is accessable
+# 1. make sure ipsec remote eip is accessable
 ## use arping to check if the remoteEIP is reachable
 set +e
 arping -C 1 {{ conn.remoteEIP }}
@@ -32,6 +11,30 @@ if [[ $? -ne 0 ]]; then
     ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
 fi
 set -e
+
+# ---loop check connection {{ conn.name }} remote eip ---
+while ! ping -n -c 1 {{ conn.remoteEIP }}; do
+    echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
+    sleep 5
+done
+
+# keepalived local vip check
+while ! ping -n -c 1 {{ conn.localVIP }}; do
+    echo "Waiting for keepalived matained local vip {{ conn.localVIP }} to respond..."
+    sleep 5
+done
+
+{% if conn.localGatewayNic is defined %}
+
+# 2. make sure ipsec gateway nic is exist and disable rp_filter
+echo "disable ipsec gateway nic {{ conn.localGatewayNic }} rp_filter"
+ip a | grep -q {{ conn.localGatewayNic }}
+localGatewayNic={{ conn.localGatewayNic }}
+# format bond0.1234 to bond0/1234
+sysctlNic="${localGatewayNic/.//}"
+echo "sysctl set nic: ${sysctlNic}"
+sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
+
 
 # # 3. make sure ipsec remote cidr route is exist
 # remoteTs={{ conn.remotePrivateCidrs }}
