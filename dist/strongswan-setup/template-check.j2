@@ -2,15 +2,16 @@
 set -eux
 {% for conn in connections %}
 
+# ipsec remote eip use linux default route
 # 1. make sure ipsec remote eip is accessable
 ## use arping to check if the remoteEIP is reachable
-set +e
-arping -C 1 {{ conn.remoteEIP }}
-if [[ $? -ne 0 ]]; then
-    echo "arping {{ conn.remoteEIP }} failed, add ip route {{ conn.remoteEIP }}"
-    ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
-fi
-set -e
+#set +e
+#arping -C 1 {{ conn.remoteEIP }}
+#if [[ $? -ne 0 ]]; then
+#    echo "arping {{ conn.remoteEIP }} failed, add ip route {{ conn.remoteEIP }}"
+#    ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
+#fi
+#set -e
 
 # ---loop check connection {{ conn.name }} remote eip ---
 while ! ping -n -c 1 {{ conn.remoteEIP }}; do
