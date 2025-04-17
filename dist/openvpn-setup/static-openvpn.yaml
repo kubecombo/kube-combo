@@ -18,23 +18,17 @@ spec:
       livenessProbe:
         exec:
           command:
-            - /bin/sh
-            - -c
-            - |
-              nc -vzu $POD_IP 1194
+            - /etc/host-init-openvpn/probe.sh
         initialDelaySeconds: 10   # Pod 启动后延迟的时间（秒）
-        timeoutSeconds: 5         # 探针超时的时间（秒）
-        periodSeconds: 10         # 探测频率（秒）
+        timeoutSeconds: 10        # 探针超时的时间（秒）
+        periodSeconds: 20         # 探测频率（秒）
         failureThreshold: 3       # 失败的阈值，超过此次数后重启容器
       readinessProbe:
         exec:
           command:
-            - /bin/sh
-            - -c
-            - |
-              nc -vzu $POD_IP 1194
+            - /etc/host-init-openvpn/probe.sh
         initialDelaySeconds: 5     # 启动后延迟的时间，通常比 liveness 小
-        timeoutSeconds: 2          # 探针超时的时间
+        timeoutSeconds: 5          # 探针超时的时间
         periodSeconds: 5           # 探测频率（秒）
         successThreshold: 1        # 成功的阈值，允许 Pod 在处于就绪状态前多次健康检查
       resources:

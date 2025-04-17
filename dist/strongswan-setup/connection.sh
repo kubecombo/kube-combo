@@ -175,6 +175,9 @@ function host-init-cache() {
 		# ls -l /static-pod-start.sh
 		\cp /static-pod-start.sh /etc/host-init-strongswan/static-pod-start.sh
 
+		# copy probe.sh to /etc/host-init-strongswan
+		\cp /probe.sh /etc/host-init-strongswan/probe.sh
+
 		# echo "show /etc/host-init-strongswan/static-pod-start.sh .............."
 		# cat /etc/host-init-strongswan/static-pod-start.sh
 

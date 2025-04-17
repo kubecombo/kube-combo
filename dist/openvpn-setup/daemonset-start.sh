@@ -47,6 +47,9 @@ echo "deploy static pod ${K8S_MANIFESTS_PATH} .............."
 sed 's|SSL_VPN_IMAGE|'"${SSL_VPN_IMAGE}"'|' -i "${SETUP_HOME}/static-openvpn.yaml"
 \cp "${SETUP_HOME}/static-openvpn.yaml" "${K8S_MANIFESTS_PATH}"
 
+# copy probe.sh to /etc/host-init-openvpn
+\cp "${SETUP_HOME}/probe.sh" "/etc/host-init-openvpn"
+
 echo "k8s static pod should run /etc/host-init-openvpn/static-pod-start.sh .............."
 echo "k8s static pod will copy certs and config file from /etc/host-init-openvpn to pod /etc/openvpn .............."
 echo "k8s static pod will run openvpn --config /etc/openvpn/openvpn.conf .............."
