@@ -10,11 +10,6 @@ spec:
   containers:
     - name: strongswan
       image: IPSEC_VPN_IMAGE
-      ports:
-        - containerPort: 500
-          protocol: UDP
-        - containerPort: 4500
-          protocol: UDP
       env:
         - name: POD_IP
           valueFrom:

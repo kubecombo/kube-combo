@@ -10,9 +10,6 @@ spec:
   containers:
     - name: openvpn
       image: SSL_VPN_IMAGE
-      ports:
-        - containerPort: 1194
-          protocol: UDP
       env:
         - name: POD_IP
           valueFrom:
