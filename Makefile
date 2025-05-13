@@ -429,7 +429,7 @@ crictl-pull-image:
 
 .PHONY: reload
 reload: kind-load-image
-	kubectl delete po -n kube-system -l control-plane=controller-manager
+	kubectl delete po -n kube-system -l control-plane=kubecombo-controller-manager
 
 .PHONY: kidr
 kidr: kind-load-image install deploy reload
