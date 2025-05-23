@@ -76,6 +76,10 @@ operator-sdk create webhook --group vpn-gw --version v1 --kind VpnGw --defaultin
 operator-sdk create webhook --group vpn-gw --version v1 --kind IpsecConn --defaulting --programmatic-validation
 operator-sdk create webhook --group vpn-gw --version v1 --kind KeepAlived --defaulting --programmatic-validation
 
+# 由于版本升级，需要指定新的 kubebuilder
+operator-sdk create webhook --group vpn-gw --version v1 --kind Debugger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
+operator-sdk create webhook --group vpn-gw --version v1 --kind Pinger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
+
 
 ```
 
