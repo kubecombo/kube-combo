@@ -1,0 +1,9 @@
+apiVersion: vpn-gw.kubecombo.com/v1
+kind: Pinger
+metadata:
+  labels:
+    app.kubernetes.io/name: kube-combo
+    app.kubernetes.io/managed-by: kustomize
+  name: pinger-sample
+spec:
+  # TODO(user): Add fields here

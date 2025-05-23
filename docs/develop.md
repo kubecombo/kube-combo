@@ -47,7 +47,7 @@ operator-sdk create api --group vpn-gw --version v1 --kind KeepAlived --resource
 
 # 由于版本升级，需要指定新的 kubebuilder
 operator-sdk create api --group vpn-gw --version v1 --kind Debugger --resource --controller --plugins=go.kubebuilder.io/v4
-operator-sdk create api --group vpn-gw --version v1 --kind pinger --resource --controller --plugins=go.kubebuilder.io/v4
+operator-sdk create api --group vpn-gw --version v1 --kind Pinger --resource --controller --plugins=go.kubebuilder.io/v4
 
 
 
