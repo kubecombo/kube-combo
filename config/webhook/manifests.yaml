@@ -10,6 +10,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-vpn-gw-kubecombo-com-v1-debugger
+  failurePolicy: Fail
+  name: mdebugger.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - debuggers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-vpn-gw-kubecombo-com-v1-ipsecconn
   failurePolicy: Fail
   name: mipsecconn.kb.io
@@ -50,6 +70,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-vpn-gw-kubecombo-com-v1-pinger
+  failurePolicy: Fail
+  name: mpinger.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pingers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-vpn-gw-kubecombo-com-v1-vpngw
   failurePolicy: Fail
   name: mvpngw.kb.io
@@ -70,6 +110,26 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validating-webhook-configuration
 webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-vpn-gw-kubecombo-com-v1-debugger
+  failurePolicy: Fail
+  name: vdebugger.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - debuggers
+  sideEffects: None
 - admissionReviewVersions:
   - v1
   clientConfig:
@@ -109,6 +169,26 @@ webhooks:
     - UPDATE
     resources:
     - keepaliveds
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-vpn-gw-kubecombo-com-v1-pinger
+  failurePolicy: Fail
+  name: vpinger.kb.io
+  rules:
+  - apiGroups:
+    - vpn-gw.kubecombo.com
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pingers
   sideEffects: None
 - admissionReviewVersions:
   - v1

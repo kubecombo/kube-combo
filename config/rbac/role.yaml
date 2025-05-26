@@ -89,8 +89,10 @@ rules:
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - debuggers
   - ipsecconns
   - keepaliveds
+  - pingers
   - vpngws
   verbs:
   - create
@@ -103,16 +105,20 @@ rules:
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - debuggers/finalizers
   - ipsecconns/finalizers
   - keepaliveds/finalizers
+  - pingers/finalizers
   - vpngws/finalizers
   verbs:
   - update
 - apiGroups:
   - vpn-gw.kubecombo.com
   resources:
+  - debuggers/status
   - ipsecconns/status
   - keepaliveds/status
+  - pingers/status
   - vpngws/status
   verbs:
   - get
