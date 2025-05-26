@@ -1,4 +1,20 @@
-# 1. code init
+# [operator-sdk](https://sdk.operatorframework.io/docs/installation/#install-from-github-release)
+
+```
+# install
+
+export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
+export OS=$(uname | awk '{print tolower($0)}')
+
+export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v1.39.2
+curl -LO ${OPERATOR_SDK_DL_URL}/operator-sdk_${OS}_${ARCH}
+
+mv /usr/bin/operator-sdk_linux_amd64 /usr/bin/operator-sdk
+chmod +x /usr/bin/operator-sdk
+
+```
+
+## 1. code init
 
 init project
 
@@ -29,6 +45,12 @@ operator-sdk create api --group vpn-gw --version v1 --kind VpnGw --resource --co
 operator-sdk create api --group vpn-gw --version v1 --kind IpsecConn --resource --controller
 operator-sdk create api --group vpn-gw --version v1 --kind KeepAlived --resource --controller
 
+# 由于版本升级，需要指定新的 kubebuilder
+operator-sdk create api --group vpn-gw --version v1 --kind Debugger --resource --controller --plugins=go.kubebuilder.io/v4
+operator-sdk create api --group vpn-gw --version v1 --kind Pinger --resource --controller --plugins=go.kubebuilder.io/v4
+
+
+
 
 # 更新依赖
 go mod tidy
@@ -54,21 +76,23 @@ operator-sdk create webhook --group vpn-gw --version v1 --kind VpnGw --defaultin
 operator-sdk create webhook --group vpn-gw --version v1 --kind IpsecConn --defaulting --programmatic-validation
 operator-sdk create webhook --group vpn-gw --version v1 --kind KeepAlived --defaulting --programmatic-validation
 
+# 由于版本升级，需要指定新的 kubebuilder
+operator-sdk create webhook --group vpn-gw --version v1 --kind Debugger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
+operator-sdk create webhook --group vpn-gw --version v1 --kind Pinger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
+
 
 ```
 
-## 1. build push
-
-Docker
+## 2. build push Docker
 
 ``` bash
 make docker-build docker-push
 
-# make docker-build 
+# make docker-build
 # make docker-push
 
 # build keepalived
-make docker-build-keepalived docker-push-keepalived 
+make docker-build-keepalived docker-push-keepalived
 
 # build openvpn image
 make docker-build-ssl-vpn docker-push-ssl-vpn
