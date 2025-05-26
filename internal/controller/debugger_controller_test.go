@@ -22,15 +22,17 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
 var _ = Describe("Debugger Controller", func() {
+	var k8sClient client.Client
+
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
