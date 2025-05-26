@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
@@ -37,9 +36,8 @@ func (r *IpsecConn) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-vpn-gw-kubecombo-com-v1-ipsecconn,mutating=true,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=ipsecconns,verbs=create;update,versions=v1,name=mipsecconn.kb.io,admissionReviewVersions=v1
-
-var _ webhook.Defaulter = &IpsecConn{}
+// +kubebuilder:webhook:path=/mutate-vpn-gw-kubecombo-com-v1-ipsecconn,mutating=true,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=ipsecconns,verbs=create;update,versions=v1,name=mipsecconn.kb.io,admissionReviewVersions=v1
+// var _ webhook.Defaulter = &IpsecConn{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *IpsecConn) Default() {
@@ -61,7 +59,7 @@ func (r *IpsecConn) Default() {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-vpn-gw-kubecombo-com-v1-ipsecconn,mutating=false,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=ipsecconns,verbs=create;update,versions=v1,name=vipsecconn.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &IpsecConn{}
+// var _ webhook.Validator = &IpsecConn{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *IpsecConn) ValidateCreate() error {

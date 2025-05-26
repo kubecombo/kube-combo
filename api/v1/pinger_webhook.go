@@ -20,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -38,7 +37,7 @@ func (r *Pinger) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // +kubebuilder:webhook:path=/mutate-vpn-gw-kubecombo-com-v1-pinger,mutating=true,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=pingers,verbs=create;update,versions=v1,name=mpinger.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &Pinger{}
+// var _ webhook.Defaulter = &Pinger{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Pinger) Default() {
@@ -52,7 +51,7 @@ func (r *Pinger) Default() {
 // Modifying the path for an invalid path can cause API server errors; failing to locate the webhook.
 // +kubebuilder:webhook:path=/validate-vpn-gw-kubecombo-com-v1-pinger,mutating=false,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=pingers,verbs=create;update,versions=v1,name=vpinger.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &Pinger{}
+// var _ webhook.Validator = &Pinger{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Pinger) ValidateCreate() (admission.Warnings, error) {

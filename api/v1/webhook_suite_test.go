@@ -27,9 +27,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
 	admissionv1 "k8s.io/api/admission/v1"
-	//+kubebuilder:scaffold:imports
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -90,12 +88,12 @@ var _ = BeforeSuite(func() {
 	// start webhook server using Manager
 	webhookInstallOptions := &testEnv.WebhookInstallOptions
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme:             scheme,
-		Host:               webhookInstallOptions.LocalServingHost,
-		Port:               webhookInstallOptions.LocalServingPort,
-		CertDir:            webhookInstallOptions.LocalServingCertDir,
-		LeaderElection:     false,
-		MetricsBindAddress: "0",
+		Scheme: scheme,
+		// Host:               webhookInstallOptions.LocalServingHost,
+		// Port:               webhookInstallOptions.LocalServingPort,
+		// CertDir:            webhookInstallOptions.LocalServingCertDir,
+		// LeaderElection:     false,
+		// MetricsBindAddress: "0",
 	})
 	Expect(err).NotTo(HaveOccurred())
 
