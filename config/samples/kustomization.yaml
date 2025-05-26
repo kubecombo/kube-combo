@@ -3,4 +3,5 @@ resources:
 - vpn-gw_v1_vpngw.yaml
 - vpn-gw_v1_ipsecconn.yaml
 - vpn-gw_v1_keepalived.yaml
+- vpn-gw_v1_debugger.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

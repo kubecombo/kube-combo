@@ -4,50 +4,59 @@
 # More info: https://book.kubebuilder.io/reference/project-config.html
 domain: kubecombo.com
 layout:
-  - go.kubebuilder.io/v4-alpha
+- go.kubebuilder.io/v4-alpha
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: kube-combo
 repo: github.com/kubecombo/kube-combo
 resources:
-  - api:
-      crdVersion: v1
-      namespaced: true
-    controller: true
-    domain: kubecombo.com
-    group: vpn-gw
-    kind: VpnGw
-    path: github.com/kubecombo/kube-combo/api/v1
-    version: v1
-    webhooks:
-      defaulting: true
-      validation: true
-      webhookVersion: v1
-  - api:
-      crdVersion: v1
-      namespaced: true
-    controller: true
-    domain: kubecombo.com
-    group: vpn-gw
-    kind: IpsecConn
-    path: github.com/kubecombo/kube-combo/api/v1
-    version: v1
-    webhooks:
-      defaulting: true
-      validation: true
-      webhookVersion: v1
-  - api:
-      crdVersion: v1
-      namespaced: true
-    controller: true
-    domain: kubecombo.com
-    group: vpn-gw
-    kind: KeepAlived
-    path: github.com/kubecombo/kube-combo/api/v1
-    version: v1
-    webhooks:
-      defaulting: true
-      validation: true
-      webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubecombo.com
+  group: vpn-gw
+  kind: VpnGw
+  path: github.com/kubecombo/kube-combo/api/v1
+  version: v1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubecombo.com
+  group: vpn-gw
+  kind: IpsecConn
+  path: github.com/kubecombo/kube-combo/api/v1
+  version: v1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubecombo.com
+  group: vpn-gw
+  kind: KeepAlived
+  path: github.com/kubecombo/kube-combo/api/v1
+  version: v1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubecombo.com
+  group: vpn-gw
+  kind: Debugger
+  path: github.com/kubecombo/kube-combo/api/v1
+  version: v1
 version: "3"
