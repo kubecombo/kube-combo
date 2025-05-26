@@ -63,4 +63,13 @@ resources:
     defaulting: true
     validation: true
     webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubecombo.com
+  group: vpn-gw
+  kind: Pinger
+  path: github.com/kubecombo/kube-combo/api/v1
+  version: v1
 version: "3"

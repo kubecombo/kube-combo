@@ -20,6 +20,8 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the Project itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- pinger_editor_role.yaml
+- pinger_viewer_role.yaml
 - debugger_editor_role.yaml
 - debugger_viewer_role.yaml
 
