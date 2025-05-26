@@ -16,6 +16,7 @@ patchesStrategicMerge:
 #- patches/webhook_in_ipsecconns.yaml
 #- patches/webhook_in_keepaliveds.yaml
 - path: patches/webhook_in_debuggers.yaml
+- path: patches/webhook_in_pingers.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
