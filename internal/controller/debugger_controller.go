@@ -19,9 +19,13 @@ package controller
 import (
 	"context"
 
+	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
@@ -30,7 +34,12 @@ import (
 // DebuggerReconciler reconciles a Debugger object
 type DebuggerReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme     *runtime.Scheme
+	KubeClient kubernetes.Interface
+	RestConfig *rest.Config
+	Log        logr.Logger
+	Namespace  string
+	Reload     chan event.GenericEvent
 }
 
 // +kubebuilder:rbac:groups=vpn-gw.kubecombo.com,resources=debuggers,verbs=get;list;watch;create;update;patch;delete

@@ -28,14 +28,51 @@ type PingerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Pinger. Edit pinger_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:Required
+	Image string `json:"Image"`
+
+	// pinger pod args
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	EnableConnCheck bool `json:"enableConnCheck"`
+
+	// defult ping, tcp, udp check interval is 5s
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=5
+	Interval int `json:"interval"`
+
+	// internal dns
+	// +kubebuilder:validation:Optional
+	InternalDns string `json:"internalDns"`
+
+	// external dns
+	// +kubebuilder:validation:Optional
+	ExternalDns string `json:"externalDns"`
+
+	// connection check targets:
+	// protocol-ip-port
+	// +kubebuilder:validation:Optional
+	ConnTargets []string `json:"connTargets"`
+
+	// enable Metrics
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	EnableMetric bool `json:"enableMetric"`
 }
 
 // PingerStatus defines the observed state of Pinger
 type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	Image           string   `json:"image,omitempty"`
+	EnableConnCheck bool     `json:"enableConnCheck,omitempty"`
+	Interval        int      `json:"interval,omitempty"`
+	InternalDns     string   `json:"internalDns,omitempty"`
+	ExternalDns     string   `json:"externalDns,omitempty"`
+	ConnTargets     []string `json:"connTargets,omitempty"`
+	EnableMetric    bool     `json:"enableMetric,omitempty"`
 }
 
 // +kubebuilder:object:root=true

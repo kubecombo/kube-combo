@@ -45,10 +45,12 @@ operator-sdk create api --group vpn-gw --version v1 --kind VpnGw --resource --co
 operator-sdk create api --group vpn-gw --version v1 --kind IpsecConn --resource --controller
 operator-sdk create api --group vpn-gw --version v1 --kind KeepAlived --resource --controller
 
-# 由于版本升级，需要指定新的 kubebuilder
+# 由于版本升级，需要指定新的 kubebuilder.io/v4
+# operator-sdk create api --group debug --version v1 --kind Debugger --resource --controller --plugins=go.kubebuilder.io/v4
+# 如上，如果想使用多个 group，目前 operator-sdk 是不支持 multi-group 的
+
 operator-sdk create api --group vpn-gw --version v1 --kind Debugger --resource --controller --plugins=go.kubebuilder.io/v4
 operator-sdk create api --group vpn-gw --version v1 --kind Pinger --resource --controller --plugins=go.kubebuilder.io/v4
-
 
 
 
@@ -76,7 +78,7 @@ operator-sdk create webhook --group vpn-gw --version v1 --kind VpnGw --defaultin
 operator-sdk create webhook --group vpn-gw --version v1 --kind IpsecConn --defaulting --programmatic-validation
 operator-sdk create webhook --group vpn-gw --version v1 --kind KeepAlived --defaulting --programmatic-validation
 
-# 由于版本升级，需要指定新的 kubebuilder
+# 由于版本升级，需要指定新的 kubebuilder.io/v4
 operator-sdk create webhook --group vpn-gw --version v1 --kind Debugger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
 operator-sdk create webhook --group vpn-gw --version v1 --kind Pinger --defaulting --programmatic-validation --plugins=go.kubebuilder.io/v4
 

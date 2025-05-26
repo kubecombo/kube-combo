@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,14 +29,77 @@ type DebuggerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Debugger. Edit debugger_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// k8s workload type
+	// deployment or daemonset
+
+	// +kubebuilder:validation:Required
+	WorkloadType string `json:"workloadType"`
+
+	// cpu, memory request
+	// cpu, memory limit
+	// 1C 1G at least
+
+	// +kubebuilder:validation:Required
+	CPU string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
+	Memory string `json:"memory"`
+
+	// 1Mbps bandwidth at least
+	// +kubebuilder:validation:Optional
+	QoSBandwidth string `json:"qosBandwidth"`
+
+	// deployment replicas
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=2
+	Replicas int32 `json:"replicas"`
+
+	// pod node selector
+	// +kubebuilder:validation:Optional
+	Selector []string `json:"selector,omitempty"`
+
+	// pod tolerations
+	// +kubebuilder:validation:Optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// pod affinity
+	// +kubebuilder:validation:Optional
+	Affinity corev1.Affinity `json:"affinity,omitempty"`
+
+	// pod node name
+	// +kubebuilder:validation:Optional
+	NodeName string `json:"nodeName,omitempty"`
+
+	// control pinger pod lifecycle
+	// enable to start pinger pod
+	// disable to stop pinger pod
+	// +kubebuilder:validation:Optional
+	EnablePinger bool `json:"enablePinger,omitempty"`
+
+	// pinger CRD
+	Pinger string `json:"pinger,omitempty"`
 }
 
 // DebuggerStatus defines the observed state of Debugger
 type DebuggerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	CPU          string              `json:"cpu" patchStrategy:"merge"`
+	Memory       string              `json:"memory" patchStrategy:"merge"`
+	QoSBandwidth string              `json:"qosBandwidth" patchStrategy:"merge"`
+	Replicas     int32               `json:"replicas" patchStrategy:"merge"`
+	Selector     []string            `json:"selector,omitempty" patchStrategy:"merge"`
+	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
+	Affinity     corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
+	NodeName     string              `json:"nodeName,omitempty" patchStrategy:"merge"`
+	EnablePinger bool                `json:"enablePinger,omitempty" patchStrategy:"merge"`
+	Pinger       string              `json:"pinger,omitempty" patchStrategy:"merge"`
+
+	// Conditions store the status conditions of the vpn gw instances
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 // +kubebuilder:object:root=true

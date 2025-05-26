@@ -117,7 +117,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// controllers
+	// vpn gw controllers
 	if err = (&controller.VpnGwReconciler{
 		Client:     mgr.GetClient(),
 		KubeClient: kubeClient,
@@ -138,7 +138,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "VpnGw")
 		os.Exit(1)
 	}
-
 	if err = (&controller.IpsecConnReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -147,13 +146,31 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "IpsecConn")
 		os.Exit(1)
 	}
-
 	if err = (&controller.KeepAlivedReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 		Log:    ctrl.Log.WithName("keepalived"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KeepAlived")
+		os.Exit(1)
+	}
+
+	// debugger controllers
+	if err = (&controller.DebuggerReconciler{
+		Client:     mgr.GetClient(),
+		KubeClient: kubeClient,
+		Scheme:     mgr.GetScheme(),
+		RestConfig: restConfig,
+		Log:        ctrl.Log.WithName("debugger"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Debugger")
+		os.Exit(1)
+	}
+	if err = (&controller.PingerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Pinger")
 		os.Exit(1)
 	}
 
@@ -173,38 +190,19 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KeepAlived")
 			os.Exit(1)
 		}
-	} else {
-		setupLog.Info("webhooks disabled")
-	}
-
-	if err = (&controller.DebuggerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Debugger")
-		os.Exit(1)
-	}
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err = (&myv1.Debugger{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Debugger")
 			os.Exit(1)
 		}
-	}
-	if err = (&controller.PingerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Pinger")
-		os.Exit(1)
-	}
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err = (&myv1.Pinger{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Pinger")
 			os.Exit(1)
 		}
+	} else {
+		setupLog.Info("webhooks disabled")
 	}
-	//+kubebuilder:scaffold:builder
 
+	//+kubebuilder:scaffold:builder
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)

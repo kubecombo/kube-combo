@@ -28,4 +28,4 @@ keepalived 表示一个维护 vip 的 keepalived 服务，单独抽象为一个 
 
 ## 5. pinger
 
-复用 kube-ovn-pinger，通过 pinger CRD 指定其参数，通过 debug CRD 触发 pod 创建
+复用 kube-ovn-pinger，通过 pinger CRD 指定其参数，通过 debugger CRD 维护 kube-ovn-pinger Pod 生命周期
