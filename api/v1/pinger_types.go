@@ -33,22 +33,10 @@ type PingerSpec struct {
 
 	// pinger pod args
 
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=true
-	EnableConnCheck bool `json:"enableConnCheck"`
-
 	// defult ping, tcp, udp check interval is 5s
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=5
 	Interval int `json:"interval"`
-
-	// internal dns
-	// +kubebuilder:validation:Optional
-	InternalDns string `json:"internalDns"`
-
-	// external dns
-	// +kubebuilder:validation:Optional
-	ExternalDns string `json:"externalDns"`
 
 	// connection check targets:
 	// protocol-ip-port
@@ -59,6 +47,31 @@ type PingerSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=False
 	EnableMetric bool `json:"enableMetric"`
+
+	// l2 check ip list, ip1,ip2,ip3
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	Arpping string `json:"arpPing,omitempty"`
+
+	// l3 check ip list, ip1,ip2,ip3
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	Ping string `json:"ping,omitempty"`
+
+	// l4 tcp check ip:port list, ip1:port1,ip2:port2,ip3:port3
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	TcpPing string `json:"tcpPing,omitempty"`
+
+	// l4 udp check ip:port list, ip1:port1,ip2:port2,ip3:port3
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	UdpPing string `json:"udpPing,omitempty"`
+
+	// l7 dns check ns list, ns1,ns2,ns3
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	Dns string `json:"dns,omitempty"`
 }
 
 // PingerStatus defines the observed state of Pinger
