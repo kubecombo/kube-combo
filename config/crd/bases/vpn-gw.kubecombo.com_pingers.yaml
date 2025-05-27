@@ -39,13 +39,65 @@ spec:
           spec:
             description: PingerSpec defines the desired state of Pinger
             properties:
-              foo:
-                description: Foo is an example field of Pinger. Edit pinger_types.go
-                  to remove/update
+              Image:
                 type: string
+              arpPing:
+                default: "False"
+                description: l2 check ip list, ip1,ip2,ip3
+                type: string
+              connTargets:
+                description: |-
+                  connection check targets:
+                  protocol-ip-port
+                items:
+                  type: string
+                type: array
+              dns:
+                default: "False"
+                description: l7 dns check ns list, ns1,ns2,ns3
+                type: string
+              enableMetric:
+                default: "False"
+                description: enable Metrics
+                type: boolean
+              interval:
+                default: 5
+                description: defult ping, tcp, udp check interval is 5s
+                type: integer
+              ping:
+                default: "False"
+                description: l3 check ip list, ip1,ip2,ip3
+                type: string
+              tcpPing:
+                default: "False"
+                description: l4 tcp check ip:port list, ip1:port1,ip2:port2,ip3:port3
+                type: string
+              udpPing:
+                default: "False"
+                description: l4 udp check ip:port list, ip1:port1,ip2:port2,ip3:port3
+                type: string
+            required:
+            - Image
             type: object
           status:
             description: PingerStatus defines the observed state of Pinger
+            properties:
+              connTargets:
+                items:
+                  type: string
+                type: array
+              enableConnCheck:
+                type: boolean
+              enableMetric:
+                type: boolean
+              externalDns:
+                type: string
+              image:
+                type: string
+              internalDns:
+                type: string
+              interval:
+                type: integer
             type: object
         type: object
     served: true
