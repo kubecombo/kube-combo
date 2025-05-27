@@ -46,7 +46,7 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-func main() {
+func controllerMain() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
