@@ -20,6 +20,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/go-logr/logr"
+	"github.com/scylladb/go-set/iset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,9 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/go-logr/logr"
-	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
-	"github.com/scylladb/go-set/iset"
+	myv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
 const (
@@ -92,11 +92,11 @@ func (r *KeepAlivedReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // SetupWithManager sets up the controller with the Manager.
 func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&vpngwv1.KeepAlived{},
+		For(&myv1.KeepAlived{},
 			builder.WithPredicates(
 				predicate.NewPredicateFuncs(
 					func(object client.Object) bool {
-						_, ok := object.(*vpngwv1.KeepAlived)
+						_, ok := object.(*myv1.KeepAlived)
 						if !ok {
 							err := errors.New("invalid keepalived")
 							r.Log.Error(err, "expected keepalived in worequeue but got something else")
@@ -139,7 +139,7 @@ func (r *KeepAlivedReconciler) handleAddOrUpdateKeepAlived(ctx context.Context, 
 	return SyncStateSuccess, nil
 }
 
-func (r *KeepAlivedReconciler) setRouterID(ctx context.Context, ka *vpngwv1.KeepAlived) error {
+func (r *KeepAlivedReconciler) setRouterID(ctx context.Context, ka *myv1.KeepAlived) error {
 	assignedIDs := []int{}
 	kas, err := r.listKeepAlived(ctx, ka.Namespace)
 	if err != nil {
@@ -178,8 +178,8 @@ func findNextAvailableID(usedIDs []int) (int, error) {
 	return 0, errors.New("cannot allocate more than 255 ids in one keepalived group")
 }
 
-func (r *KeepAlivedReconciler) getKeepAlived(ctx context.Context, name types.NamespacedName) (*vpngwv1.KeepAlived, error) {
-	var res vpngwv1.KeepAlived
+func (r *KeepAlivedReconciler) getKeepAlived(ctx context.Context, name types.NamespacedName) (*myv1.KeepAlived, error) {
+	var res myv1.KeepAlived
 	err := r.Get(ctx, name, &res)
 	if apierrors.IsNotFound(err) { // in case of delete, get fails and we need to pass nil to the handler
 		return nil, nil
@@ -191,8 +191,8 @@ func (r *KeepAlivedReconciler) getKeepAlived(ctx context.Context, name types.Nam
 	return &res, nil
 }
 
-func (r *KeepAlivedReconciler) listKeepAlived(ctx context.Context, ns string) (*[]vpngwv1.KeepAlived, error) {
-	kaList := &vpngwv1.KeepAlivedList{}
+func (r *KeepAlivedReconciler) listKeepAlived(ctx context.Context, ns string) (*[]myv1.KeepAlived, error) {
+	kaList := &myv1.KeepAlivedList{}
 	listOps := &client.ListOptions{Namespace: ns}
 	err := r.List(ctx, kaList, listOps)
 	if err != nil {

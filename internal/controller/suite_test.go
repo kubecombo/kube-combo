@@ -20,9 +20,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	//+kubebuilder:scaffold:imports
+
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,8 +31,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
-	//+kubebuilder:scaffold:imports
+	myv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
 func TestAPIs(t *testing.T) {
@@ -58,7 +58,7 @@ var _ = ginkgo.BeforeSuite(func() {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	gomega.Expect(cfg).NotTo(gomega.BeNil())
 
-	err = vpngwv1.AddToScheme(scheme.Scheme)
+	err = myv1.AddToScheme(scheme.Scheme)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme

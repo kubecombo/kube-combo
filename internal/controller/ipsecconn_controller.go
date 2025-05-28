@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/go-logr/logr"
-	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -15,6 +14,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
+	myv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
 // IpsecConnReconciler reconciles a IpsecConn object
@@ -70,11 +71,11 @@ func (r *IpsecConnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 // SetupWithManager sets up the controller with the Manager.
 func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&vpngwv1.IpsecConn{},
+		For(&myv1.IpsecConn{},
 			builder.WithPredicates(
 				predicate.NewPredicateFuncs(
 					func(object client.Object) bool {
-						_, ok := object.(*vpngwv1.IpsecConn)
+						_, ok := object.(*myv1.IpsecConn)
 						if !ok {
 							err := errors.New("invalid ipsecConn")
 							r.Log.Error(err, "expected ipsecConn in worequeue but got something else")
@@ -88,7 +89,7 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecConn) error {
+func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *myv1.IpsecConn) error {
 	if ipsecConn.Spec.IkeVersion != "0" && ipsecConn.Spec.IkeVersion != "1" && ipsecConn.Spec.IkeVersion != "2" {
 		err := errors.New("ipsec connection spec ike version is invalid")
 		r.Log.Error(err, "ignore invalid ipsec connection")
@@ -102,7 +103,7 @@ func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *vpngwv1.IpsecCo
 	return nil
 }
 
-func labelsForIpsecConnection(conn *vpngwv1.IpsecConn) map[string]string {
+func labelsForIpsecConnection(conn *myv1.IpsecConn) map[string]string {
 	return map[string]string{
 		VpnGwLabel: conn.Spec.VpnGw,
 	}
@@ -145,8 +146,8 @@ func (r *IpsecConnReconciler) handleAddOrUpdateIpsecConnection(ctx context.Conte
 	return SyncStateSuccess, err
 }
 
-func (r *IpsecConnReconciler) getIpsecConnection(ctx context.Context, name types.NamespacedName) (*vpngwv1.IpsecConn, error) {
-	var res vpngwv1.IpsecConn
+func (r *IpsecConnReconciler) getIpsecConnection(ctx context.Context, name types.NamespacedName) (*myv1.IpsecConn, error) {
+	var res myv1.IpsecConn
 	err := r.Get(ctx, name, &res)
 	if apierrors.IsNotFound(err) { // in case of delete, get fails and we need to pass nil to the handler
 		return nil, nil
