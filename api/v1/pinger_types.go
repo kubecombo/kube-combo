@@ -38,15 +38,15 @@ type PingerSpec struct {
 	// +kubebuilder:default:=5
 	Interval int `json:"interval"`
 
-	// connection check targets:
-	// protocol-ip-port
-	// +kubebuilder:validation:Optional
-	ConnTargets []string `json:"connTargets"`
-
-	// enable Metrics
+	// enable metrics
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=False
 	EnableMetric bool `json:"enableMetric"`
+
+	// must reach
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	MustReach bool `json:"mustReach,omitempty"`
 
 	// l2 check ip list, ip1,ip2,ip3
 	// +kubebuilder:validation:Optional
@@ -79,13 +79,19 @@ type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Image           string   `json:"image,omitempty"`
-	EnableConnCheck bool     `json:"enableConnCheck,omitempty"`
-	Interval        int      `json:"interval,omitempty"`
-	InternalDns     string   `json:"internalDns,omitempty"`
-	ExternalDns     string   `json:"externalDns,omitempty"`
-	ConnTargets     []string `json:"connTargets,omitempty"`
-	EnableMetric    bool     `json:"enableMetric,omitempty"`
+	Image        string   `json:"image,omitempty"`
+	Interval     int      `json:"interval,omitempty"`
+	EnableMetric bool     `json:"enableMetric,omitempty"`
+	MustReach    bool     `json:"mustReach,omitempty"`
+	Arpping      []string `json:"arpPing,omitempty"`
+	Ping         []string `json:"ping,omitempty"`
+	TcpPing      []string `json:"tcpPing,omitempty"`
+	UdpPing      []string `json:"udpPing,omitempty"`
+	Dns          []string `json:"dns,omitempty"`
+
+	// Conditions store the status conditions of the vpn gw instances
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 // +kubebuilder:object:root=true
