@@ -79,15 +79,15 @@ type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Image        string   `json:"image,omitempty"`
-	Interval     int      `json:"interval,omitempty"`
-	EnableMetric bool     `json:"enableMetric,omitempty"`
-	MustReach    bool     `json:"mustReach,omitempty"`
-	Arpping      []string `json:"arpPing,omitempty"`
-	Ping         []string `json:"ping,omitempty"`
-	TcpPing      []string `json:"tcpPing,omitempty"`
-	UdpPing      []string `json:"udpPing,omitempty"`
-	Dns          []string `json:"dns,omitempty"`
+	Image        string `json:"image,omitempty"`
+	Interval     int    `json:"interval,omitempty"`
+	EnableMetric bool   `json:"enableMetric,omitempty"`
+	MustReach    bool   `json:"mustReach,omitempty"`
+	Arpping      string `json:"arpPing,omitempty"`
+	Ping         string `json:"ping,omitempty"`
+	TcpPing      string `json:"tcpPing,omitempty"`
+	UdpPing      string `json:"udpPing,omitempty"`
+	Dns          string `json:"dns,omitempty"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

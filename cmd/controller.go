@@ -169,6 +169,7 @@ func controllerMain() {
 	if err = (&controller.PingerReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("pinger"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pinger")
 		os.Exit(1)
