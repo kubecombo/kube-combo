@@ -43,7 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
+	myv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
 const (
@@ -200,11 +200,11 @@ func (r *VpnGwReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 // SetupWithManager sets up the controller with the Manager.
 func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&vpngwv1.VpnGw{},
+		For(&myv1.VpnGw{},
 			builder.WithPredicates(
 				predicate.NewPredicateFuncs(
 					func(object client.Object) bool {
-						_, ok := object.(*vpngwv1.VpnGw)
+						_, ok := object.(*myv1.VpnGw)
 						if !ok {
 							err := errors.New("invalid vpn gw")
 							r.Log.Error(err, "expected vpn gw in worequeue but got something else")
@@ -216,12 +216,12 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			),
 		).
 		Owns(&appsv1.StatefulSet{}).
-		Owns(&vpngwv1.IpsecConn{}).
-		Owns(&vpngwv1.KeepAlived{}).
+		Owns(&myv1.IpsecConn{}).
+		Owns(&myv1.KeepAlived{}).
 		Complete(r)
 }
 
-func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
+func (r *VpnGwReconciler) validateKeepalived(ka *myv1.KeepAlived) error {
 	if ka.Spec.Image == "" {
 		err := errors.New("keepalived image is required")
 		r.Log.Error(err, "should set keepalived image")
@@ -235,7 +235,7 @@ func (r *VpnGwReconciler) validateKeepalived(ka *vpngwv1.KeepAlived) error {
 	return nil
 }
 
-func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
+func (r *VpnGwReconciler) validateVpnGw(gw *myv1.VpnGw) error {
 	r.Log.V(3).Info("start validateVpnGw", "vpn gw", gw)
 	if gw.Spec.CPU == "" || gw.Spec.Memory == "" {
 		err := errors.New("vpn gw cpu and memory is required")
@@ -297,7 +297,7 @@ func (r *VpnGwReconciler) validateVpnGw(gw *vpngwv1.VpnGw) error {
 	return nil
 }
 
-func (r *VpnGwReconciler) isChanged(gw *vpngwv1.VpnGw, ipsecConnections []string) bool {
+func (r *VpnGwReconciler) isChanged(gw *myv1.VpnGw, ipsecConnections []string) bool {
 	if gw.Status.Keepalived == "" && gw.Spec.Keepalived != "" {
 		return true
 	}
@@ -442,7 +442,7 @@ func (r *VpnGwReconciler) UpdateVpnGW(ctx context.Context, req ctrl.Request, ips
 	return nil
 }
 
-func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
+func (r *VpnGwReconciler) statefulSetForVpnGw(gw *myv1.VpnGw, ka *myv1.KeepAlived, oldSts *appsv1.StatefulSet) (newSts *appsv1.StatefulSet) {
 	namespacedName := fmt.Sprintf("%s/%s", gw.Namespace, gw.Name)
 	r.Log.Info("start statefulSetForVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end statefulSetForVpnGw", "vpn gw", namespacedName)
@@ -744,7 +744,7 @@ func (r *VpnGwReconciler) statefulSetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.Kee
 	return
 }
 
-func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived, oldDs *appsv1.DaemonSet) (newDs *appsv1.DaemonSet) {
+func (r *VpnGwReconciler) daemonsetForVpnGw(gw *myv1.VpnGw, ka *myv1.KeepAlived, oldDs *appsv1.DaemonSet) (newDs *appsv1.DaemonSet) {
 	namespacedName := fmt.Sprintf("%s/%s", gw.Namespace, gw.Name)
 	r.Log.Info("start daemonsetForVpnGw", "vpn gw", namespacedName)
 	defer r.Log.Info("end daemonsetForVpnGw", "vpn gw", namespacedName)
@@ -1116,7 +1116,7 @@ func (r *VpnGwReconciler) daemonsetForVpnGw(gw *vpngwv1.VpnGw, ka *vpngwv1.KeepA
 }
 
 // belonging to the given vpn gw CR name.
-func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
+func labelsForVpnGw(gw *myv1.VpnGw) map[string]string {
 	return map[string]string{
 		EnableSslVpnLabel:   strconv.FormatBool(gw.Spec.EnableSslVpn),
 		EnableIPSecVpnLabel: strconv.FormatBool(gw.Spec.EnableIPSecVpn),
@@ -1124,7 +1124,7 @@ func labelsForVpnGw(gw *vpngwv1.VpnGw) map[string]string {
 	}
 }
 
-func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived) error {
+func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *myv1.VpnGw, ka *myv1.KeepAlived) error {
 	// create or update statefulset
 	needToCreate := false
 	oldSts := &appsv1.StatefulSet{}
@@ -1167,7 +1167,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnStatefulset(req ctrl.Request, gw *
 	return nil
 }
 
-func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vpngwv1.VpnGw, ka *vpngwv1.KeepAlived) error {
+func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *myv1.VpnGw, ka *myv1.KeepAlived) error {
 	// use daemonset to reconcile static pod yaml
 	// create or update daemonset
 	needToCreate := false
@@ -1209,7 +1209,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnDaemonset(req ctrl.Request, gw *vp
 	return nil
 }
 
-func (r *VpnGwReconciler) validateIPSecConns(gw *vpngwv1.VpnGw, conns *[]vpngwv1.IpsecConn) (string, SyncState, error) {
+func (r *VpnGwReconciler) validateIPSecConns(gw *myv1.VpnGw, conns *[]myv1.IpsecConn) (string, SyncState, error) {
 	if gw.Spec.IPSecEnablePSK && gw.Spec.DefaultPSK == "" {
 		err := fmt.Errorf("vpn gw %s should have one default psk", gw.Name)
 		r.Log.Error(err, "invalid ipsec connection")
@@ -1346,9 +1346,9 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		// invalid spec, no retry
 		return SyncStateErrorNoRetry, err
 	}
-	var ka *vpngwv1.KeepAlived
+	var ka *myv1.KeepAlived
 	if gw.Spec.Keepalived != "" {
-		ka = &vpngwv1.KeepAlived{
+		ka = &myv1.KeepAlived{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      gw.Spec.Keepalived,
 				Namespace: gw.Namespace,
@@ -1448,7 +1448,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 	return SyncStateSuccess, nil
 }
 
-func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.NamespacedName, gw *vpngwv1.VpnGw) ([]string, error) {
+func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.NamespacedName, gw *myv1.VpnGw) ([]string, error) {
 	enableVPN := EnableSslVpnLabel
 	if gw.Spec.EnableIPSecVpn {
 		enableVPN = EnableIPSecVpnLabel
@@ -1480,8 +1480,8 @@ func (r *VpnGwReconciler) getVpnGwPodNames(ctx context.Context, name types.Names
 	return podNames, nil
 }
 
-func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedName) (*vpngwv1.VpnGw, error) {
-	var res vpngwv1.VpnGw
+func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedName) (*myv1.VpnGw, error) {
+	var res myv1.VpnGw
 	err := r.Get(ctx, name, &res)
 	if apierrors.IsNotFound(err) { // in case of delete, get fails and we need to pass nil to the handler
 		return nil, nil
@@ -1494,8 +1494,8 @@ func (r *VpnGwReconciler) getVpnGw(ctx context.Context, name types.NamespacedNam
 }
 
 // returns all ipsec connections who has labels about the vpn gw
-func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.VpnGw) (*[]vpngwv1.IpsecConn, error) {
-	var res vpngwv1.IpsecConnList
+func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *myv1.VpnGw) (*[]myv1.IpsecConn, error) {
+	var res myv1.IpsecConnList
 	err := r.List(ctx, &res, client.MatchingLabels{VpnGwLabel: gw.Name})
 	if err != nil {
 		r.Log.Error(err, "failed to list vpn gw ipsec connections")
@@ -1504,8 +1504,8 @@ func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *vpngwv1.V
 	return &res.Items, nil
 }
 
-func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *vpngwv1.KeepAlived) (*vpngwv1.KeepAlived, error) {
-	var res vpngwv1.KeepAlived
+func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *myv1.KeepAlived) (*myv1.KeepAlived, error) {
+	var res myv1.KeepAlived
 	name := types.NamespacedName{
 		Name:      ka.Name,
 		Namespace: ka.Namespace,
