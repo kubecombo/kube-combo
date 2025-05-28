@@ -33,6 +33,11 @@ type PingerSpec struct {
 
 	// pinger pod args
 
+	// must reach
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=False
+	MustReach bool `json:"mustReach,omitempty"`
+
 	// defult ping, tcp, udp check interval is 5s
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=5
@@ -42,11 +47,6 @@ type PingerSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=False
 	EnableMetric bool `json:"enableMetric"`
-
-	// must reach
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=False
-	MustReach bool `json:"mustReach,omitempty"`
 
 	// l2 check ip list, ip1,ip2,ip3
 	// +kubebuilder:validation:Optional
@@ -96,6 +96,11 @@ type PingerStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+
+//+kubebuilder:storageversion
+//+kubebuilder:printcolumn:name="MustReach",type=bool,JSONPath=`.spec.mustReach`
+//+kubebuilder:printcolumn:name="Interval",type=integer,JSONPath=`.spec.interval`
+//+kubebuilder:printcolumn:name="EnableMetric",type=bool,JSONPath=`.spec.enableMetric`
 
 // Pinger is the Schema for the pingers API
 type Pinger struct {
