@@ -53,9 +53,8 @@ type PingerSpec struct {
 	// +kubebuilder:default:=5
 	Interval int `json:"interval"`
 
-	// enable metrics
+	// enable metric
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=False
 	EnableMetric bool `json:"enableMetric"`
 
 	// l2 check ip list, ip1,ip2,ip3

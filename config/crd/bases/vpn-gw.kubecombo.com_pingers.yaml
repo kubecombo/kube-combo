@@ -54,7 +54,7 @@ spec:
                 description: l7 dns check ns list, ns1,ns2,ns3
                 type: string
               enableMetric:
-                description: enable metrics
+                description: enable metric
                 type: boolean
               interval:
                 default: 5
