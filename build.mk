@@ -60,11 +60,11 @@ go-build-manager-arm: manifests generate fmt vet
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
 
 .PHONY: docker-build-manager-amd64
-docker-build-manager-amd64: test build-amd64
+docker-build-manager-amd64: go-build-manager-amd
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-manager-arm64
-docker-build-manager-arm64: test build-arm64
+docker-build-manager-arm64: go-build-manager-arm
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push-manager
