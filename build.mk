@@ -156,3 +156,16 @@ docker-pull-all:
 	docker pull ${SSL_VPN_IMG} && \
 	docker pull ${IPSEC_VPN_IMG} && \
 	docker pull ${KEEPALIVED_IMG}
+
+
+##@ run
+
+.PHONY: run-manager
+run-manager: manifests generate fmt vet ## Run kube-combo manager from your host.
+	go mod tidy
+	go run ./run/manager/main.go
+
+.PHONY: run-pinger
+run-pinger: manifests generate fmt vet ## Run kube-combo pinger from your host.
+	go mod tidy
+	go run ./run/pinger/main.go
