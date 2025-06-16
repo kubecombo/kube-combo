@@ -25,6 +25,7 @@ import (
 
 // PingerSpec defines the desired state of Pinger
 type PingerSpec struct {
+
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -88,6 +89,7 @@ type PingerSpec struct {
 type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
 	CPU          string `json:"cpu,omitempty"`
 	Memory       string `json:"memory,omitempty"`
 	Image        string `json:"image,omitempty"`
