@@ -20,23 +20,23 @@ IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
 KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # Full Image URL
-IMG ?= $(IMAGE_TAG_BASE)-manager:v$(VERSION)
+IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
 PINGER_IMG ?= $(IMAGE_TAG_BASE)-pinger:v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
-##@ Build
+##@ go build
 .PHONY: go-build-all-amd
 go-build-all-amd: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
 .PHONY: go-build-all-arm
 go-build-all-arm: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
 .PHONY: go-build-pinger-amd
@@ -49,26 +49,27 @@ go-build-pinger-arm: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
-.PHONY: go-build-manager-amd
-go-build-manager-amd: manifests generate fmt vet
+.PHONY: go-build-controller-amd
+go-build-controller-amd: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
 
-.PHONY: go-build-manager-arm
-go-build-manager-arm: manifests generate fmt vet
+.PHONY: go-build-controller-arm
+go-build-controller-arm: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
 
-.PHONY: docker-build-manager-amd64
-docker-build-manager-amd64: go-build-manager-amd
+##@ docker build
+.PHONY: docker-build-controller-amd64
+docker-build-controller-amd64: go-build-controller-amd
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
-.PHONY: docker-build-manager-arm64
-docker-build-manager-arm64: go-build-manager-arm
+.PHONY: docker-build-controller-arm64
+docker-build-controller-arm64: go-build-controller-arm
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
-.PHONY: docker-push-manager
-docker-push-manager:
+.PHONY: docker-push-controller
+docker-push-controller:
 	docker push ${IMG}
 
 .PHONY: docker-build-pinger-amd64
@@ -136,10 +137,10 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-manager-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
+docker-build-all-amd64: docker-build-controller-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-manager-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
+docker-build-all-arm64: docker-build-controller-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
 
 .PHONY: docker-push-all
 docker-push-all:
@@ -160,10 +161,10 @@ docker-pull-all:
 
 ##@ run
 
-.PHONY: run-manager
-run-manager: manifests generate fmt vet ## Run kube-combo manager from your host.
+.PHONY: run-controller
+run-controller: manifests generate fmt vet ## Run kube-combo controller from your host.
 	go mod tidy
-	go run ./run/manager/main.go
+	go run ./run/controller/main.go
 
 .PHONY: run-pinger
 run-pinger: manifests generate fmt vet ## Run kube-combo pinger from your host.
