@@ -15,15 +15,9 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.mustReach
-      name: MustReach
-      type: bool
     - jsonPath: .spec.interval
       name: Interval
       type: integer
-    - jsonPath: .spec.enableMetric
-      name: EnableMetric
-      type: bool
     name: v1
     schema:
       openAPIV3Schema:
@@ -52,17 +46,14 @@ spec:
               Image:
                 type: string
               arpPing:
-                default: "False"
                 description: l2 check ip list, ip1,ip2,ip3
                 type: string
               cpu:
                 type: string
               dns:
-                default: "False"
                 description: l7 dns check ns list, ns1,ns2,ns3
                 type: string
               enableMetric:
-                default: "False"
                 description: enable metrics
                 type: boolean
               interval:
@@ -72,19 +63,15 @@ spec:
               memory:
                 type: string
               mustReach:
-                default: "False"
                 description: must reach
                 type: boolean
               ping:
-                default: "False"
                 description: l3 check ip list, ip1,ip2,ip3
                 type: string
               tcpPing:
-                default: "False"
                 description: l4 tcp check ip:port list, ip1:port1,ip2:port2,ip3:port3
                 type: string
               udpPing:
-                default: "False"
                 description: l4 udp check ip:port list, ip1:port1,ip2:port2,ip3:port3
                 type: string
             required:
