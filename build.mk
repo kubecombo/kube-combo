@@ -74,11 +74,11 @@ docker-push-controller:
 
 .PHONY: docker-build-pinger-amd64
 docker-build-pinger-amd64:
-	docker buildx build --network host --load --platform linux/amd64 -t ${PINGER_IMG} ./Dockerfile.pinger
+	docker buildx build --network host --load --platform linux/amd64 -t ${PINGER_IMG} -f ./Dockerfile.pinger
 
 .PHONY: docker-build-pinger-arm64
 docker-build-pinger-arm64:
-	docker buildx build --network host --load --platform linux/arm64 -t ${PINGER_IMG} ./Dockerfile.pinger
+	docker buildx build --network host --load --platform linux/arm64 -t ${PINGER_IMG} -f ./Dockerfile.pinger
 
 .PHONY: docker-push-pinger
 docker-push-pinger:
