@@ -21,6 +21,6 @@ func main() {
 	case CmdPinger:
 		pinger.CmdMain()
 	default:
-		println("%s is an unknown command", cmd)
+		println("unknown command:", cmd)
 	}
 }
