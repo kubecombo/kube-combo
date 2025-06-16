@@ -1,9 +1,11 @@
+SHELL = /bin/bash
+
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=xxx)
 # - use environment variables to overwrite this value (e.g export VERSION=xxx)
-VERSION ?= 1.1.0
+VERSION ?= 1.2.0
 
 print-version:
 	@echo $(VERSION)
@@ -35,11 +37,6 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # IMAGE_TAG_BASE ?= kubecombo.com/kube-combo
 IMAGE_TAG_BASE ?= icoy/kube-combo
 
-BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}-base
-SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
-IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
-KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
-
 # dependencies
 KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
 CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.17.0
@@ -67,15 +64,6 @@ endif
 # Set the Operator SDK version to use. By default, what is installed on the system is used.
 # This is useful for CI or a project to utilize a specific version of the operator-sdk toolkit.
 OPERATOR_SDK_VERSION ?= v1.31.0
-
-# Image URL to use all building/pushing image targets
-# IMG ?= controller:latest
-IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
-
-BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
-SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
-IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
-KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.0
@@ -133,107 +121,6 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
-
-##@ Build
-
-.PHONY: build-amd64
-build-amd64: manifests generate fmt vet ## Build manager amd64 binary.
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o bin/manager cmd/main.go
-
-.PHONY: build-arm64
-build-arm64: manifests generate fmt vet ## Build manager arm64 binary.
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o bin/manager cmd/main.go
-
-.PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./cmd/main.go
-
-# If you wish built the manager image targeting other platforms you can use the --platform flag.
-# (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
-# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-.PHONY: docker-build-amd64
-docker-build-amd64: test build-amd64 ## Build docker amd64 image with the manager.
-	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
-
-.PHONY: docker-build-arm64
-docker-build-arm64: test build-arm64 ## Build docker arm64 image with the manager.
-	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
-
-.PHONY: docker-build-base-amd64
-docker-build-base-amd64: ## Build docker base image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
-
-.PHONY: docker-build-base-arm64
-docker-build-base-arm64: ## Build docker base image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
-
-.PHONY: docker-push-base
-docker-push-base: ## Push docker base image
-	docker push ${BASE_IMG}
-
-.PHONY: docker-build-ssl-vpn-amd64
-docker-build-ssl-vpn-amd64: ## Build docker ssl-vpn image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-build-ssl-vpn-arm64
-docker-build-ssl-vpn-arm64: ## Build docker ssl-vpn image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.openvpn -t ${SSL_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-push-ssl-vpn
-docker-push-ssl-vpn: ## Push docker ssl-vpn image
-	docker push ${SSL_VPN_IMG}
-
-.PHONY: docker-build-ipsec-vpn-amd64
-docker-build-ipsec-vpn-amd64: ## Build docker ipsec-vpn image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-build-ipsec-vpn-arm64
-docker-build-ipsec-vpn-arm64: ## Build docker ipsec-vpn image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.strongSwan -t ${IPSEC_VPN_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-push-ipsec-vpn
-docker-push-ipsec-vpn: ## Push docker ipsec-vpn image
-	docker push ${IPSEC_VPN_IMG}
-
-.PHONY: docker-build-keepalived-amd64
-docker-build-keepalived-amd64: ## Build docker keepalived image for amd64.
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-build-keepalived-arm64
-docker-build-keepalived-arm64: ## Build docker keepalived image for arm64.
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.keepalived -t ${KEEPALIVED_IMG} --build-arg BASE_TAG=v${VERSION} .
-
-.PHONY: docker-push-keepalived
-docker-push-keepalived: ## Push docker keepalived image
-	docker push ${KEEPALIVED_IMG}
-
-.PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 ## Build all images for amd64.
-
-.PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 ## Build all images for arm64.
-
-.PHONY: docker-pull-all
-docker-pull-all: ## Pull docker images
-	docker pull ${BASE_IMG} && \
-	docker pull ${IMG} && \
-	docker pull ${SSL_VPN_IMG} && \
-	docker pull ${IPSEC_VPN_IMG} && \
-	docker pull ${KEEPALIVED_IMG}
-
-.PHONY: docker-push-all
-docker-push-all: ## Push docker images
-	docker push ${BASE_IMG} && \
-	docker push ${IMG} && \
-	docker push ${SSL_VPN_IMG} && \
-	docker push ${IPSEC_VPN_IMG} && \
-	docker push ${KEEPALIVED_IMG}
 
 # PLATFORMS defines the target platforms for  the manager image be build to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
@@ -388,48 +275,6 @@ catalog-build: opm ## Build a catalog image.
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
-# Kind install
-KIND_CLUSTER_NAME ?= kube-ovn
-define docker_ensure_image_exists
-	if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep "^$(1)$$" >/dev/null; then \
-		docker pull "$(1)"; \
-	fi
-endef
-
-define kind_load_image
-	@if [ "x$(3)" = "x1" ]; then \
-		$(call docker_ensure_image_exists,$(2)); \
-	fi
-	kind load docker-image --name $(1) $(2)
-endef
-
-define crictl_pull_image
-	crictl pull $(1)
-endef
-
-.PHONY: kind-load-image
-kind-load-image:
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
-	#$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(NETSHOOT_IMG))
-
-.PHONY: crictl-pull-image
-crictl-pull-image:
-	#$(call crictl_pull_image,$(KUBE_RBAC_PROXY))
-	#$(call crictl_pull_image,$(BASE_IMG))
-	$(call crictl_pull_image,$(IMG))
-	$(call crictl_pull_image,$(SSL_VPN_IMG))
-	$(call crictl_pull_image,$(IPSEC_VPN_IMG))
-	$(call crictl_pull_image,$(KEEPALIVED_IMG))
-	$(call crictl_pull_image,$(NETSHOOT_IMG))
-
-.PHONY: reload
-reload: kind-load-image
-	kubectl delete po -n kube-system -l control-plane=kubecombo-controller-manager
-
-.PHONY: kidr
-kidr: kind-load-image install deploy reload
+# include extensions
+-include build.mk
+-include env.mk
