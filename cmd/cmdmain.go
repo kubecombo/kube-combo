@@ -10,11 +10,14 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
+
+	"github.com/kubecombo/kube-combo/cmd/controller"
+	"github.com/kubecombo/kube-combo/cmd/pinger"
 )
 
 const (
-	CmdController = "kube-ovn-controller"
-	CmdPinger     = "kube-ovn-pinger"
+	CmdController = "controller"
+	CmdPinger     = "pinger"
 )
 
 const timeFormat = "2006-01-02_15:04:05"
@@ -79,10 +82,10 @@ func main() {
 	switch cmd {
 	case CmdController:
 		dumpProfile()
-		controllerMain()
+		controller.CmdMain()
 	case CmdPinger:
 		dumpProfile()
-		pingerMain()
+		pinger.CmdMain()
 	default:
 		LogFatalAndExit(nil, "%s is an unknown command", cmd)
 	}
