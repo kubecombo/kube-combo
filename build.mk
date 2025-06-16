@@ -60,11 +60,11 @@ go-build-manager-arm: manifests generate fmt vet
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
 
 .PHONY: docker-build-manager-amd64
-docker-build-amd64: test build-amd64
+docker-build-manager-amd64: test build-amd64
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-manager-arm64
-docker-build-arm64: test build-arm64
+docker-build-manager-arm64: test build-arm64
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push-manager
@@ -136,14 +136,15 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
+docker-build-all-amd64: docker-build-manager-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
+docker-build-all-arm64: docker-build-manager-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
 
 .PHONY: docker-push-all
 docker-push-all:
-	docker push ${IMG} && \
+	docker pull ${IMG} && \
+	docker push ${PINGER_IMG} && \
 	docker push ${SSL_VPN_IMG} && \
 	docker push ${IPSEC_VPN_IMG} && \
 	docker push ${KEEPALIVED_IMG}
@@ -151,6 +152,7 @@ docker-push-all:
 .PHONY: docker-pull-all
 docker-pull-all:
 	docker pull ${IMG} && \
+	docker pull ${PINGER_IMG} && \
 	docker pull ${SSL_VPN_IMG} && \
 	docker pull ${IPSEC_VPN_IMG} && \
 	docker pull ${KEEPALIVED_IMG}
