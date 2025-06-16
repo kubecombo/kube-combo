@@ -20,6 +20,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	//+kubebuilder:scaffold:imports
+
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -55,9 +57,6 @@ var _ = ginkgo.BeforeSuite(func() {
 	cfg, err = testEnv.Start()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	gomega.Expect(cfg).NotTo(gomega.BeNil())
-
-	err = myv1.AddToScheme(scheme.Scheme)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	err = myv1.AddToScheme(scheme.Scheme)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
