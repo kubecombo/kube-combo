@@ -21,54 +21,83 @@ KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # Full Image URL
 IMG ?= $(IMAGE_TAG_BASE)-manager:v$(VERSION)
+PINGER_IMG ?= $(IMAGE_TAG_BASE)-pinger:v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
 ##@ Build
-
-.PHONY: build-amd
-build-amd: manifests generate fmt vet ## Build manager amd64 binary.
+.PHONY: go-build-all-amd
+go-build-all-amd: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
-.PHONY: build-arm
-build-arm: manifests generate fmt vet ## Build manager arm64 binary.
+.PHONY: go-build-all-arm
+go-build-all-arm: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
-.PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./cmd/main.go
+.PHONY: go-build-pinger-amd
+go-build-pinger-amd: manifests generate fmt vet
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
-# If you wish built the manager image targeting other platforms you can use the --platform flag.
-# (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
-# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-.PHONY: docker-build-amd64
-docker-build-amd64: test build-amd64 ## Build docker amd64 image with the manager.
+.PHONY: go-build-pinger-arm
+go-build-pinger-arm: manifests generate fmt vet
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
+
+.PHONY: go-build-manager-amd
+go-build-manager-amd: manifests generate fmt vet
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+
+.PHONY: go-build-manager-arm
+go-build-manager-arm: manifests generate fmt vet
+	go mod tidy
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+
+.PHONY: docker-build-manager-amd64
+docker-build-amd64: test build-amd64
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
-.PHONY: docker-build-arm64
-docker-build-arm64: test build-arm64 ## Build docker arm64 image with the manager.
+.PHONY: docker-build-manager-arm64
+docker-build-arm64: test build-arm64
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
+.PHONY: docker-push-manager
+docker-push-manager:
 	docker push ${IMG}
 
+.PHONY: docker-build-pinger-amd64
+docker-build-pinger-amd64:
+	docker buildx build --network host --load --platform linux/amd64 -t ${PINGER_IMG} ./Dockerfile.pinger
+
+.PHONY: docker-build-pinger-arm64
+docker-build-pinger-arm64:
+	docker buildx build --network host --load --platform linux/arm64 -t ${PINGER_IMG} ./Dockerfile.pinger
+
+.PHONY: docker-push-pinger
+docker-push-pinger:
+	docker push ${PINGER_IMG}
+
 .PHONY: docker-build-base-amd64
-docker-build-base-amd64: ## Build docker base image for amd64.
+docker-build-base-amd64:
 	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-build-base-arm64
-docker-build-base-arm64: ## Build docker base image for arm64.
+docker-build-base-arm64:
 	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-push-base
-docker-push-base: ## Push docker base image
+docker-push-base:
 	docker push ${BASE_IMG}
+
+.PHONY: docker-pull-base
+docker-pull-base:
+	docker pull ${BASE_IMG}
 
 .PHONY: docker-build-ssl-vpn-amd64
 docker-build-ssl-vpn-amd64: ## Build docker ssl-vpn image for amd64.
@@ -107,23 +136,21 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 ## Build all images for amd64.
+docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 ## Build all images for arm64.
-
-.PHONY: docker-pull-all
-docker-pull-all: ## Pull docker images
-	docker pull ${BASE_IMG} && \
-	docker pull ${IMG} && \
-	docker pull ${SSL_VPN_IMG} && \
-	docker pull ${IPSEC_VPN_IMG} && \
-	docker pull ${KEEPALIVED_IMG}
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
 
 .PHONY: docker-push-all
-docker-push-all: ## Push docker images
-	docker push ${BASE_IMG} && \
+docker-push-all:
 	docker push ${IMG} && \
 	docker push ${SSL_VPN_IMG} && \
 	docker push ${IPSEC_VPN_IMG} && \
 	docker push ${KEEPALIVED_IMG}
+
+.PHONY: docker-pull-all
+docker-pull-all:
+	docker pull ${IMG} && \
+	docker pull ${SSL_VPN_IMG} && \
+	docker pull ${IPSEC_VPN_IMG} && \
+	docker pull ${KEEPALIVED_IMG}
