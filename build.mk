@@ -20,33 +20,24 @@ IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
 KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # Full Image URL
-IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
+IMG ?= $(IMAGE_TAG_BASE)-manager:v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
-.PHONY: build-go-amd
-build-go-amd:
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o $(CURDIR)/dist/images/controller -v ./cmd/controller
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o $(CURDIR)/dist/images/pinger -v ./cmd/pinger
-
-.PHONY: build-go-arm
-build-go-arm:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o $(CURDIR)/dist/images/controller -v ./cmd/controller
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o $(CURDIR)/dist/images/pinger -v ./cmd/pinger
-
 ##@ Build
 
-.PHONY: build-amd64
-build-amd64: manifests generate fmt vet ## Build manager amd64 binary.
+.PHONY: build-amd
+build-amd: manifests generate fmt vet ## Build manager amd64 binary.
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o bin/manager cmd/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
-.PHONY: build-arm64
-build-arm64: manifests generate fmt vet ## Build manager arm64 binary.
+.PHONY: build-arm
+build-arm: manifests generate fmt vet ## Build manager arm64 binary.
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o bin/manager cmd/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/manager -v ./cmd/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
