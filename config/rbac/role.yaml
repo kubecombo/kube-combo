@@ -50,6 +50,7 @@ rules:
   - apps
   resources:
   - daemonsets
+  - deployments
   - statefulsets
   verbs:
   - create
@@ -63,6 +64,7 @@ rules:
   - apps
   resources:
   - daemonsets/finalizers
+  - deployments/finalizers
   - statefulsets/finalizers
   verbs:
   - get
@@ -72,6 +74,7 @@ rules:
   - apps
   resources:
   - daemonsets/scale
+  - deployments/scale
   - statefulsets/scale
   verbs:
   - get
@@ -81,6 +84,7 @@ rules:
   - apps
   resources:
   - daemonsets/status
+  - deployments/status
   - statefulsets/status
   verbs:
   - get

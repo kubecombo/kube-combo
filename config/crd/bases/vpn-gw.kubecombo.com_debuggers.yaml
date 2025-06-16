@@ -959,10 +959,14 @@ spec:
                   enable to start pinger pod
                   disable to stop pinger pod
                 type: boolean
+              image:
+                default: kubecombo/debugger:latest
+                description: debugger default image
+                type: string
               memory:
                 type: string
               nodeName:
-                description: pod node name
+                description: deployment pod spec node name
                 type: string
               pinger:
                 description: pinger CRD
@@ -971,7 +975,7 @@ spec:
                 description: 1Mbps bandwidth at least
                 type: string
               replicas:
-                default: 2
+                default: 1
                 format: int32
                 type: integer
               selector:
@@ -979,6 +983,9 @@ spec:
                 items:
                   type: string
                 type: array
+              subnet:
+                description: kube-ovn subnet
+                type: string
               tolerations:
                 description: pod tolerations
                 items:
@@ -1023,7 +1030,6 @@ spec:
             required:
             - cpu
             - memory
-            - replicas
             - workloadType
             type: object
           status:
@@ -2003,6 +2009,8 @@ spec:
                 type: string
               enablePinger:
                 type: boolean
+              image:
+                type: string
               memory:
                 type: string
               nodeName:
@@ -2018,6 +2026,8 @@ spec:
                 items:
                   type: string
                 type: array
+              subnet:
+                type: string
               tolerations:
                 items:
                   description: |-
@@ -2056,11 +2066,14 @@ spec:
                       type: string
                   type: object
                 type: array
+              workloadType:
+                type: string
             required:
             - cpu
             - memory
             - qosBandwidth
             - replicas
+            - workloadType
             type: object
         type: object
     served: true
