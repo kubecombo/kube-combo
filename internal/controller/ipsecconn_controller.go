@@ -62,7 +62,7 @@ func (r *IpsecConnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	case SyncStateErrorNoRetry:
 		// TODO:// use longer retry interval and limit the retry times
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle ipsecConn, will not retry")
+		r.Log.Error(err, "failed to handle ipsecConn, not retry")
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, nil
@@ -78,7 +78,7 @@ func (r *IpsecConnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 						_, ok := object.(*myv1.IpsecConn)
 						if !ok {
 							err := errors.New("invalid ipsecConn")
-							r.Log.Error(err, "expected ipsecConn in worequeue but got something else")
+							r.Log.Error(err, "expected ipsecConn in workqueue but got something else")
 							return false
 						}
 						return true

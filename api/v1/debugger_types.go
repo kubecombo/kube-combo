@@ -49,10 +49,19 @@ type DebuggerSpec struct {
 	// +kubebuilder:validation:Optional
 	QoSBandwidth string `json:"qosBandwidth"`
 
-	// deployment replicas
+	// kube-ovn subnet
+	// +kubebuilder:validation:Optional
+	Subnet string `json:"subnet,omitempty"`
 
-	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=2
+	// debugger default image
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:="kubecombo/debugger:latest"
+	Image string `json:"image,omitempty"`
+
+	// deployment replicas, daemonset not need this
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=1
 	Replicas int32 `json:"replicas"`
 
 	// pod node selector
@@ -67,7 +76,7 @@ type DebuggerSpec struct {
 	// +kubebuilder:validation:Optional
 	Affinity corev1.Affinity `json:"affinity,omitempty"`
 
-	// pod node name
+	// deployment pod spec node name
 	// +kubebuilder:validation:Optional
 	NodeName string `json:"nodeName,omitempty"`
 
@@ -86,9 +95,12 @@ type DebuggerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	WorkloadType string              `json:"workloadType" patchStrategy:"merge"`
 	CPU          string              `json:"cpu" patchStrategy:"merge"`
 	Memory       string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth string              `json:"qosBandwidth" patchStrategy:"merge"`
+	Subnet       string              `json:"subnet,omitempty" patchStrategy:"merge"`
+	Image        string              `json:"image,omitempty" patchStrategy:"merge"`
 	Replicas     int32               `json:"replicas" patchStrategy:"merge"`
 	Selector     []string            `json:"selector,omitempty" patchStrategy:"merge"`
 	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`

@@ -75,7 +75,7 @@ func (r *PingerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle pinger, will not retry")
+		r.Log.Error(err, "failed to handle pinger, not retry")
 		return ctrl.Result{}, nil
 	}
 
@@ -92,7 +92,7 @@ func (r *PingerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 						_, ok := object.(*myv1.Pinger)
 						if !ok {
 							err := errors.New("invalid pinger")
-							r.Log.Error(err, "expected pinger in worequeue but got something else")
+							r.Log.Error(err, "expected pinger in workqueue but got something else")
 							return false
 						}
 						return true

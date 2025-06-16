@@ -28,6 +28,16 @@ type PingerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// cpu, memory request
+	// cpu, memory limit
+	// 1C 1G at most
+
+	// +kubebuilder:validation:Required
+	CPU string `json:"cpu"`
+
+	// +kubebuilder:validation:Required
+	Memory string `json:"memory"`
+
 	// +kubebuilder:validation:Required
 	Image string `json:"Image"`
 
@@ -78,7 +88,8 @@ type PingerSpec struct {
 type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
+	CPU          string `json:"cpu,omitempty"`
+	Memory       string `json:"memory,omitempty"`
 	Image        string `json:"image,omitempty"`
 	Interval     int    `json:"interval,omitempty"`
 	EnableMetric bool   `json:"enableMetric,omitempty"`
