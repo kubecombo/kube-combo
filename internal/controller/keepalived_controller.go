@@ -82,7 +82,7 @@ func (r *KeepAlivedReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle keepalived, will not retry")
+		r.Log.Error(err, "failed to handle keepalived, not retry")
 		return ctrl.Result{}, nil
 	}
 
@@ -99,7 +99,7 @@ func (r *KeepAlivedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 						_, ok := object.(*myv1.KeepAlived)
 						if !ok {
 							err := errors.New("invalid keepalived")
-							r.Log.Error(err, "expected keepalived in worequeue but got something else")
+							r.Log.Error(err, "expected keepalived in workqueue but got something else")
 							return false
 						}
 						return true

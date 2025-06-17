@@ -5,6 +5,8 @@ resources:
 - bases/vpn-gw.kubecombo.com_vpngws.yaml
 - bases/vpn-gw.kubecombo.com_ipsecconns.yaml
 - bases/vpn-gw.kubecombo.com_keepaliveds.yaml
+- bases/vpn-gw.kubecombo.com_debuggers.yaml
+- bases/vpn-gw.kubecombo.com_pingers.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
@@ -13,6 +15,8 @@ patchesStrategicMerge:
 #- patches/webhook_in_vpngws.yaml
 #- patches/webhook_in_ipsecconns.yaml
 #- patches/webhook_in_keepaliveds.yaml
+- path: patches/webhook_in_debuggers.yaml
+- path: patches/webhook_in_pingers.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
@@ -20,6 +24,8 @@ patchesStrategicMerge:
 #- patches/cainjection_in_vpngws.yaml
 #- patches/cainjection_in_ipsecconns.yaml
 #- patches/cainjection_in_keepaliveds.yaml
+#- path: patches/cainjection_in_debuggers.yaml
+#- path: patches/cainjection_in_pingers.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.

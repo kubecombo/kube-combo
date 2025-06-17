@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
@@ -39,7 +38,7 @@ func (r *KeepAlived) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 //+kubebuilder:webhook:path=/mutate-vpn-gw-kubecombo-com-v1-keepalived,mutating=true,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=keepaliveds,verbs=create;update,versions=v1,name=mkeepalived.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &KeepAlived{}
+// var _ webhook.Defaulter = &KeepAlived{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *KeepAlived) Default() {
@@ -51,7 +50,7 @@ func (r *KeepAlived) Default() {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-vpn-gw-kubecombo-com-v1-keepalived,mutating=false,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=keepaliveds,verbs=create;update,versions=v1,name=vkeepalived.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &KeepAlived{}
+// var _ webhook.Validator = &KeepAlived{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *KeepAlived) ValidateCreate() error {

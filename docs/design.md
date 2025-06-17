@@ -21,3 +21,11 @@ ipsec connection 表示 ipsec site-to-site 之间的连接，单独抽象为一�
 ## 3. keepalived
 
 keepalived 表示一个维护 vip 的 keepalived 服务，单独抽象为一个 crd，在 vpn gw 中基于一个 spec 属性来引用
+
+## 4. debugger
+
+通过 debugger CRD 维护一（组）pod，专门用于运维，可观察性场景：巡检、提供监控数据、对接监控告警、收集 debug 工具
+
+## 5. pinger
+
+复用 kube-ovn-pinger，通过 pinger CRD 指定其参数，通过 debugger CRD 维护 kube-ovn-pinger Pod 生命周期

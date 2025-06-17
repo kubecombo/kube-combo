@@ -191,7 +191,7 @@ func (r *VpnGwReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{RequeueAfter: 3 * time.Second}, errRetry
 	case SyncStateErrorNoRetry:
 		updateErrors.Inc()
-		r.Log.Error(err, "failed to handle vpn gw, will not retry")
+		r.Log.Error(err, "failed to handle vpn gw, not retry")
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, nil
@@ -207,7 +207,7 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 						_, ok := object.(*myv1.VpnGw)
 						if !ok {
 							err := errors.New("invalid vpn gw")
-							r.Log.Error(err, "expected vpn gw in worequeue but got something else")
+							r.Log.Error(err, "expected vpn gw in workqueue but got something else")
 							return false
 						}
 						return true
@@ -215,7 +215,8 @@ func (r *VpnGwReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				),
 			),
 		).
-		Owns(&appsv1.StatefulSet{}).
+		Owns(&appsv1.StatefulSet{}). // for vpc case
+		Owns(&appsv1.DaemonSet{}).   // for node static pod case
 		Owns(&myv1.IpsecConn{}).
 		Owns(&myv1.KeepAlived{}).
 		Complete(r)
@@ -237,9 +238,15 @@ func (r *VpnGwReconciler) validateKeepalived(ka *myv1.KeepAlived) error {
 
 func (r *VpnGwReconciler) validateVpnGw(gw *myv1.VpnGw) error {
 	r.Log.V(3).Info("start validateVpnGw", "vpn gw", gw)
-	if gw.Spec.CPU == "" || gw.Spec.Memory == "" {
-		err := errors.New("vpn gw cpu and memory is required")
-		r.Log.Error(err, "should set cpu and memory")
+	if gw.Spec.CPU == "" {
+		err := errors.New("vpn gw pod cpu is required")
+		r.Log.Error(err, "should set cpu")
+		return err
+	}
+
+	if gw.Spec.Memory == "" {
+		err := errors.New("vpn gw pod memory is required")
+		r.Log.Error(err, "should set memory")
 		return err
 	}
 
@@ -1354,7 +1361,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 				Namespace: gw.Namespace,
 			},
 		}
-		ka, err = r.getValidKeepalived(ctx, ka)
+		ka, err = r.getKeepalived(ctx, ka)
 		if err != nil {
 			r.Log.Error(err, "failed to get keepalived")
 			return SyncStateError, err
@@ -1504,7 +1511,7 @@ func (r *VpnGwReconciler) getIpsecConnections(ctx context.Context, gw *myv1.VpnG
 	return &res.Items, nil
 }
 
-func (r *VpnGwReconciler) getValidKeepalived(ctx context.Context, ka *myv1.KeepAlived) (*myv1.KeepAlived, error) {
+func (r *VpnGwReconciler) getKeepalived(ctx context.Context, ka *myv1.KeepAlived) (*myv1.KeepAlived, error) {
 	var res myv1.KeepAlived
 	name := types.NamespacedName{
 		Name:      ka.Name,

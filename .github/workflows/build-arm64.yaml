@@ -21,4 +21,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: |
-          make build-arm64
+          make docker-build-controller-arm64
+          make docker-build-pinger-arm64

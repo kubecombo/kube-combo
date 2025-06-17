@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
@@ -39,7 +38,7 @@ func (r *VpnGw) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 //+kubebuilder:webhook:path=/mutate-vpn-gw-kubecombo-com-v1-vpngw,mutating=true,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=vpngws,verbs=create;update,versions=v1,name=mvpngw.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &VpnGw{}
+// var _ webhook.Defaulter = &VpnGw{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *VpnGw) Default() {
@@ -51,7 +50,7 @@ func (r *VpnGw) Default() {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-vpn-gw-kubecombo-com-v1-vpngw,mutating=false,failurePolicy=fail,sideEffects=None,groups=vpn-gw.kubecombo.com,resources=vpngws,verbs=create;update,versions=v1,name=vvpngw.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &VpnGw{}
+// var _ webhook.Validator = &VpnGw{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *VpnGw) ValidateCreate() error {

@@ -27,7 +27,8 @@ jobs:
         run: |
           TAG=$(make print-version)
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          make docker-build-amd64
+          make docker-build-controller-amd64
+          make docker-build-pinger-amd64
           docker images
           docker tag icoy/kube-combo-controller:v$TAG icoy/kube-combo-controller:v$TAG-amd64
           docker push icoy/kube-combo-controller:v$TAG-amd64

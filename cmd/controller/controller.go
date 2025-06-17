@@ -14,27 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package controller
 
 import (
 	"flag"
 	"os"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	vpngwv1 "github.com/kubecombo/kube-combo/api/v1"
+	myv1 "github.com/kubecombo/kube-combo/api/v1"
 	"github.com/kubecombo/kube-combo/internal/controller"
-	//+kubebuilder:scaffold:imports
 )
 
 var (
@@ -45,11 +42,11 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(vpngwv1.AddToScheme(scheme))
+	utilruntime.Must(myv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
-func main() {
+func CmdMain() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -91,12 +88,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO:// fix ctrl.GetConfigOrDie() called multiple times
+	bindAddress := metricsAddr + ":9443"
+	metricsOptions := metricsserver.Options{
+		BindAddress: bindAddress,
+	}
 
+	// TODO:// fix ctrl.GetConfigOrDie() called multiple times
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Metrics:                metricsOptions,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "8e41f5a6.kubecombo.com",
@@ -117,7 +117,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// controllers
+	// vpn gw controllers
 	if err = (&controller.VpnGwReconciler{
 		Client:     mgr.GetClient(),
 		KubeClient: kubeClient,
@@ -138,7 +138,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "VpnGw")
 		os.Exit(1)
 	}
-
 	if err = (&controller.IpsecConnReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -147,7 +146,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "IpsecConn")
 		os.Exit(1)
 	}
-
 	if err = (&controller.KeepAlivedReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -157,20 +155,48 @@ func main() {
 		os.Exit(1)
 	}
 
+	// debugger controllers
+	if err = (&controller.DebuggerReconciler{
+		Client:     mgr.GetClient(),
+		KubeClient: kubeClient,
+		Scheme:     mgr.GetScheme(),
+		RestConfig: restConfig,
+		Log:        ctrl.Log.WithName("debugger"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Debugger")
+		os.Exit(1)
+	}
+	if err = (&controller.PingerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("pinger"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Pinger")
+		os.Exit(1)
+	}
+
 	if enableWebhooks {
 		setupLog.Info("enabling webhooks")
-		if err = (&vpngwv1.VpnGw{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&myv1.VpnGw{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "VpnGw")
 			os.Exit(1)
 		}
 
-		if err = (&vpngwv1.IpsecConn{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&myv1.IpsecConn{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "IpsecConn")
 			os.Exit(1)
 		}
 
-		if err = (&vpngwv1.KeepAlived{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&myv1.KeepAlived{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KeepAlived")
+			os.Exit(1)
+		}
+		if err = (&myv1.Debugger{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Debugger")
+			os.Exit(1)
+		}
+		if err = (&myv1.Pinger{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Pinger")
 			os.Exit(1)
 		}
 	} else {
@@ -178,7 +204,6 @@ func main() {
 	}
 
 	//+kubebuilder:scaffold:builder
-
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
