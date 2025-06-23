@@ -26,7 +26,6 @@ RUN apt-get update && \
     ltrace \
     mtr \
     net-snmp-tools \
-    netcat-openbsd \
     nftables \
     ngrep \
     nmap \
@@ -35,7 +34,6 @@ RUN apt-get update && \
     scapy \
     socat \
     speedtest-cli \
-    openssh \
     strace \
     tcptraceroute \
     tshark \
