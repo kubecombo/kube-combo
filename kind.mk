@@ -20,8 +20,8 @@ endef
 
 .PHONY: kind-load-image
 kind-load-image:
-	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
-	#$(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
+	# $(call kind_load_image,$(KIND_CLUSTER_NAME),$(KUBE_RBAC_PROXY))
+	# $(call kind_load_image,$(KIND_CLUSTER_NAME),$(BASE_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(SSL_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
@@ -30,8 +30,8 @@ kind-load-image:
 
 .PHONY: crictl-pull-image
 crictl-pull-image:
-	#$(call crictl_pull_image,$(KUBE_RBAC_PROXY))
-	#$(call crictl_pull_image,$(BASE_IMG))
+	# $(call crictl_pull_image,$(KUBE_RBAC_PROXY))
+	# $(call crictl_pull_image,$(BASE_IMG))
 	$(call crictl_pull_image,$(IMG))
 	$(call crictl_pull_image,$(SSL_VPN_IMG))
 	$(call crictl_pull_image,$(IPSEC_VPN_IMG))

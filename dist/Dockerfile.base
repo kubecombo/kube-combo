@@ -1,28 +1,46 @@
 # syntax = docker/dockerfile:experimental
-FROM debian:bookworm
+FROM kubeovn/kube-ovn-base:v1.12.9-mc
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     j2cli \
-    hostname \
-    vim \
-    tree \
-    iproute2 \
-    inetutils-ping \
-    traceroute \
-    arping \
     lsof \
-    ncat \
-    iptables \
-    tcpdump \
-    ipset \
-    curl \
-    openssl \
-    easy-rsa \
-    dnsutils \
-    procps \
-    net-tools && \
+    apache2-utils \
+    bind-tools \
+    bird \
+    bridge-utils \
+    dhcping \
+    drill \
+    fping \
+    grpcurl \
+    iftop \
+    iperf \
+    iperf3 \
+    iptraf-ng \
+    iputils \
+    jq \
+    libc6-compat \
+    liboping \
+    ltrace \
+    mtr \
+    net-snmp-tools \
+    netcat-openbsd \
+    nftables \
+    ngrep \
+    nmap \
+    nmap-nping \
+    nmap-scripts \
+    scapy \
+    socat \
+    speedtest-cli \
+    openssh \
+    strace \
+    tcptraceroute \
+    tshark \
+    util-linux \
+    vim \
+    websocat && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /etc/localtime
