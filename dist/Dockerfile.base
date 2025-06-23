@@ -1,28 +1,67 @@
 # syntax = docker/dockerfile:experimental
-FROM debian:bookworm
+FROM kubeovn/kube-ovn-base:v1.12.9-mc
 
-ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    j2cli \
-    hostname \
-    vim \
-    tree \
-    iproute2 \
-    inetutils-ping \
-    traceroute \
+    apache2-utils \
     arping \
-    lsof \
-    ncat \
-    iptables \
-    tcpdump \
-    ipset \
+    bash \
+    bind9-dnsutils \
+    bind-tools \
+    bird \
+    bridge-utils \
+    busybox \
+    conntrack \
     curl \
+    dhcping \
+    drill \
+    ethtool \
+    file \
+    fping \
+    git \
+    grpcurl \
+    hostname \
+    httpie \
+    iftop \
+    inetutils-ping \
+    iperf \
+    iperf3 \
+    iproute2 \
+    ipset \
+    iptables \
+    iptraf-ng \
+    ipvsadm \
+    jq \
+    libc6-compat \
+    liboping \
+    lsof \
+    ltrace \
+    mtr \
+    ncat \
+    net-snmp-tools \
+    net-tools \
+    nftables \
+    ngrep \
+    nmap \
+    nmap-nping \
+    nmap-scripts \
+    openssh-client \
     openssl \
-    easy-rsa \
-    dnsutils \
     procps \
-    net-tools && \
+    python3-pip \
+    scapy \
+    socat \
+    speedtest-cli \
+    strace \
+    tcpdump \
+    tcptraceroute \
+    traceroute \
+    tshark \
+    tree \
+    util-linux \
+    vim \
+    websocat \
+    zsh && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /etc/localtime
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
