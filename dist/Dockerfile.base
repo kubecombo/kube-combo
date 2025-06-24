@@ -5,40 +5,65 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    j2cli \
-    lsof \
     apache2-utils \
+    arping \
+    bash \
     bind-tools \
+    bind9-dnsutils \
     bird \
     bridge-utils \
+    busybox \
+    conntrack \
+    curl \
     dhcping \
     drill \
+    ethtool \
+    file \
     fping \
+    git \
     grpcurl \
+    hostname \
+    httpie \
     iftop \
+    inetutils-ping \
     iperf \
     iperf3 \
+    iproute2 \
+    ipset \
+    iptables \
     iptraf-ng \
-    iputils \
+    ipvsadm \
+    j2cli \
     jq \
     libc6-compat \
     liboping \
+    lsof \
     ltrace \
     mtr \
+    ncat \
     net-snmp-tools \
+    net-tools \
     nftables \
     ngrep \
     nmap \
     nmap-nping \
     nmap-scripts \
+    openssh-client \
+    openssl \
+    procps \
+    python3-pip \
     scapy \
     socat \
     speedtest-cli \
     strace \
+    tcpdump \
     tcptraceroute \
+    traceroute \
+    tree \
     tshark \
     util-linux \
     vim \
-    websocat && \
+    websocat \
+    zsh && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /etc/localtime
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
