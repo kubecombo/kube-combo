@@ -2,6 +2,7 @@
 FROM kubeovn/kube-ovn-base:v1.12.9-mc
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG ARCH
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -65,4 +66,4 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN wget https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.amd64.deb && dpkg -i nettrace-1.2.11-2.amd64.deb && rm nettrace-1.2.11-2.amd64.deb 
+RUN wget https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb 

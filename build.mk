@@ -86,11 +86,11 @@ docker-push-pinger:
 
 .PHONY: docker-build-base-amd64
 docker-build-base-amd64:
-	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+	docker buildx build --network host --load --platform linux/amd64 --build-arg ARCH=amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-build-base-arm64
 docker-build-base-arm64:
-	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
+	docker buildx build --network host --load --platform linux/arm64 --build-arg ARCH=arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-push-base
 docker-push-base:
