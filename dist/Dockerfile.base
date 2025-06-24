@@ -2,13 +2,13 @@
 FROM kubeovn/kube-ovn-base:v1.12.9-mc
 
 ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     apache2-utils \
     arping \
     bash \
-    bind-tools \
     bind9-dnsutils \
     bird \
     bridge-utils \
@@ -16,12 +16,10 @@ RUN apt-get update && \
     conntrack \
     curl \
     dhcping \
-    drill \
     ethtool \
     file \
     fping \
     git \
-    grpcurl \
     hostname \
     httpie \
     iftop \
@@ -35,24 +33,23 @@ RUN apt-get update && \
     ipvsadm \
     j2cli \
     jq \
-    libc6-compat \
-    liboping \
+    ldnsutils \
+    liboping-dev \
     lsof \
     ltrace \
     mtr \
     ncat \
-    net-snmp-tools \
     net-tools \
     nftables \
     ngrep \
     nmap \
-    nmap-nping \
-    nmap-scripts \
     openssh-client \
     openssl \
+    oping \
     procps \
     python3-pip \
     scapy \
+    snmp \ 
     socat \
     speedtest-cli \
     strace \
@@ -63,7 +60,6 @@ RUN apt-get update && \
     tshark \
     util-linux \
     vim \
-    websocat \
     zsh && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
