@@ -32,33 +32,41 @@ KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 go-build-all-amd: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
+	chmod +x bin/controller
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
+	chmod +x bin/pinger
 
 .PHONY: go-build-all-arm
 go-build-all-arm: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
+	chmod +x bin/controller
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
+	chmod +x bin/pinger
 
 .PHONY: go-build-pinger-amd
 go-build-pinger-amd: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
+	chmod +x bin/pinger
 
 .PHONY: go-build-pinger-arm
 go-build-pinger-arm: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/pinger -v ./cmd/pinger
+	chmod +x bin/pinger
 
 .PHONY: go-build-controller-amd
 go-build-controller-amd: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
+	chmod +x bin/controller
 
 .PHONY: go-build-controller-arm
 go-build-controller-arm: manifests generate fmt vet
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o bin/controller -v ./cmd/controller
+	chmod +x bin/controller
 
 ##@ docker build
 .PHONY: docker-build-controller-amd64
