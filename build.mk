@@ -28,70 +28,28 @@ IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
 ##@ go build
-.PHONY: go-build-all-amd
-go-build-all-amd: manifests generate fmt vet
+.PHONY: go-build-amd
+go-build-amd: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/controller -v ./cmd/
-	chmod +x bin/controller
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/pinger -v ./cmd/
-	chmod +x bin/pinger
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/kube-combo-cmd -v ./cmd/
 
-.PHONY: go-build-all-arm
-go-build-all-arm: manifests generate fmt vet
+.PHONY: go-build-arm
+go-build-arm: manifests generate fmt vet
 	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/controller -v ./cmd/
-	chmod +x bin/controller
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/pinger -v ./cmd/
-	chmod +x bin/pinger
-
-.PHONY: go-build-pinger-amd
-go-build-pinger-amd: manifests generate fmt vet
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/pinger -v ./cmd/
-	chmod +x bin/pinger
-
-.PHONY: go-build-pinger-arm
-go-build-pinger-arm: manifests generate fmt vet
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/pinger -v ./cmd/
-	chmod +x bin/pinger
-
-.PHONY: go-build-controller-amd
-go-build-controller-amd: manifests generate fmt vet
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/controller -v ./cmd/
-	chmod +x bin/controller
-
-.PHONY: go-build-controller-arm
-go-build-controller-arm: manifests generate fmt vet
-	go mod tidy
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/controller -v ./cmd/
-	chmod +x bin/controller
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/kube-combo-cmd -v ./cmd/
 
 ##@ docker build
-.PHONY: docker-build-controller-amd64
-docker-build-controller-amd64: go-build-controller-amd
+.PHONY: docker-build-amd64
+docker-build-amd64: go-build-amd
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
-.PHONY: docker-build-controller-arm64
-docker-build-controller-arm64: go-build-controller-arm
+.PHONY: docker-build-arm64
+docker-build-arm64: go-build-arm
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
-.PHONY: docker-push-controller
-docker-push-controller:
+.PHONY: docker-push
+docker-push:
 	docker push ${IMG}
-
-.PHONY: docker-build-pinger-amd64
-docker-build-pinger-amd64: go-build-pinger-amd
-	docker buildx build --network host --load --platform linux/amd64 -t ${PINGER_IMG} -f ./Dockerfile.pinger .
-
-.PHONY: docker-build-pinger-arm64
-docker-build-pinger-arm64: go-build-pinger-arm
-	docker buildx build --network host --load --platform linux/arm64 -t ${PINGER_IMG} -f ./Dockerfile.pinger .
-
-.PHONY: docker-push-pinger
-docker-push-pinger:
-	docker push ${PINGER_IMG}
 
 .PHONY: docker-build-base-amd64
 docker-build-base-amd64:
@@ -154,10 +112,10 @@ docker-pull-base-arm64:
 	docker pull --platform linux/arm64 ${KUBE_OVN_BASE_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-pull-base-amd64 docker-build-controller-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
+docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-pull-base-arm64 docker-build-controller-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
 
 .PHONY: docker-push-all
 docker-push-all:
