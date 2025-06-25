@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 WORKDIR /
 COPY ./bin/pinger .
 ENTRYPOINT ["/pinger"]
