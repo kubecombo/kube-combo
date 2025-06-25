@@ -64,7 +64,7 @@ spec:
             - --metrics-bind-address=127.0.0.1:8080
             - --leader-elect
           command:
-            - /manager
+            - /controller
           image: {{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}
           imagePullPolicy: {{.Values.image.pullPolicy}}
           livenessProbe:
