@@ -9,13 +9,13 @@ global:
   images:
     kubecombo:
       repository: kube-combo-controller
-      tag: v1.2.0
+      tag: v1.3.0
     openvpn:
       repository: kube-combo-openvpn
-      tag: v1.2.0
+      tag: v1.3.0
     strongswan:
       repository: kube-combo-strongswan
-      tag: v1.2.0
+      tag: v1.3.0
 
 kubebuilder:
   registry:
