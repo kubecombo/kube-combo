@@ -67,7 +67,7 @@ spec:
         #   type: RuntimeDefault
       containers:
         - command:
-            - /manager
+            - /controller
           args:
             - --leader-elect
           image: icoy/kube-combo-controller:v1.3.0
