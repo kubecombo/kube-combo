@@ -13,7 +13,7 @@ endif
 # Base Image
 BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}-base
 BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
-KUBE_OVN_BASE_IMG ?= "kubeovn/kube-ovn-base:v1.12.9-mc"
+KUBE_OVN_BASE_IMG ?= kubeovn/kube-ovn-base:v1.12.9-mc
 
 # Image Name
 SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
@@ -139,11 +139,11 @@ docker-push-keepalived: ## Push docker keepalived image
 
 .PHONY: docker-pull-base-amd64
 docker-pull-base-amd64:
-	docker pull --platform linux/amd64 "${KUBE_OVN_BASE_IMG}"
+	docker pull --platform linux/amd64 ${KUBE_OVN_BASE_IMG}
 
 .PHONY: docker-pull-base-arm64
 docker-pull-base-arm64:
-	docker pull --platform linux/arm64 "${KUBE_OVN_BASE_IMG}"
+	docker pull --platform linux/arm64 ${KUBE_OVN_BASE_IMG}
 
 .PHONY: docker-build-all-amd64
 docker-build-all-amd64: docker-pull-base-amd64 docker-build-controller-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
