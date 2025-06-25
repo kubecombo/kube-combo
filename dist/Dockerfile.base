@@ -8,49 +8,28 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     apache2-utils \
-    arping \
     bash \
-    bind9-dnsutils \
-    bird \
-    bridge-utils \
     busybox \
     dhcping \
-    ethtool \
     file \
     fping \
     httpie \
     iftop \
-    inetutils-ping \
     iperf \
     iperf3 \
     iptraf-ng \
     j2cli \
     jq \
-    ldnsutils \
-    liboping-dev \
     lsof \
     ltrace \
     mtr \
-    ncat \
-    nftables \
-    ngrep \
     nmap \
-    openssh-client \
     oping \
-    procps \
     snmp \
-    socat \
     speedtest-cli \
     strace \
-    tcptraceroute \
-    traceroute \
-    tree \
-    tshark \
-    util-linux \
-    vim \
-    wget \
-    zsh && \
+    tcptraceroute && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN wget https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb
+RUN curl -LO https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb

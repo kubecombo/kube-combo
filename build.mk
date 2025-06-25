@@ -13,6 +13,7 @@ endif
 # Base Image
 BASE_IMG_BASE ?= ${IMAGE_TAG_BASE}-base
 BASE_IMG ?= $(BASE_IMG_BASE):v$(VERSION)
+KUBE_OVN_BASE_IMG ?= "kubeovn/kube-ovn-base:v1.12.9-mc"
 
 # Image Name
 SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
@@ -136,11 +137,19 @@ docker-build-keepalived-arm64: ## Build docker keepalived image for arm64.
 docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
+.PHONY: docker-pull-base-amd64
+docker-pull-base-amd64:
+	docker pull --platform linux/amd64 "${KUBE_OVN_BASE_IMG}"
+
+.PHONY: docker-pull-base-arm64
+docker-pull-base-arm64:
+	docker pull --platform linux/arm64 "${KUBE_OVN_BASE_IMG}"
+
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-controller-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
+docker-build-all-amd64: docker-pull-base-amd64 docker-build-controller-amd64 docker-build-pinger-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-controller-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
+docker-build-all-arm64: docker-pull-base-arm64 docker-build-controller-arm64 docker-build-pinger-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
 
 .PHONY: docker-push-all
 docker-push-all:
