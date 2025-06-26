@@ -47,7 +47,7 @@ docker-build-arm64: go-build-arm ## Build docker kube-combo image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
-docker-push: ##Push docker kube-combo image.
+docker-push: ## Push docker kube-combo image.
 	docker push ${IMG}
 
 .PHONY: docker-build-base-amd64
@@ -59,7 +59,7 @@ docker-build-base-arm64: ## Build docker kube-combo-base image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 --build-arg ARCH=arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-push-base
-docker-push-base: ##Push docker kube-combo image.
+docker-push-base: ## Push docker kube-combo image.
 	docker push ${BASE_IMG}
 
 .PHONY: docker-pull-base
