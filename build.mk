@@ -22,45 +22,44 @@ KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 
 # Full Image URL
 IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
-PINGER_IMG ?= $(IMAGE_TAG_BASE)-pinger:v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 
 ##@ go build
 .PHONY: go-build-amd
-go-build-amd: manifests generate fmt vet
+go-build-amd: manifests generate fmt vet ## Build the kube-combo binary for amd64 architecture
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/kube-combo-cmd -v ./cmd/
 
 .PHONY: go-build-arm
-go-build-arm: manifests generate fmt vet
+go-build-arm: manifests generate fmt vet ## Build the kube-combo binary for arm64 architecture
 	go mod tidy
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -buildmode=pie -o ./bin/kube-combo-cmd -v ./cmd/
 
 ##@ docker build
 .PHONY: docker-build-amd64
-docker-build-amd64: go-build-amd
+docker-build-amd64: go-build-amd ## Build docker kube-combo image for amd64.
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-arm64
-docker-build-arm64: go-build-arm
+docker-build-arm64: go-build-arm ## Build docker kube-combo image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
-docker-push:
+docker-push: ##Push docker kube-combo image.
 	docker push ${IMG}
 
 .PHONY: docker-build-base-amd64
-docker-build-base-amd64:
+docker-build-base-amd64: ## Build docker kube-combo-base image for amd64.
 	docker buildx build --network host --load --platform linux/amd64 --build-arg ARCH=amd64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-build-base-arm64
-docker-build-base-arm64:
+docker-build-base-arm64: ## Build docker kube-combo-base image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 --build-arg ARCH=arm64 -f ./dist/Dockerfile.base -t ${BASE_IMG} .
 
 .PHONY: docker-push-base
-docker-push-base:
+docker-push-base: ##Push docker kube-combo image.
 	docker push ${BASE_IMG}
 
 .PHONY: docker-pull-base
@@ -120,7 +119,6 @@ docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-
 .PHONY: docker-push-all
 docker-push-all:
 	docker pull ${IMG} && \
-	docker push ${PINGER_IMG} && \
 	docker push ${SSL_VPN_IMG} && \
 	docker push ${IPSEC_VPN_IMG} && \
 	docker push ${KEEPALIVED_IMG}
@@ -128,7 +126,6 @@ docker-push-all:
 .PHONY: docker-pull-all
 docker-pull-all:
 	docker pull ${IMG} && \
-	docker pull ${PINGER_IMG} && \
 	docker pull ${SSL_VPN_IMG} && \
 	docker pull ${IPSEC_VPN_IMG} && \
 	docker pull ${KEEPALIVED_IMG}
