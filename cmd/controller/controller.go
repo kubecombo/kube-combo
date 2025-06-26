@@ -56,7 +56,7 @@ func CmdMain() {
 	var sslVpnTCP, sslVpnUDP string
 	var ipSecBootPcPort, ipSecIsakmpPort, ipSecNatPort, ipSecVpnSecretPath string
 	flag.BoolVar(&enableWebhooks, "enable-webhooks", os.Getenv("ENABLE_WEBHOOKS") == "true", "Enable webhooks")
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":38080", "The address the metric endpoint binds to.")
+	flag.StringVar(&metricsAddr, "metrics-bind-address", "127.0.0.1", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":38081", "The address the probe endpoint binds to.")
 	// vpn gw server pod need those config to start
 	flag.StringVar(&k8sManifestsPath, "k8s-manifests-path", "/etc/kubernetes/manifests", "The path the ssl vpn daemonset pod will copy static pod yaml to.")
