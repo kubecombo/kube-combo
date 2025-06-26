@@ -41,7 +41,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 IMAGE_TAG_BASE ?= icoy/kube-combo
 
 # dependencies
-KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
+KUBE_RBAC_PROXY ?= gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
 CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.17.0
 CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.17.0
 CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.17.0
