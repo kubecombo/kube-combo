@@ -23,7 +23,7 @@ kubebuilder:
     imagePullSecrets: []
   images:
     repository: kube-rbac-proxy
-    tag: v0.15.0
+    tag: v0.13.1
 
 image:
   pullPolicy: IfNotPresent
