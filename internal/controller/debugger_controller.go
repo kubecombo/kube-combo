@@ -487,6 +487,7 @@ func (r *DebuggerReconciler) getDebuggerDeploy(debugger *myv1.Debugger, pinger *
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
 			},
+			RestartPolicy: corev1.RestartPolicyNever,
 		},
 	}
 	if len(debugger.Spec.Selector) > 0 {

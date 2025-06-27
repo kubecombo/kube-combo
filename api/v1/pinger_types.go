@@ -40,7 +40,7 @@ type PingerSpec struct {
 	Memory string `json:"memory"`
 
 	// +kubebuilder:validation:Required
-	Image string `json:"Image"`
+	Image string `json:"image"`
 
 	// pinger pod args
 
