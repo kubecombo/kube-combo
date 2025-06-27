@@ -269,8 +269,8 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		r.Log.Error(err, "should set workload type")
 		return err
 	}
-	if debugger.Spec.WorkloadType != "daemonset" && debugger.Spec.WorkloadType != "deployment" {
-		err := fmt.Errorf("debugger %s workload type is invalid, should be daemonset or deployment", debugger.Name)
+	if debugger.Spec.WorkloadType != WorkloadTypeDaemonset && debugger.Spec.WorkloadType != WorkloadTypePod {
+		err := fmt.Errorf("debugger %s workload type is invalid, should be daemonset or pod", debugger.Name)
 		r.Log.Error(err, "should set valid workload type")
 		return err
 	}
