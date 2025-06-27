@@ -11,6 +11,8 @@ spec:
     kind: Pinger
     listKind: PingerList
     plural: pingers
+    shortNames:
+    - ping
     singular: pinger
   scope: Namespaced
   versions:
