@@ -14,7 +14,23 @@ spec:
     singular: debugger
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.cpu
+      name: CPU
+      type: string
+    - jsonPath: .spec.memory
+      name: Memory
+      type: string
+    - jsonPath: .spec.subnet
+      name: Subnet
+      type: string
+    - jsonPath: .spec.image
+      name: WorkloadType
+      type: string
+    - jsonPath: .spec.image
+      name: Image
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         description: Debugger is the Schema for the debuggers API
@@ -974,10 +990,6 @@ spec:
               qosBandwidth:
                 description: 1Mbps bandwidth at least
                 type: string
-              replicas:
-                default: 1
-                format: int32
-                type: integer
               selector:
                 description: pod node selector
                 items:
@@ -2019,9 +2031,6 @@ spec:
                 type: string
               qosBandwidth:
                 type: string
-              replicas:
-                format: int32
-                type: integer
               selector:
                 items:
                   type: string
@@ -2072,7 +2081,6 @@ spec:
             - cpu
             - memory
             - qosBandwidth
-            - replicas
             - workloadType
             type: object
         type: object

@@ -15,9 +15,21 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.cpu
+      name: CPU
+      type: string
+    - jsonPath: .spec.memory
+      name: Memory
+      type: string
     - jsonPath: .spec.interval
       name: Interval
       type: integer
+    - jsonPath: .spec.image
+      name: Image
+      type: string
+    - jsonPath: .spec.ping
+      name: Ping
+      type: string
     name: v1
     schema:
       openAPIV3Schema:
@@ -166,4 +178,5 @@ spec:
         type: object
     served: true
     storage: true
-    subresources: {}
+    subresources:
+      status: {}
