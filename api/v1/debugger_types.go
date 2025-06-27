@@ -114,7 +114,7 @@ type DebuggerStatus struct {
 // +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
 // +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
 // +kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.image`
-//+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
+// +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 
 // Debugger is the Schema for the debuggers API
 type Debugger struct {
