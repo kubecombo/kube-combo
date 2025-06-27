@@ -11,6 +11,8 @@ spec:
     kind: Debugger
     listKind: DebuggerList
     plural: debuggers
+    shortNames:
+    - debug
     singular: debugger
   scope: Namespaced
   versions:
@@ -24,8 +26,11 @@ spec:
     - jsonPath: .spec.subnet
       name: Subnet
       type: string
-    - jsonPath: .spec.image
-      name: WorkloadType
+    - jsonPath: .spec.workloadType
+      name: Workload
+      type: string
+    - jsonPath: .spec.pinger
+      name: Pinger
       type: string
     - jsonPath: .spec.image
       name: Image
