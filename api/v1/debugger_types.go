@@ -30,7 +30,7 @@ type DebuggerSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// k8s workload type
-	// deployment or daemonset
+	// one pod or daemonset
 
 	// +kubebuilder:validation:Required
 	WorkloadType string `json:"workloadType"`
