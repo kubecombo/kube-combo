@@ -101,13 +101,13 @@ type PingerStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
-//+kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
-//+kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
-//+kubebuilder:printcolumn:name="Interval",type=integer,JSONPath=`.spec.interval`
-//+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
-//+kubebuilder:printcolumn:name="Ping",type=string,JSONPath=`.spec.ping`
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
+// +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
+// +kubebuilder:printcolumn:name="Interval",type=integer,JSONPath=`.spec.interval`
+// +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
+// +kubebuilder:printcolumn:name="Ping",type=string,JSONPath=`.spec.ping`
 
 // Pinger is the Schema for the pingers API
 type Pinger struct {

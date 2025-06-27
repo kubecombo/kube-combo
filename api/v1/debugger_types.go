@@ -108,12 +108,12 @@ type DebuggerStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
-//+kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
-//+kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
-//+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
-//+kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.image`
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
+// +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
+// +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
+// +kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.image`
 //+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 
 // Debugger is the Schema for the debuggers API
