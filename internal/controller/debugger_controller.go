@@ -55,8 +55,8 @@ const (
 	DebuggerStartCMD = "/kubeovn/debugger-start.sh"
 	PingerStartCMD   = "/kubeovn/pinger-start.sh"
 
-	// WorkloadTypeDeployment is the workload type for deployment
-	WorkloadTypeDeployment = "deployment"
+	// WorkloadTypePod is the workload type for pod
+	WorkloadTypePod = "pod"
 	// WorkloadTypeDaemonset is the workload type for daemonset
 	WorkloadTypeDaemonset = "daemonset"
 	// debugger env
@@ -201,9 +201,9 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 		}
 	}
 	// create debugger or update
-	if debugger.Spec.WorkloadType == WorkloadTypeDeployment {
+	if debugger.Spec.WorkloadType == WorkloadTypePod {
 		// deployment for one pod case
-		if err := r.handleAddOrUpdateDeploy(req, debugger, pinger); err != nil {
+		if err := r.handleAddOrUpdatePod(req, debugger, pinger); err != nil {
 			r.Log.Error(err, "failed to handleAddOrUpdateDeploy")
 			return SyncStateError, err
 		}
@@ -275,7 +275,7 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		return err
 	}
 
-	if debugger.Spec.WorkloadType == WorkloadTypeDeployment {
+	if debugger.Spec.WorkloadType == WorkloadTypePod {
 		if debugger.Spec.Replicas < 1 {
 			err := fmt.Errorf("debugger %s replicas should be at least 1", debugger.Name)
 			r.Log.Error(err, "should set valid replicas")
@@ -337,16 +337,16 @@ func (r *DebuggerReconciler) validatePinger(pinger *myv1.Pinger, enablePinger bo
 	return nil
 }
 
-func (r *DebuggerReconciler) handleAddOrUpdateDeploy(req ctrl.Request, debugger *myv1.Debugger, pinger *myv1.Pinger) error {
-	// create or update deployment
+func (r *DebuggerReconciler) handleAddOrUpdatePod(req ctrl.Request, debugger *myv1.Debugger, pinger *myv1.Pinger) error {
+	// create or update pod
 	needToCreate := false
-	oldDeploy := &appsv1.Deployment{}
-	err := r.Get(context.Background(), req.NamespacedName, oldDeploy)
+	oldPod := &corev1.Pod{}
+	err := r.Get(context.Background(), req.NamespacedName, oldPod)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			needToCreate = true
 		} else {
-			r.Log.Error(err, "failed to get deployment")
+			r.Log.Error(err, "failed to get pod")
 			return err
 		}
 	}
@@ -354,7 +354,7 @@ func (r *DebuggerReconciler) handleAddOrUpdateDeploy(req ctrl.Request, debugger 
 	// create
 	if needToCreate {
 		// create deployment
-		newDeploy := r.getDebuggerDeploy(debugger, pinger, nil)
+		newDeploy := r.getDebuggerPod(debugger, pinger, nil)
 		err = r.Create(context.Background(), newDeploy)
 		if err != nil {
 			r.Log.Error(err, "failed to create the new deployment")
@@ -366,7 +366,7 @@ func (r *DebuggerReconciler) handleAddOrUpdateDeploy(req ctrl.Request, debugger 
 	// update
 	if r.isChanged(newDebugger) {
 		// update deployment
-		newDeploy := r.getDebuggerDeploy(debugger, pinger, oldDeploy.DeepCopy())
+		newDeploy := r.getDebuggerPod(debugger, pinger, oldPod.DeepCopy())
 		err = r.Update(context.Background(), newDeploy)
 		if err != nil {
 			r.Log.Error(err, "failed to update the deployment")
@@ -376,7 +376,7 @@ func (r *DebuggerReconciler) handleAddOrUpdateDeploy(req ctrl.Request, debugger 
 		return nil
 	}
 	// no change
-	r.Log.Info("debugger deployment not changed", "debugger", debugger.Name)
+	r.Log.Info("debugger pod not changed", "debugger", debugger.Name)
 	return nil
 }
 
@@ -430,16 +430,15 @@ func labelsFor(debugger *myv1.Debugger) map[string]string {
 	}
 }
 
-func (r *DebuggerReconciler) getDebuggerDeploy(debugger *myv1.Debugger, pinger *myv1.Pinger, oldDeploy *appsv1.Deployment) (newDeploy *appsv1.Deployment) {
+func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv1.Pinger, oldPod *corev1.Pod) (newPod *corev1.Pod) {
 	namespacedName := fmt.Sprintf("%s/%s", debugger.Namespace, debugger.Name)
-	r.Log.Info("start deployForDebugger", "debugger", namespacedName)
-	defer r.Log.Info("end deployForDebugger", "debugger", namespacedName)
+	r.Log.Info("start podForDebugger", "debugger", namespacedName)
+	defer r.Log.Info("end podForDebugger", "debugger", namespacedName)
 
-	replicas := debugger.Spec.Replicas
 	labels := labelsFor(debugger)
 	newPodAnnotations := map[string]string{}
-	if oldDeploy != nil && len(oldDeploy.Annotations) != 0 {
-		newPodAnnotations = oldDeploy.Annotations
+	if oldPod != nil && len(oldPod.Annotations) != 0 {
+		newPodAnnotations = oldPod.Annotations
 	}
 	podAnnotations := map[string]string{
 		KubeovnLogicalSwitchAnnotation: debugger.Spec.Subnet,
@@ -462,59 +461,24 @@ func (r *DebuggerReconciler) getDebuggerDeploy(debugger *myv1.Debugger, pinger *
 		containers = append(containers, pingerContainer)
 	}
 
-	newDeploy = &appsv1.Deployment{
+	newPod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      debugger.Name,
-			Namespace: debugger.Namespace,
-			Labels:    labels,
+			Name:        debugger.Name,
+			Namespace:   debugger.Namespace,
+			Annotations: newPodAnnotations,
+			Labels:      labels,
 		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
-					Annotations: newPodAnnotations,
-				},
-				Spec: corev1.PodSpec{
-					NodeName:      debugger.Spec.NodeName,
-					Containers:    containers,
-					Volumes:       volumes,
-					RestartPolicy: corev1.RestartPolicyNever,
-				},
-			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RollingUpdateDeploymentStrategyType,
-			},
+		Spec: corev1.PodSpec{
+			NodeName:      debugger.Spec.NodeName,
+			Containers:    containers,
+			Volumes:       volumes,
+			RestartPolicy: corev1.RestartPolicyNever,
 		},
-	}
-	if len(debugger.Spec.Selector) > 0 {
-		selectors := make(map[string]string)
-		for _, v := range debugger.Spec.Selector {
-			parts := strings.Split(strings.TrimSpace(v), ":")
-			if len(parts) != 2 {
-				continue
-			}
-			selectors[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
-		}
-		newDeploy.Spec.Template.Spec.NodeSelector = selectors
-	}
-
-	if len(debugger.Spec.Tolerations) > 0 {
-		newDeploy.Spec.Template.Spec.Tolerations = debugger.Spec.Tolerations
-	}
-
-	if debugger.Spec.Affinity.NodeAffinity != nil ||
-		debugger.Spec.Affinity.PodAffinity != nil ||
-		debugger.Spec.Affinity.PodAntiAffinity != nil {
-		newDeploy.Spec.Template.Spec.Affinity = &debugger.Spec.Affinity
 	}
 
 	// set owner reference
-	if err := controllerutil.SetControllerReference(debugger, newDeploy, r.Scheme); err != nil {
-		r.Log.Error(err, "failed to set debugger as the owner of the deployment")
+	if err := controllerutil.SetControllerReference(debugger, newPod, r.Scheme); err != nil {
+		r.Log.Error(err, "failed to set debugger as the owner of the pod")
 		return nil
 	}
 	return
