@@ -134,7 +134,7 @@ docker-pull-all:
 ##@ run
 
 .PHONY: run-controller
-run-controller: manifests generate fmt vet ## Run kube-combo controller from your host.
+run-controller: manifests generate fmt vet install ## Run kube-combo controller from your host.
 	go mod tidy
 	go run ./run/controller/main.go
 
