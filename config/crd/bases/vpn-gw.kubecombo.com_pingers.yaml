@@ -43,8 +43,6 @@ spec:
           spec:
             description: PingerSpec defines the desired state of Pinger
             properties:
-              Image:
-                type: string
               arpPing:
                 description: l2 check ip list, ip1,ip2,ip3
                 type: string
@@ -56,6 +54,8 @@ spec:
               enableMetric:
                 description: enable metric
                 type: boolean
+              image:
+                type: string
               interval:
                 default: 5
                 description: defult ping, tcp, udp check interval is 5s
@@ -75,8 +75,8 @@ spec:
                 description: l4 udp check ip:port list, ip1:port1,ip2:port2,ip3:port3
                 type: string
             required:
-            - Image
             - cpu
+            - image
             - memory
             type: object
           status:
