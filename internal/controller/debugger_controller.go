@@ -275,13 +275,6 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		return err
 	}
 
-	if debugger.Spec.WorkloadType == WorkloadTypePod {
-		if debugger.Spec.Replicas < 1 {
-			err := fmt.Errorf("debugger %s replicas should be at least 1", debugger.Name)
-			r.Log.Error(err, "should set valid replicas")
-			return err
-		}
-	}
 	if debugger.Spec.WorkloadType == WorkloadTypeDaemonset {
 		if debugger.Spec.NodeName != "" {
 			err := fmt.Errorf("debugger %s daemonset not need node name", debugger.Name)
@@ -671,7 +664,6 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 	if debugger.Spec.CPU != debugger.Status.CPU ||
 		debugger.Spec.Memory != debugger.Status.Memory ||
 		debugger.Spec.Image != debugger.Status.Image ||
-		debugger.Spec.Replicas != debugger.Status.Replicas ||
 		debugger.Spec.QoSBandwidth != debugger.Status.QoSBandwidth ||
 		debugger.Spec.WorkloadType != debugger.Status.WorkloadType ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||

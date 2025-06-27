@@ -58,12 +58,6 @@ type DebuggerSpec struct {
 	// +kubebuilder:default:="kubecombo/debugger:latest"
 	Image string `json:"image,omitempty"`
 
-	// deployment replicas, daemonset not need this
-
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=1
-	Replicas int32 `json:"replicas"`
-
 	// pod node selector
 	// +kubebuilder:validation:Optional
 	Selector []string `json:"selector,omitempty"`
@@ -101,7 +95,6 @@ type DebuggerStatus struct {
 	QoSBandwidth string              `json:"qosBandwidth" patchStrategy:"merge"`
 	Subnet       string              `json:"subnet,omitempty" patchStrategy:"merge"`
 	Image        string              `json:"image,omitempty" patchStrategy:"merge"`
-	Replicas     int32               `json:"replicas" patchStrategy:"merge"`
 	Selector     []string            `json:"selector,omitempty" patchStrategy:"merge"`
 	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
 	Affinity     corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
@@ -115,7 +108,13 @@ type DebuggerStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
+// //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
+//+kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
+//+kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
+//+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
+//+kubebuilder:printcolumn:name="WorkloadType",type=string,JSONPath=`.spec.image`
+//+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 
 // Debugger is the Schema for the debuggers API
 type Debugger struct {
