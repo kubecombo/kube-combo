@@ -11,6 +11,8 @@ spec:
     kind: KeepAlived
     listKind: KeepAlivedList
     plural: keepaliveds
+    shortNames:
+    - ka
     singular: keepalived
   scope: Namespaced
   versions:

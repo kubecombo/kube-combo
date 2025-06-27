@@ -66,6 +66,7 @@ func (m *KeepAlived) SetConditions(conditions []metav1.Condition) {
 //+kubebuilder:object:root=true
 // // +kubebuilder:subresource:status
 //+kubebuilder:storageversion
+// +kubebuilder:resource:shortName=ka
 //+kubebuilder:printcolumn:name="VipV4",type=string,JSONPath=`.spec.vipV4`
 //+kubebuilder:printcolumn:name="VipV6",type=string,JSONPath=`.spec.vipV6`
 //+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`

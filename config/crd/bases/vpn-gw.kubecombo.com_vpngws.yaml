@@ -11,6 +11,8 @@ spec:
     kind: VpnGw
     listKind: VpnGwList
     plural: vpngws
+    shortNames:
+    - vpn
     singular: vpngw
   scope: Namespaced
   versions:
