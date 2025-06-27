@@ -111,6 +111,7 @@ type IpsecConnSpec struct {
 //+kubebuilder:object:root=true
 // //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
+// +kubebuilder:resource:shortName=conn
 //+kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
 //+kubebuilder:printcolumn:name="LocalVIP",type=string,JSONPath=`.spec.localVIP`
 //+kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`

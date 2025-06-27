@@ -11,6 +11,8 @@ spec:
     kind: IpsecConn
     listKind: IpsecConnList
     plural: ipsecconns
+    shortNames:
+    - conn
     singular: ipsecconn
   scope: Namespaced
   versions:

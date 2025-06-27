@@ -166,6 +166,7 @@ type VpnGwStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
+// +kubebuilder:resource:shortName=vpn
 //+kubebuilder:printcolumn:name="Keepalived",type=string,JSONPath=`.spec.keepalived`
 //+kubebuilder:printcolumn:name="EnableSsl",type=string,JSONPath=`.spec.enableSslVpn`
 //+kubebuilder:printcolumn:name="EnableIpsec",type=string,JSONPath=`.spec.enableIpsecVpn`
