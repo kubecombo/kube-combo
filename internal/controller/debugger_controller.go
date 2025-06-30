@@ -70,6 +70,40 @@ const (
 	TcpPing      = "TCP_PING"
 	UdpPing      = "UDP_PING"
 	Dns          = "DNS"
+
+	// service account
+	ServiceAccountName = "kube-ovn-app"
+)
+
+// volume mounts
+const (
+	// volume path and name
+	VarRunOpenvswitch = "/var/run/openvswitch"
+	OpenvswitchName   = "host-run-ovs"
+
+	VarRunOvn = "/var/run/ovn"
+	OvnName   = "host-run-ovn"
+
+	EtcOpenvswitch    = "/etc/openvswitch"
+	OpenvswitchConfig = "host-config-openvswitch"
+
+	VarLogOpenvswitch = "/var/log/openvswitch"
+	OpenvswitchLog    = "host-log-openvswitch"
+
+	VarLogOvn = "/var/log/ovn"
+	OvnLog    = "host-log-ovn"
+
+	VarLogKubeOvn = "/var/log/kube-ovn"
+	KubeOvnLog    = "host-log-kube-ovn"
+
+	VarLogKubeCombo = "/var/log/kube-combo"
+	KubeComboLog    = "host-log-kube-combo"
+
+	EtcLocalTime  = "/etc/localtime"
+	LocalTimeName = "localtime"
+
+	VarRunTls = "/var/run/tls"
+	TlsName   = "kube-ovn-tls"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -420,7 +454,169 @@ func labelsFor(debugger *myv1.Debugger) map[string]string {
 	return map[string]string{
 		EnablePingerLabel: strconv.FormatBool(debugger.Spec.EnablePinger),
 		DebuggerName:      debugger.Name,
+		"app":             "debugger",
 	}
+}
+
+func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
+	return []corev1.EnvVar{
+		{
+			Name: "POD_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.name",
+				},
+			},
+		},
+		{
+			Name: "POD_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.namespace",
+				},
+			},
+		},
+		{
+			Name: "NODE_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "spec.nodeName",
+				},
+			},
+		},
+		{
+			Name: "POD_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "status.podIP",
+				},
+			},
+		},
+		{
+			Name: "HOST_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "status.hostIP",
+				},
+			},
+		},
+	}
+}
+func (r *DebuggerReconciler) getVolumesMounts() ([]corev1.Volume, []corev1.VolumeMount) {
+	volumes := []corev1.Volume{
+		{
+			Name: OpenvswitchName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarRunOpenvswitch,
+				},
+			},
+		},
+		{
+			Name: OvnName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarRunOvn,
+				},
+			},
+		},
+		{
+			Name: OpenvswitchConfig,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: EtcOpenvswitch,
+				},
+			},
+		},
+		{
+			Name: OpenvswitchLog,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarLogOpenvswitch,
+				},
+			},
+		},
+		{
+			Name: OvnLog,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarLogOvn,
+				},
+			},
+		},
+		{
+			Name: KubeOvnLog,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarLogKubeOvn,
+				},
+			},
+		},
+		{
+			Name: KubeComboLog,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarLogKubeCombo,
+				},
+			},
+		},
+		{
+			Name: LocalTimeName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: EtcLocalTime,
+				},
+			},
+		},
+		{
+			Name: TlsName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: VarRunTls,
+				},
+			},
+		},
+	}
+
+	volumeMounts := []corev1.VolumeMount{
+		{
+			Name:      OpenvswitchName,
+			MountPath: VarRunOpenvswitch,
+		},
+		{
+			Name:      OvnName,
+			MountPath: VarRunOvn,
+		},
+		{
+			Name:      OpenvswitchConfig,
+			MountPath: EtcOpenvswitch,
+		},
+		{
+			Name:      OpenvswitchLog,
+			MountPath: VarLogOpenvswitch,
+		},
+		{
+			Name:      OvnLog,
+			MountPath: VarLogOvn,
+		},
+		{
+			Name:      KubeOvnLog,
+			MountPath: VarLogKubeOvn,
+		},
+		{
+			Name:      KubeComboLog,
+			MountPath: VarLogKubeCombo,
+		},
+		{
+			Name:      LocalTimeName,
+			MountPath: EtcLocalTime,
+		},
+		{
+			Name:      TlsName,
+			MountPath: VarRunTls,
+		},
+	}
+	return volumes, volumeMounts
 }
 
 func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv1.Pinger, oldPod *corev1.Pod) (newPod *corev1.Pod) {
@@ -441,19 +637,22 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 	for key, value := range podAnnotations {
 		newPodAnnotations[key] = value
 	}
-
+	volumes, volumeMounts := r.getVolumesMounts()
+	envs := r.getEnvs()
 	containers := []corev1.Container{}
-	volumes := []corev1.Volume{}
-
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
+	debuggerContainer.VolumeMounts = volumeMounts
+	// append envs
+	debuggerContainer.Env = append(debuggerContainer.Env, envs...)
 	containers = append(containers, debuggerContainer)
 	if debugger.Spec.EnablePinger {
 		// pinger container
 		pingerContainer := r.getPingerContainer(pinger)
+		pingerContainer.VolumeMounts = volumeMounts
+		pingerContainer.Env = append(pingerContainer.Env, envs...)
 		containers = append(containers, pingerContainer)
 	}
-
 	newPod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        debugger.Name,
@@ -466,6 +665,11 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 			Containers:    containers,
 			Volumes:       volumes,
 			RestartPolicy: corev1.RestartPolicyNever,
+			HostNetwork:   debugger.Spec.HostNetwork, // host network pod
+			HostPID:       debugger.Spec.HostNetwork, // host network pod see host pid
+			// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
+			ServiceAccountName:       ServiceAccountName, // use kube-ovn service account
+			DeprecatedServiceAccount: ServiceAccountName, // use kube-ovn service account
 		},
 	}
 
@@ -500,7 +704,14 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
+			RunAsUser:                &[]int64{0}[0], // run as root user
 			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			Capabilities: &corev1.Capabilities{
+				Add: []corev1.Capability{
+					"NET_ADMIN", // add net admin capability
+					"NET_RAW",   // add net raw capability
+				},
+			},
 		},
 	}
 	return debuggerContainer
@@ -557,7 +768,14 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger) corev1.Cont
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
+			RunAsUser:                &[]int64{0}[0], // run as root user
 			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			Capabilities: &corev1.Capabilities{
+				Add: []corev1.Capability{
+					"NET_ADMIN", // add net admin capability
+					"NET_RAW",   // add net raw capability
+				},
+			},
 		},
 	}
 	return pingerContainer
@@ -582,14 +800,19 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 	}
 
 	containers := []corev1.Container{}
-	volumes := []corev1.Volume{}
-
+	volumes, volumeMounts := r.getVolumesMounts()
+	envs := r.getEnvs()
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
+	debuggerContainer.VolumeMounts = volumeMounts
+	// append envs
+	debuggerContainer.Env = append(debuggerContainer.Env, envs...)
 	containers = append(containers, debuggerContainer)
 	if debugger.Spec.EnablePinger {
 		// pinger container
 		pingerContainer := r.getPingerContainer(pinger)
+		pingerContainer.VolumeMounts = volumeMounts
+		pingerContainer.Env = append(pingerContainer.Env, envs...)
 		containers = append(containers, pingerContainer)
 	}
 
@@ -605,12 +828,23 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
+					Name:        debugger.Name,
+					Namespace:   debugger.Namespace,
 					Labels:      labels,
 					Annotations: newPodAnnotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers: containers,
-					Volumes:    volumes,
+					Containers:  containers,
+					Volumes:     volumes,
+					HostNetwork: debugger.Spec.HostNetwork, // host network pod
+					HostPID:     debugger.Spec.HostNetwork, // host network pod see host pid
+					// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
+					ServiceAccountName:       ServiceAccountName, // use kube-ovn service account
+					DeprecatedServiceAccount: ServiceAccountName, // use kube-ovn service account
+					SecurityContext: &corev1.PodSecurityContext{
+						// run as root user
+						RunAsUser: &[]int64{0}[0],
+					},
 				},
 			},
 			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
