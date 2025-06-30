@@ -63,15 +63,15 @@ func (m *KeepAlived) SetConditions(conditions []metav1.Condition) {
 	m.Status.Conditions = conditions
 }
 
-//+kubebuilder:object:root=true
-// // +kubebuilder:subresource:status
-//+kubebuilder:storageversion
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=ka
-//+kubebuilder:printcolumn:name="VipV4",type=string,JSONPath=`.spec.vipV4`
-//+kubebuilder:printcolumn:name="VipV6",type=string,JSONPath=`.spec.vipV6`
-//+kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
-//+kubebuilder:printcolumn:name="RouterID",type=string,JSONPath=`.status.routerID`
-//+kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
+// +kubebuilder:printcolumn:name="VipV4",type=string,JSONPath=`.spec.vipV4`
+// +kubebuilder:printcolumn:name="VipV6",type=string,JSONPath=`.spec.vipV6`
+// +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
+// +kubebuilder:printcolumn:name="RouterID",type=string,JSONPath=`.status.routerID`
+// +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 
 // KeepAlived is the Schema for the keepaliveds API
 type KeepAlived struct {

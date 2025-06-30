@@ -6,4 +6,5 @@ RUN ln -s /kube-combo-cmd /controller && \
     ln -s /kube-combo-cmd /pinger
 
 USER 9443:9443
+COPY ./dist/pinger-setup/pinger-start.sh .
 ENTRYPOINT ["/controller"]

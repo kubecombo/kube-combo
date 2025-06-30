@@ -52,8 +52,8 @@ const (
 	DebuggerName      = "debugger"
 	PingerName        = "pinger"
 
-	DebuggerStartCMD = "/kubeovn/debugger-start.sh"
-	PingerStartCMD   = "/kubeovn/pinger-start.sh"
+	DebuggerStartCMD = "/debugger-start.sh"
+	PingerStartCMD   = "/pinger-start.sh"
 
 	// WorkloadTypePod is the workload type for pod
 	WorkloadTypePod = "pod"
@@ -425,8 +425,8 @@ func labelsFor(debugger *myv1.Debugger) map[string]string {
 
 func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv1.Pinger, oldPod *corev1.Pod) (newPod *corev1.Pod) {
 	namespacedName := fmt.Sprintf("%s/%s", debugger.Namespace, debugger.Name)
-	r.Log.Info("start podForDebugger", "debugger", namespacedName)
-	defer r.Log.Info("end podForDebugger", "debugger", namespacedName)
+	r.Log.Info("start getDebuggerPod", "debugger", namespacedName)
+	defer r.Log.Info("end getDebuggerPod", "debugger", namespacedName)
 
 	labels := labelsFor(debugger)
 	newPodAnnotations := map[string]string{}

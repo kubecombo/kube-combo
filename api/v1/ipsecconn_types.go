@@ -102,22 +102,19 @@ type IpsecConnSpec struct {
 	ESPProposals string `json:"espProposals,omitempty"`
 }
 
-// // IpsecConnStatus defines the observed state of IpsecConn
 // type IpsecConnStatus struct {
-// 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-// 	// Important: Run "make" to regenerate code after modifying this file
 // }
 
-//+kubebuilder:object:root=true
-// //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=conn
-//+kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
-//+kubebuilder:printcolumn:name="LocalVIP",type=string,JSONPath=`.spec.localVIP`
-//+kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`
-//+kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
-//+kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`
-//+kubebuilder:printcolumn:name="RemotePrivateCidrs",type=string,JSONPath=`.spec.remotePrivateCidrs`
+// +kubebuilder:printcolumn:name="VpnGw",type=string,JSONPath=`.spec.vpnGw`
+// +kubebuilder:printcolumn:name="LocalVIP",type=string,JSONPath=`.spec.localVIP`
+// +kubebuilder:printcolumn:name="LocalEIP",type=string,JSONPath=`.spec.localEIP`
+// +kubebuilder:printcolumn:name="RemoteEIP",type=string,JSONPath=`.spec.remoteEIP`
+// +kubebuilder:printcolumn:name="LocalPrivateCidrs",type=string,JSONPath=`.spec.localPrivateCidrs`
+// +kubebuilder:printcolumn:name="RemotePrivateCidrs",type=string,JSONPath=`.spec.remotePrivateCidrs`
 
 // IpsecConn is the Schema for the ipsecconns API
 type IpsecConn struct {
