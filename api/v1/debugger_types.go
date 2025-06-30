@@ -120,7 +120,7 @@ type DebuggerStatus struct {
 // +kubebuilder:resource:shortName=debug
 // +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
 // +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
-// +kubebuilder:printcolumn:name="Host Network",type=boolean,JSONPath
+// +kubebuilder:printcolumn:name="HostNetwork",type=boolean,JSONPath=`.spec.hostNetwork`
 // +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
 // +kubebuilder:printcolumn:name="Workload",type=string,JSONPath=`.spec.workloadType`
 // +kubebuilder:printcolumn:name="Pinger",type=string,JSONPath=`.spec.pinger`

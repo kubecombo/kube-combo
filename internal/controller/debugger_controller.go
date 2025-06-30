@@ -323,6 +323,18 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		return err
 	}
 
+	if debugger.Status.Subnet != "" && debugger.Spec.Subnet != "" && debugger.Status.Subnet != debugger.Spec.Subnet {
+		err := fmt.Errorf("debugger %s subnet is changed, old: %s, new: %s", debugger.Name, debugger.Status.Subnet, debugger.Spec.Subnet)
+		r.Log.Error(err, "should not change subnet")
+		return err
+	}
+
+	if debugger.Spec.HostNetwork && debugger.Spec.Subnet != "" {
+		err := fmt.Errorf("debugger %s use host network pod not need subnet", debugger.Name)
+		r.Log.Error(err, "should not set subnet for host network pod")
+		return err
+	}
+
 	return nil
 }
 
@@ -911,6 +923,9 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		return true
 	}
 	if debugger.Spec.NodeName != debugger.Status.NodeName {
+		return true
+	}
+	if debugger.Spec.HostNetwork != debugger.Status.HostNetwork {
 		return true
 	}
 	return false
