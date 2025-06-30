@@ -323,7 +323,7 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		return err
 	}
 
-	if debugger.Status.Subnet != "" && debugger.Spec.Subnet != "" && debugger.Status.Subnet != debugger.Spec.Subnet {
+	if debugger.Status.Subnet != "" && debugger.Status.Subnet != debugger.Spec.Subnet {
 		err := fmt.Errorf("debugger %s subnet is changed, old: %s, new: %s", debugger.Name, debugger.Status.Subnet, debugger.Spec.Subnet)
 		r.Log.Error(err, "should not change subnet")
 		return err
