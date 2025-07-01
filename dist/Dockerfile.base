@@ -6,7 +6,7 @@ ARG ARCH
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --auto-remove \
     apache2-utils \
     bash \
     busybox \
@@ -30,8 +30,15 @@ RUN apt-get update && \
     strace \
     tree \
     tcptraceroute && \
+    apt remove -y --allow-remove-essential --auto-remove login && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -f /usr/bin/nc && \
+    rm -f /usr/bin/netcat && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /etc/localtime && \
+    rm -f /usr/lib/apt/methods/mirror && \
+    rm -rf /var/tmp/* && \
+    rm -rf /var/tmp/*
 
 RUN curl -LO https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb
 COPY ./dist/debugger-setup/debugger-start.sh /
