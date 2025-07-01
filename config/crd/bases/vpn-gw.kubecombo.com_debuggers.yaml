@@ -23,6 +23,9 @@ spec:
     - jsonPath: .spec.memory
       name: Memory
       type: string
+    - jsonPath: .spec.hostNetwork
+      name: HostNetwork
+      type: boolean
     - jsonPath: .spec.subnet
       name: Subnet
       type: string
@@ -979,6 +982,12 @@ spec:
                   control pinger pod lifecycle
                   enable to start pinger pod
                   disable to stop pinger pod
+                type: boolean
+              hostNetwork:
+                default: false
+                description: |-
+                  hostnetwork pod
+                  default is false
                 type: boolean
               image:
                 default: kubecombo/debugger:latest
@@ -2025,6 +2034,8 @@ spec:
               cpu:
                 type: string
               enablePinger:
+                type: boolean
+              hostNetwork:
                 type: boolean
               image:
                 type: string

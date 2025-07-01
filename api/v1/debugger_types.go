@@ -53,6 +53,12 @@ type DebuggerSpec struct {
 	// +kubebuilder:validation:Optional
 	Subnet string `json:"subnet,omitempty"`
 
+	// hostnetwork pod
+	// default is false
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=false
+	HostNetwork bool `json:"hostNetwork,omitempty"`
+
 	// debugger default image
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:="kubecombo/debugger:latest"
@@ -94,6 +100,7 @@ type DebuggerStatus struct {
 	Memory       string              `json:"memory" patchStrategy:"merge"`
 	QoSBandwidth string              `json:"qosBandwidth" patchStrategy:"merge"`
 	Subnet       string              `json:"subnet,omitempty" patchStrategy:"merge"`
+	HostNetwork  bool                `json:"hostNetwork,omitempty" patchStrategy:"merge"`
 	Image        string              `json:"image,omitempty" patchStrategy:"merge"`
 	Selector     []string            `json:"selector,omitempty" patchStrategy:"merge"`
 	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
@@ -113,6 +120,7 @@ type DebuggerStatus struct {
 // +kubebuilder:resource:shortName=debug
 // +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
 // +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
+// +kubebuilder:printcolumn:name="HostNetwork",type=boolean,JSONPath=`.spec.hostNetwork`
 // +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
 // +kubebuilder:printcolumn:name="Workload",type=string,JSONPath=`.spec.workloadType`
 // +kubebuilder:printcolumn:name="Pinger",type=string,JSONPath=`.spec.pinger`
