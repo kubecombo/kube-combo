@@ -4,21 +4,28 @@ ARG BASE_TAG
 FROM icoy/kube-combo-base:$BASE_TAG
 
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends --auto-remove \
     strongswan-swanctl \
     charon-systemd \
     libcharon-extauth-plugins \
     libcharon-extra-plugins \
     libstrongswan \
     libstrongswan-extra-plugins \
-    libstrongswan-standard-plugins \
-    && apt-get clean \
-    && apt-get autoremove \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f /etc/ipsec.conf \
-    && rm -f /etc/swanctl/swanctl.conf \
-    && rm -f /etc/swanctl/conf.d/* \
-    && cp -r /etc/swanctl /etc/swanctl-bak
+    libstrongswan-standard-plugins && \
+    apt-get clean && \
+    rm -f /usr/bin/nc && \
+    rm -f /usr/bin/netcat && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /etc/localtime && \
+    rm -f /usr/lib/apt/methods/mirror && \
+    rm -rf /var/tmp/* && \
+    rm -rf /var/tmp/* && \
+    rm -f /etc/ipsec.conf && \
+    rm -f /etc/swanctl/swanctl.conf && \
+    rm -f /etc/swanctl/conf.d/* && \
+    cp -r /etc/swanctl /etc/swanctl-bak
 
 EXPOSE 500/udp 4500/udp
 
