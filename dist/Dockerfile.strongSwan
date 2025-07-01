@@ -15,8 +15,6 @@ RUN apt-get update && \
     libstrongswan-extra-plugins \
     libstrongswan-standard-plugins && \
     apt-get clean && \
-    rm -f /usr/bin/nc && \
-    rm -f /usr/bin/netcat && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /etc/localtime && \
     rm -f /usr/lib/apt/methods/mirror && \
