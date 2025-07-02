@@ -819,12 +819,18 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 	debuggerContainer.VolumeMounts = volumeMounts
 	// append envs
 	debuggerContainer.Env = append(debuggerContainer.Env, envs...)
+	dsEnv := corev1.EnvVar{
+		Name:  "DS_NAME",
+		Value: debugger.Name,
+	}
+	debuggerContainer.Env = append(debuggerContainer.Env, dsEnv)
 	containers = append(containers, debuggerContainer)
 	if debugger.Spec.EnablePinger {
 		// pinger container
 		pingerContainer := r.getPingerContainer(pinger)
 		pingerContainer.VolumeMounts = volumeMounts
 		pingerContainer.Env = append(pingerContainer.Env, envs...)
+		pingerContainer.Env = append(pingerContainer.Env, dsEnv)
 		containers = append(containers, pingerContainer)
 	}
 
