@@ -53,7 +53,7 @@ func ParseFlags() (*Configuration, error) {
 		argDaemonSetName      = pflag.String("ds-name", "kube-ovn-pinger", "kube-ovn-pinger daemonset name")
 		argInterval           = pflag.Int("interval", 5, "interval seconds between consecutive pings")
 		argMode               = pflag.String("mode", "server", "server or job Mode")
-		argExitCode           = pflag.Int("exit-code", 0, "exit code when failure happens")
+		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
 		argInternalDNS        = pflag.String("internal-dns", "kubernetes.default", "check dns from pod")
 		argExternalDNS        = pflag.String("external-dns", "", "check external dns resolve from pod")
 		argExternalAddress    = pflag.String("external-address", "", "check ping connection to an external address, default: 1.1.1.1")

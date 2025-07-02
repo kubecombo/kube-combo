@@ -162,22 +162,6 @@ func pingPods(config *Configuration, setMetrics bool) error {
 		for _, podIP := range pod.Status.PodIPs {
 			if slices.Contains(config.PodProtocols, CheckProtocol(podIP.IP)) {
 				func(podIP, podName, nodeIP, nodeName string) {
-					if config.EnableVerboseConnCheck {
-						if err := TCPConnectivityCheck(JoinHostPort(podIP, config.TCPConnCheckPort)); err != nil {
-							klog.Infof("TCP connectivity to pod %s %s failed", podName, podIP)
-							pingErr = err
-						} else {
-							klog.Infof("TCP connectivity to pod %s %s success", podName, podIP)
-						}
-
-						if err := UDPConnectivityCheck(JoinHostPort(podIP, config.UDPConnCheckPort)); err != nil {
-							klog.Infof("UDP connectivity to pod %s %s failed", podName, podIP)
-							pingErr = err
-						} else {
-							klog.Infof("UDP connectivity to pod %s %s success", podName, podIP)
-						}
-					}
-
 					pinger, err := goping.NewPinger(podIP)
 					if err != nil {
 						klog.Errorf("failed to init pinger, %v", err)
