@@ -41,15 +41,17 @@ func CmdMain() {
 			}()
 		}
 
-		if config.EnableVerboseConnCheck {
-			addr := pinger.JoinHostPort("0.0.0.0", config.UDPConnCheckPort)
-			if err = pinger.UDPConnectivityListen(addr); err != nil {
-				pinger.LogFatalAndExit(err, "failed to start UDP listen on addr %s", addr)
-			}
-
-			addr = pinger.JoinHostPort("0.0.0.0", config.TCPConnCheckPort)
+		if config.TCPPort != 0 {
+			addr := pinger.JoinHostPort("0.0.0.0", config.TCPPort)
 			if err = pinger.TCPConnectivityListen(addr); err != nil {
 				pinger.LogFatalAndExit(err, "failed to start TCP listen on addr %s", addr)
+			}
+		}
+
+		if config.UDPPort != 0 {
+			addr := pinger.JoinHostPort("0.0.0.0", config.UDPPort)
+			if err = pinger.UDPConnectivityListen(addr); err != nil {
+				pinger.LogFatalAndExit(err, "failed to start UDP listen on addr %s", addr)
 			}
 		}
 	}

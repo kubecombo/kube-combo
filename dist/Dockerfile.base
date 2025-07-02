@@ -41,4 +41,5 @@ RUN apt-get update && \
     rm -rf /var/tmp/*
 
 RUN curl -LO https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb
-COPY ./dist/debugger-setup/debugger-start.sh /
+COPY ./dist/debugger-setup/debugger-start.sh /debugger-start.sh
+COPY ./dist/kubectl-ko /usr/bin/kubectl-ko
