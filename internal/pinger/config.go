@@ -17,27 +17,27 @@ import (
 type Configuration struct {
 	KubeConfigFile     string
 	KubeClient         kubernetes.Interface
-	Port               int32
 	DaemonSetNamespace string
 	DaemonSetName      string
 	Interval           int
 	Mode               string
 	ExitCode           int
-	InternalDNS        string
-	ExternalDNS        string
 	NodeName           string
 	HostIP             string
 	PodName            string
 	PodIP              string
 	PodProtocols       []string
-	ExternalAddress    string
 	EnableMetrics      bool
+	Port               int32
+	TCPPort            int32
+	UDPPort            int32
+	LogPerm            string
 
-	TCPPort       int32
-	UDPPort       int32
-	TargetIPPorts string
-
-	LogPerm string
+	// ArpPing   string // TODO
+	Ping      string
+	TCPPing   string
+	UDPPing   string
+	DnsLookup string
 }
 
 func ParseFlags() (*Configuration, error) {
@@ -52,13 +52,13 @@ func ParseFlags() (*Configuration, error) {
 		argDaemonSetName      = pflag.String("ds-name", "kube-ovn-pinger", "kube-ovn-pinger daemonset name")
 		argInterval           = pflag.Int("interval", 5, "interval seconds between consecutive pings")
 		argMode               = pflag.String("mode", "server", "server or job Mode")
-		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
-		argInternalDNS        = pflag.String("internal-dns", "kubernetes.default", "check dns from pod")
-		argExternalDNS        = pflag.String("external-dns", "", "check external dns resolve from pod")
-		argExternalAddress    = pflag.String("external-address", "", "check ping connection to an external address, default: 1.1.1.1")
-		argTargetIPPorts      = pflag.String("target-ip-ports", "", "target protocol ip and port, eg: 'tcp-169.254.1.1-8080,udp-169.254.2.2-8081'")
 		argEnableMetrics      = pflag.Bool("enable-metrics", true, "Whether to support metrics query")
 		argLogPerm            = pflag.String("log-perm", "640", "The permission for the log file")
+		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
+		argPing               = pflag.String("ping", "", "check ping connection to an external address, eg: '1.1.1.1,2.2.2.2'")
+		argTCPPing            = pflag.String("tcpping", "", "target tcp ip and port, eg: '10.16.0.9:80,10.16.0.10:80'")
+		argUDPPing            = pflag.String("udpping", "", "target udp ip and port, eg: '10.16.0.9:53,10.16.0.10:53'")
+		argDnsLookup          = pflag.String("dnslookup", "", "check external dns resolve from pod, eg: 'baidu.com,google.com'")
 	)
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
 	klog.InitFlags(klogFlags)
@@ -87,18 +87,19 @@ func ParseFlags() (*Configuration, error) {
 		Interval:           *argInterval,
 		Mode:               *argMode,
 		ExitCode:           *argExitCode,
-		InternalDNS:        *argInternalDNS,
-		ExternalDNS:        *argExternalDNS,
 		PodIP:              os.Getenv("POD_IP"),
 		HostIP:             os.Getenv("HOST_IP"),
 		NodeName:           os.Getenv("NODE_NAME"),
 		PodName:            os.Getenv("POD_NAME"),
-		ExternalAddress:    *argExternalAddress,
 		EnableMetrics:      *argEnableMetrics,
 
-		TCPPort:       *argTCPPort,
-		UDPPort:       *argUDPPort,
-		TargetIPPorts: *argTargetIPPorts,
+		TCPPort: *argTCPPort,
+		UDPPort: *argUDPPort,
+
+		Ping:      *argPing,
+		TCPPing:   *argTCPPing,
+		UDPPing:   *argUDPPing,
+		DnsLookup: *argDnsLookup,
 
 		LogPerm: *argLogPerm,
 	}

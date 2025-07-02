@@ -3,7 +3,6 @@ package pinger
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math"
 	"net"
 	"os"
@@ -50,26 +49,27 @@ LOOP:
 func ping(config *Configuration, withMetrics bool) error {
 	errHappens := false
 
+	if config.Ping != "" {
+		if pingExternal(config, withMetrics) != nil {
+			errHappens = true
+		}
+	}
+	if config.TCPPing != "" || config.UDPPing != "" {
+		if checkAccessTargetIPPorts(config) != nil {
+			errHappens = true
+		}
+	}
 	if pingPods(config, withMetrics) != nil {
 		errHappens = true
 	}
 	if pingNodes(config, withMetrics) != nil {
 		errHappens = true
 	}
+
 	if dnslookup(config, withMetrics) != nil {
 		errHappens = true
 	}
-	if config.TargetIPPorts != "" {
-		if checkAccessTargetIPPorts(config) != nil {
-			errHappens = true
-		}
-	}
 
-	if config.ExternalAddress != "" {
-		if pingExternal(config, withMetrics) != nil {
-			errHappens = true
-		}
-	}
 	if errHappens {
 		return errors.New("ping failed")
 	}
@@ -207,17 +207,17 @@ func pingPods(config *Configuration, setMetrics bool) error {
 }
 
 func pingExternal(config *Configuration, setMetrics bool) error {
-	if config.ExternalAddress == "" {
+	if config.Ping == "" {
 		return nil
 	}
 
-	addresses := strings.SplitSeq(config.ExternalAddress, ",")
+	addresses := strings.SplitSeq(config.Ping, ",")
 	for addr := range addresses {
 		if !slices.Contains(config.PodProtocols, CheckProtocol(addr)) {
 			continue
 		}
 
-		klog.Infof("start to check ping external to %s", addr)
+		klog.Infof("start to check ping %s", addr)
 		pinger, err := goping.NewPinger(addr)
 		if err != nil {
 			klog.Errorf("failed to init pinger, %v", err)
@@ -253,71 +253,51 @@ func pingExternal(config *Configuration, setMetrics bool) error {
 }
 
 func checkAccessTargetIPPorts(config *Configuration) error {
-	klog.Infof("start to check Service or externalIPPort connectivity")
-	if config.TargetIPPorts == "" {
-		return nil
-	}
+	klog.Infof("start to check target ip ports connectivity")
 	var checkErr error
-	targetIPPorts := strings.SplitSeq(config.TargetIPPorts, ",")
-	for targetIPPort := range targetIPPorts {
-		klog.Infof("checking targetIPPort %s", targetIPPort)
-		items := strings.Split(targetIPPort, "-")
-		if len(items) != 3 {
-			klog.Infof("targetIPPort format failed")
-			continue
+	tcps := strings.SplitSeq(config.TCPPing, ",")
+	for tcp := range tcps {
+		klog.Infof("tcp checking %s", tcp)
+		if err := TCPConnectivityCheck(tcp); err != nil {
+			klog.Errorf("TCP connectivity to %s failed", tcp)
+			checkErr = err
+		} else {
+			klog.Infof("TCP connectivity to %s success", tcp)
 		}
-		proto := items[0]
-		addr := items[1]
-		port := items[2]
-
-		if !slices.Contains(config.PodProtocols, CheckProtocol(addr)) {
-			continue
-		}
-		if CheckProtocol(addr) == ProtocolIPv6 {
-			addr = fmt.Sprintf("[%s]", addr)
-		}
-
-		switch proto {
-		case ProtocolTCP:
-			if err := TCPConnectivityCheck(fmt.Sprintf("%s:%s", addr, port)); err != nil {
-				klog.Infof("TCP connectivity to targetIPPort %s:%s failed", addr, port)
-				checkErr = err
-			} else {
-				klog.Infof("TCP connectivity to targetIPPort %s:%s success", addr, port)
-			}
-		case ProtocolUDP:
-			if err := UDPConnectivityCheck(fmt.Sprintf("%s:%s", addr, port)); err != nil {
-				klog.Infof("UDP connectivity to target %s:%s failed", addr, port)
-				checkErr = err
-			} else {
-				klog.Infof("UDP connectivity to target %s:%s success", addr, port)
-			}
-		default:
-			klog.Infof("unrecognized protocol %s", proto)
-			continue
+	}
+	udps := strings.SplitSeq(config.UDPPing, ",")
+	for udp := range udps {
+		klog.Infof("udp checking %s", udp)
+		if err := UDPConnectivityCheck(udp); err != nil {
+			klog.Errorf("UDP connectivity to %s failed", udp)
+			checkErr = err
+		} else {
+			klog.Infof("UDP connectivity to %s success", udp)
 		}
 	}
 	return checkErr
 }
 
 func dnslookup(config *Configuration, setMetrics bool) error {
-	klog.Infof("start to check dns connectivity")
-	t1 := time.Now()
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-	defer cancel()
-	var r net.Resolver
-	addrs, err := r.LookupHost(ctx, config.ExternalDNS)
-	elapsed := time.Since(t1)
-	if err != nil {
-		klog.Errorf("failed to resolve dns %s, %v", config.ExternalDNS, err)
-		if setMetrics {
-			SetDnsUnhealthyMetrics(config.NodeName)
+	klog.Infof("start to dnslookup %s", config.DnsLookup)
+	for dns := range strings.SplitSeq(config.DnsLookup, ",") {
+		t1 := time.Now()
+		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+		defer cancel()
+		var r net.Resolver
+		addrs, err := r.LookupHost(ctx, dns)
+		elapsed := time.Since(t1)
+		if err != nil {
+			klog.Errorf("failed to resolve dns %s, %v", dns, err)
+			if setMetrics {
+				SetDnsUnhealthyMetrics(config.NodeName)
+			}
+			return err
 		}
-		return err
+		if setMetrics {
+			SetDnsHealthyMetrics(config.NodeName, float64(elapsed)/float64(time.Millisecond))
+		}
+		klog.Infof("resolve dns %s to %v in %.2fms", dns, addrs, float64(elapsed)/float64(time.Millisecond))
 	}
-	if setMetrics {
-		SetDnsHealthyMetrics(config.NodeName, float64(elapsed)/float64(time.Millisecond))
-	}
-	klog.Infof("resolve dns %s to %v in %.2fms", config.ExternalDNS, addrs, float64(elapsed)/float64(time.Millisecond))
 	return nil
 }
