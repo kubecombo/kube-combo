@@ -3,6 +3,7 @@ package pinger
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"net"
 	"os"
@@ -26,7 +27,8 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 
 LOOP:
 	for {
-		if ping(config, withMetrics) != nil {
+		if err := check(config, withMetrics); err != nil {
+			klog.Errorf("check failed: %v", err)
 			errHappens = true
 		}
 		if config.Mode != "server" {
@@ -46,32 +48,37 @@ LOOP:
 	}
 }
 
-func ping(config *Configuration, withMetrics bool) error {
+func check(config *Configuration, withMetrics bool) error {
 	errHappens := false
 
 	if config.Ping != "" {
-		if pingExternal(config, withMetrics) != nil {
+		if err := pingExternal(config, withMetrics); err != nil {
+			klog.Errorf("pingExternal failed: %v", err)
 			errHappens = true
 		}
 	}
 	if config.TCPPing != "" || config.UDPPing != "" {
-		if checkAccessTargetIPPorts(config) != nil {
+		if err := checkAccessTargetIPPorts(config); err != nil {
+			klog.Errorf("checkAccessTargetIPPorts failed: %v", err)
 			errHappens = true
 		}
 	}
-	if pingPods(config, withMetrics) != nil {
+	if err := pingPods(config, withMetrics); err != nil {
+		klog.Errorf("pingPods failed: %v", err)
 		errHappens = true
 	}
-	if pingNodes(config, withMetrics) != nil {
+	if err := pingNodes(config, withMetrics); err != nil {
+		klog.Errorf("pingNodes failed: %v", err)
 		errHappens = true
 	}
 
-	if dnslookup(config, withMetrics) != nil {
+	if err := dnslookup(config, withMetrics); err != nil {
+		klog.Errorf("dnslookup failed: %v", err)
 		errHappens = true
 	}
 
 	if errHappens {
-		return errors.New("ping failed")
+		return errors.New("check failed")
 	}
 	return nil
 }
@@ -91,8 +98,8 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 				func(nodeIP, nodeName string) {
 					pinger, err := goping.NewPinger(nodeIP)
 					if err != nil {
-						klog.Errorf("failed to init pinger, %v", err)
 						pingErr = err
+						klog.Errorf("failed to init pinger, %v", err)
 						return
 					}
 					pinger.SetPrivileged(true)
@@ -101,8 +108,8 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 					pinger.Interval = 100 * time.Millisecond
 					pinger.Debug = true
 					if err = pinger.Run(); err != nil {
-						klog.Errorf("failed to run pinger for destination %s: %v", nodeIP, err)
 						pingErr = err
+						klog.Errorf("failed to run pinger for destination %s: %v", nodeIP, err)
 						return
 					}
 
@@ -110,7 +117,11 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 					klog.Infof("ping node: %s %s, count: %d, loss count %d, average rtt %.2fms",
 						nodeName, nodeIP, pinger.Count, int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))), float64(stats.AvgRtt)/float64(time.Millisecond))
 					if int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))) != 0 {
-						pingErr = errors.New("ping failed")
+						err := fmt.Errorf("ping node %s %s failed, packets sent: %d, packets received: %d",
+							nodeName, nodeIP, stats.PacketsSent, stats.PacketsRecv)
+						pingErr = err
+						klog.Error(err)
+						return
 					}
 					if setMetrics {
 						SetNodePingMetrics(
@@ -149,16 +160,16 @@ func pingPods(config *Configuration, setMetrics bool) error {
 				func(podIP, podName, nodeIP, nodeName string) {
 					if config.TCPPort != 0 {
 						if err := TCPConnectivityCheck(JoinHostPort(podIP, config.TCPPort)); err != nil {
-							klog.Infof("TCP connectivity to pod %s %s failed", podName, podIP)
 							pingErr = err
+							klog.Errorf("TCP connectivity to pod %s %s failed: %v", podName, podIP, err)
 						} else {
 							klog.Infof("TCP connectivity to pod %s %s success", podName, podIP)
 						}
 					}
 					if config.UDPPort != 0 {
 						if err := UDPConnectivityCheck(JoinHostPort(podIP, config.UDPPort)); err != nil {
-							klog.Infof("UDP connectivity to pod %s %s failed", podName, podIP)
 							pingErr = err
+							klog.Errorf("UDP connectivity to pod %s %s failed: %v", podName, podIP, err)
 						} else {
 							klog.Infof("UDP connectivity to pod %s %s success", podName, podIP)
 						}
@@ -185,7 +196,10 @@ func pingPods(config *Configuration, setMetrics bool) error {
 					klog.Infof("ping pod: %s %s, count: %d, loss count %d, average rtt %.2fms",
 						podName, podIP, pinger.Count, int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))), float64(stats.AvgRtt)/float64(time.Millisecond))
 					if int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))) != 0 {
-						pingErr = errors.New("ping failed")
+						err := fmt.Errorf("ping pod %s %s failed, packets sent: %d, packets received: %d",
+							podName, podIP, stats.PacketsSent, stats.PacketsRecv)
+						pingErr = err
+						klog.Error(err)
 					}
 					if setMetrics {
 						SetPodPingMetrics(
@@ -245,7 +259,10 @@ func pingExternal(config *Configuration, setMetrics bool) error {
 				int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))))
 		}
 		if int(math.Abs(float64(stats.PacketsSent-stats.PacketsRecv))) != 0 {
-			return errors.New("ping failed")
+			err := fmt.Errorf("ping external address %s failed, packets sent: %d, packets received: %d",
+				addr, stats.PacketsSent, stats.PacketsRecv)
+			klog.Error(err)
+			return err
 		}
 	}
 
