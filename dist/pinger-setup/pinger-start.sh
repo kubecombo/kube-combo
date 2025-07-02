@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is used to start the Pinger application.
-## 1. debug
-env
-sleep infinity
+
+env | grep -i -E "ping|dns"
+
+./pinger --ds-namespace="$POD_NAMESPACE" --ds-name="$DS_NAME" --interval="$INTERVAL" --mode="server" --ping="$PING" --tcpping="$TCP_PING" --udpping="$UDP_PING" --dnslookup="$DNS"
