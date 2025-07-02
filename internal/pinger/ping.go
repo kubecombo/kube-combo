@@ -40,6 +40,7 @@ LOOP:
 		case <-stopCh:
 			break LOOP
 		case <-timer.C:
+			klog.Infof("pinger will check after interval %d seconds", config.Interval)
 		}
 	}
 	timer.Stop()
