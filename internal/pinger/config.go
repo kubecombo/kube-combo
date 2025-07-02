@@ -33,20 +33,19 @@ type Configuration struct {
 	ExternalAddress    string
 	EnableMetrics      bool
 
-	EnableVerboseConnCheck bool
-	TCPConnCheckPort       int32
-	UDPConnCheckPort       int32
-	TargetIPPorts          string
-	LogPerm                string
+	TCPPort       int32
+	UDPPort       int32
+	TargetIPPorts string
+
+	LogPerm string
 }
 
 func ParseFlags() (*Configuration, error) {
 	var (
 		argPort = pflag.Int32("port", 8080, "metrics port")
 
-		argEnableVerboseConnCheck   = pflag.Bool("enable-verbose-conn-check", false, "enable TCP/UDP connectivity check")
-		argTCPConnectivityCheckPort = pflag.Int32("tcp-conn-check-port", 8100, "TCP connectivity Check Port")
-		argUDPConnectivityCheckPort = pflag.Int32("udp-conn-check-port", 8101, "UDP connectivity Check Port")
+		argTCPPort = pflag.Int32("tcp-port", 54321, "TCP connectivity auto check pod ip tcp port")
+		argUDPPort = pflag.Int32("udp-port", 54322, "UDP connectivity auto check pod ip udp port")
 
 		argKubeConfigFile     = pflag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information. If not set use the inCluster token.")
 		argDaemonSetNameSpace = pflag.String("ds-namespace", "kube-system", "kube-ovn-pinger daemonset namespace")
@@ -97,10 +96,9 @@ func ParseFlags() (*Configuration, error) {
 		ExternalAddress:    *argExternalAddress,
 		EnableMetrics:      *argEnableMetrics,
 
-		EnableVerboseConnCheck: *argEnableVerboseConnCheck,
-		TCPConnCheckPort:       *argTCPConnectivityCheckPort,
-		UDPConnCheckPort:       *argUDPConnectivityCheckPort,
-		TargetIPPorts:          *argTargetIPPorts,
+		TCPPort:       *argTCPPort,
+		UDPPort:       *argUDPPort,
+		TargetIPPorts: *argTargetIPPorts,
 
 		LogPerm: *argLogPerm,
 	}

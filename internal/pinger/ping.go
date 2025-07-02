@@ -89,21 +89,6 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 		for _, addr := range no.Status.Addresses {
 			if addr.Type == v1.NodeInternalIP && slices.Contains(config.PodProtocols, CheckProtocol(addr.Address)) {
 				func(nodeIP, nodeName string) {
-					if config.EnableVerboseConnCheck {
-						if err := TCPConnectivityCheck(JoinHostPort(nodeIP, config.TCPConnCheckPort)); err != nil {
-							klog.Infof("TCP connectivity to node %s %s failed", nodeName, nodeIP)
-							pingErr = err
-						} else {
-							klog.Infof("TCP connectivity to node %s %s success", nodeName, nodeIP)
-						}
-						if err := UDPConnectivityCheck(JoinHostPort(nodeIP, config.UDPConnCheckPort)); err != nil {
-							klog.Infof("UDP connectivity to node %s %s failed", nodeName, nodeIP)
-							pingErr = err
-						} else {
-							klog.Infof("UDP connectivity to node %s %s success", nodeName, nodeIP)
-						}
-					}
-
 					pinger, err := goping.NewPinger(nodeIP)
 					if err != nil {
 						klog.Errorf("failed to init pinger, %v", err)
@@ -162,6 +147,23 @@ func pingPods(config *Configuration, setMetrics bool) error {
 		for _, podIP := range pod.Status.PodIPs {
 			if slices.Contains(config.PodProtocols, CheckProtocol(podIP.IP)) {
 				func(podIP, podName, nodeIP, nodeName string) {
+					if config.TCPPort != 0 {
+						if err := TCPConnectivityCheck(JoinHostPort(podIP, config.TCPPort)); err != nil {
+							klog.Infof("TCP connectivity to pod %s %s failed", podName, podIP)
+							pingErr = err
+						} else {
+							klog.Infof("TCP connectivity to pod %s %s success", podName, podIP)
+						}
+					}
+					if config.UDPPort != 0 {
+						if err := UDPConnectivityCheck(JoinHostPort(podIP, config.UDPPort)); err != nil {
+							klog.Infof("UDP connectivity to pod %s %s failed", podName, podIP)
+							pingErr = err
+						} else {
+							klog.Infof("UDP connectivity to pod %s %s success", podName, podIP)
+						}
+					}
+
 					pinger, err := goping.NewPinger(podIP)
 					if err != nil {
 						klog.Errorf("failed to init pinger, %v", err)
