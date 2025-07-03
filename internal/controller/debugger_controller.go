@@ -817,7 +817,7 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 
 	containers := []corev1.Container{}
 	volumes, volumeMounts := r.getVolumesMounts()
-	envs := r.getEnvs()
+	envs := r.getEnvs(debugger.Spec.HostNetwork)
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
 	debuggerContainer.VolumeMounts = volumeMounts
