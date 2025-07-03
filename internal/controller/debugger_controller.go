@@ -470,7 +470,7 @@ func labelsFor(debugger *myv1.Debugger) map[string]string {
 	}
 }
 
-func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
+func (r *DebuggerReconciler) getEnvs(hostNetwork bool) []corev1.EnvVar {
 	return []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
@@ -513,12 +513,8 @@ func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
 			},
 		},
 		{
-			Name: "HOST_NETWORK",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{
-					FieldPath: "spec.hostNetwork",
-				},
-			},
+			Name:  "HOST_NETWORK",
+			Value: strconv.FormatBool(hostNetwork),
 		},
 	}
 }
@@ -658,7 +654,7 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 		newPodAnnotations[key] = value
 	}
 	volumes, volumeMounts := r.getVolumesMounts()
-	envs := r.getEnvs()
+	envs := r.getEnvs(debugger.Spec.HostNetwork)
 	containers := []corev1.Container{}
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
