@@ -531,6 +531,13 @@ func labelsFor(debugger *myv1.Debugger) map[string]string {
 }
 
 func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinger) []corev1.EnvVar {
+	var dsName, subnetName string
+	if debugger.Spec.WorkloadType == WorkloadTypeDaemonset {
+		dsName = debugger.Name
+	}
+	if !debugger.Spec.HostNetwork {
+		subnetName = debugger.Spec.Subnet
+	}
 	return []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
@@ -578,11 +585,11 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 		},
 		{
 			Name:  "DS_NAME",
-			Value: debugger.Name,
+			Value: dsName,
 		},
 		{
 			Name:  Subnet,
-			Value: debugger.Spec.Subnet,
+			Value: subnetName,
 		},
 		{
 			Name:  EnableMetrics,
