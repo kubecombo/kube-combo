@@ -38,6 +38,9 @@ type Configuration struct {
 	TCPPing   string
 	UDPPing   string
 	DnsLookup string
+
+	// enable Node ip check
+	EnableNodeIPCheck bool
 }
 
 func ParseFlags() (*Configuration, error) {
@@ -59,6 +62,7 @@ func ParseFlags() (*Configuration, error) {
 		argTCPPing            = pflag.String("tcpping", "", "target tcp ip and port, eg: '10.16.0.9:80,10.16.0.10:80'")
 		argUDPPing            = pflag.String("udpping", "", "target udp ip and port, eg: '10.16.0.9:53,10.16.0.10:53'")
 		argDnsLookup          = pflag.String("dnslookup", "", "check external dns resolve from pod, eg: 'baidu.com,google.com'")
+		argEnableNodeIPCheck  = pflag.Bool("enable-node-ip-check", false, "Whether to enable node IP check")
 	)
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
 	klog.InitFlags(klogFlags)
@@ -100,6 +104,8 @@ func ParseFlags() (*Configuration, error) {
 		TCPPing:   *argTCPPing,
 		UDPPing:   *argUDPPing,
 		DnsLookup: *argDnsLookup,
+
+		EnableNodeIPCheck: *argEnableNodeIPCheck,
 
 		LogPerm: *argLogPerm,
 	}

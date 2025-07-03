@@ -68,9 +68,11 @@ func check(config *Configuration, withMetrics bool) error {
 		klog.Errorf("pingPods failed: %v", err)
 		errHappens = true
 	}
-	if err := pingNodes(config, withMetrics); err != nil {
-		klog.Errorf("pingNodes failed: %v", err)
-		errHappens = true
+	if config.EnableNodeIPCheck {
+		if err := pingNodes(config, withMetrics); err != nil {
+			klog.Errorf("pingNodes failed: %v", err)
+			errHappens = true
+		}
 	}
 
 	if err := dnslookup(config, withMetrics); err != nil {
