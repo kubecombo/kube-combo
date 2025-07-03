@@ -38,9 +38,9 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			klog.Infof("pinger stopped")
 			return
 		case <-timer.C:
-			klog.Infof("pinger check every %d seconds", config.Interval)
+			klog.Infof("pinger check every %ds, errHappens: %v", config.Interval, errHappens)
 			if errHappens && config.ExitCode != 0 {
-				klog.Infof("ping err: %v, exitCode: %d", errHappens, config.ExitCode)
+				klog.Errorf("exit with code: %d", config.ExitCode)
 				os.Exit(config.ExitCode)
 			}
 		}

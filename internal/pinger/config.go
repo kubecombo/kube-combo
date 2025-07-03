@@ -51,7 +51,7 @@ func ParseFlags() (*Configuration, error) {
 		argMode               = pflag.String("mode", "server", "server or job Mode")
 		argEnableMetrics      = pflag.Bool("enable-metrics", false, "Whether to support metrics query")
 		argLogPerm            = pflag.String("log-perm", "640", "The permission for the log file")
-		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
+		argExitCode           = pflag.Int("exit-code", 1, "exit code when failure happens")
 		argPing               = pflag.String("ping", "", "check ping connection to an external address, eg: '1.1.1.1,2.2.2.2'")
 		argTCPPing            = pflag.String("tcpping", "", "target tcp ip and port, eg: '10.16.0.9:80,10.16.0.10:80'")
 		argUDPPing            = pflag.String("udpping", "", "target udp ip and port, eg: '10.16.0.9:53,10.16.0.10:53'")
