@@ -17,15 +17,9 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.cpu
-      name: CPU
-      type: string
-    - jsonPath: .spec.memory
-      name: Memory
-      type: string
-    - jsonPath: .spec.interval
-      name: Interval
-      type: integer
+    - jsonPath: .spec.enableMetric
+      name: EnableMetric
+      type: boolean
     - jsonPath: .spec.image
       name: Image
       type: string
@@ -57,11 +51,6 @@ spec:
           spec:
             description: PingerSpec defines the desired state of Pinger
             properties:
-              arpPing:
-                description: l2 check ip list, ip1,ip2,ip3
-                type: string
-              cpu:
-                type: string
               dns:
                 description: l7 dns check ns list, ns1,ns2,ns3
                 type: string
@@ -70,15 +59,6 @@ spec:
                 type: boolean
               image:
                 type: string
-              interval:
-                default: 3
-                description: defult ping, tcp, udp check interval is 5s
-                type: integer
-              memory:
-                type: string
-              mustReach:
-                description: must reach
-                type: boolean
               ping:
                 description: l3 check ip list, ip1,ip2,ip3
                 type: string
@@ -89,15 +69,11 @@ spec:
                 description: l4 udp check ip:port list, ip1:port1,ip2:port2,ip3:port3
                 type: string
             required:
-            - cpu
             - image
-            - memory
             type: object
           status:
             description: PingerStatus defines the observed state of Pinger
             properties:
-              arpPing:
-                type: string
               conditions:
                 description: Conditions store the status conditions of the vpn gw
                   instances
@@ -156,20 +132,12 @@ spec:
                   - type
                   type: object
                 type: array
-              cpu:
-                type: string
               dns:
                 type: string
               enableMetric:
                 type: boolean
               image:
                 type: string
-              interval:
-                type: integer
-              memory:
-                type: string
-              mustReach:
-                type: boolean
               ping:
                 type: string
               tcpPing:

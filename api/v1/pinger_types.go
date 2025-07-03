@@ -29,37 +29,12 @@ type PingerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// cpu, memory request
-	// cpu, memory limit
-	// 1C 1G at most
-
-	// +kubebuilder:validation:Required
-	CPU string `json:"cpu"`
-
-	// +kubebuilder:validation:Required
-	Memory string `json:"memory"`
-
 	// +kubebuilder:validation:Required
 	Image string `json:"image"`
-
-	// pinger pod args
-
-	// must reach
-	// +kubebuilder:validation:Optional
-	MustReach bool `json:"mustReach,omitempty"`
-
-	// defult ping, tcp, udp check interval is 5s
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=3
-	Interval int `json:"interval"`
 
 	// enable metric
 	// +kubebuilder:validation:Optional
 	EnableMetric bool `json:"enableMetric"`
-
-	// l2 check ip list, ip1,ip2,ip3
-	// +kubebuilder:validation:Optional
-	Arpping string `json:"arpPing,omitempty"`
 
 	// l3 check ip list, ip1,ip2,ip3
 	// +kubebuilder:validation:Optional
@@ -83,13 +58,8 @@ type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	CPU          string `json:"cpu,omitempty"`
-	Memory       string `json:"memory,omitempty"`
 	Image        string `json:"image,omitempty"`
-	Interval     int    `json:"interval,omitempty"`
 	EnableMetric bool   `json:"enableMetric,omitempty"`
-	MustReach    bool   `json:"mustReach,omitempty"`
-	Arpping      string `json:"arpPing,omitempty"`
 	Ping         string `json:"ping,omitempty"`
 	TcpPing      string `json:"tcpPing,omitempty"`
 	UdpPing      string `json:"udpPing,omitempty"`
@@ -104,9 +74,7 @@ type PingerStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=ping
-// +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
-// +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
-// +kubebuilder:printcolumn:name="Interval",type=integer,JSONPath=`.spec.interval`
+// +kubebuilder:printcolumn:name="EnableMetric",type=boolean,JSONPath=`.spec.enableMetric`
 // +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 // +kubebuilder:printcolumn:name="Ping",type=string,JSONPath=`.spec.ping`
 
