@@ -17,8 +17,8 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.enableMetric
-      name: EnableMetric
+    - jsonPath: .spec.enableMetrics
+      name: EnableMetrics
       type: boolean
     - jsonPath: .spec.image
       name: Image
@@ -54,7 +54,7 @@ spec:
               dns:
                 description: l7 dns check ns list, ns1,ns2,ns3
                 type: string
-              enableMetric:
+              enableMetrics:
                 description: enable metric
                 type: boolean
               image:
@@ -134,7 +134,7 @@ spec:
                 type: array
               dns:
                 type: string
-              enableMetric:
+              enableMetrics:
                 type: boolean
               image:
                 type: string
