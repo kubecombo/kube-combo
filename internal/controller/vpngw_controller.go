@@ -1449,7 +1449,7 @@ func (r *VpnGwReconciler) handleAddOrUpdateVpnGw(ctx context.Context, req ctrl.R
 		}
 	}
 	if err := r.UpdateVpnGW(ctx, req, conns); err != nil {
-		r.Log.Error(err, "failed to update vpn gw")
+		r.Log.Error(err, "failed to update vpn gw status")
 		return SyncStateError, err
 	}
 	return SyncStateSuccess, nil

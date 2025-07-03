@@ -48,9 +48,8 @@ import (
 )
 
 const (
-	EnablePingerLabel = "kubecombo.com/enable-pinger"
-	DebuggerName      = "debugger"
-	PingerName        = "pinger"
+	DebuggerName = "debug"
+	PingerName   = "ping"
 
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
@@ -62,14 +61,12 @@ const (
 	// debugger env
 	Subnet = "SUBNET"
 	// pinger env
-	MustReach    = "MUST_REACH"
-	Interval     = "INTERVAL"
-	EnableMetric = "ENABLE_METRIC"
-	Arpping      = "ARPING"
-	Ping         = "PING"
-	TcpPing      = "TCP_PING"
-	UdpPing      = "UDP_PING"
-	Dns          = "DNS"
+	Ping    = "PING"
+	TcpPing = "TCP_PING"
+	UdpPing = "UDP_PING"
+	Dns     = "DNS"
+
+	EnableMetrics = "ENABLE_METRICS"
 
 	// service account
 	ServiceAccountName = "kube-ovn-app"
@@ -234,6 +231,13 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 			return SyncStateErrorNoRetry, err
 		}
 	}
+
+	change := r.isChanged(debugger)
+	if !change {
+		r.Log.Info("debugger is up to date, no need to sync", "debugger", debugger.Name)
+		return SyncStateSuccess, nil
+	}
+
 	// create debugger or update
 	if debugger.Spec.WorkloadType == WorkloadTypePod {
 		// deployment for one pod case
@@ -248,7 +252,72 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 			return SyncStateError, err
 		}
 	}
+
+	if err := r.UpdateDebugger(ctx, req, debugger); err != nil {
+		r.Log.Error(err, "failed to update debugger status")
+		return SyncStateError, err
+	}
 	return SyncStateSuccess, nil
+}
+
+func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Request, debugger *myv1.Debugger) error {
+	if debugger == nil {
+		return nil
+	}
+	changed := false
+	newDebugger := debugger.DeepCopy()
+	if debugger.Spec.CPU != debugger.Status.CPU {
+		newDebugger.Status.CPU = debugger.Spec.CPU
+		changed = true
+	}
+	if debugger.Spec.Memory != debugger.Status.Memory {
+		newDebugger.Status.Memory = debugger.Spec.Memory
+		changed = true
+	}
+	if debugger.Spec.Image != debugger.Status.Image {
+		newDebugger.Status.Image = debugger.Spec.Image
+		changed = true
+	}
+	if debugger.Spec.QoSBandwidth != debugger.Status.QoSBandwidth {
+		newDebugger.Status.QoSBandwidth = debugger.Spec.QoSBandwidth
+		changed = true
+	}
+	if debugger.Spec.WorkloadType != debugger.Status.WorkloadType {
+		newDebugger.Status.WorkloadType = debugger.Spec.WorkloadType
+		changed = true
+	}
+	if debugger.Spec.EnablePinger != debugger.Status.EnablePinger {
+		newDebugger.Status.EnablePinger = debugger.Spec.EnablePinger
+		changed = true
+	}
+	if debugger.Spec.Pinger != debugger.Status.Pinger {
+		newDebugger.Status.Pinger = debugger.Spec.Pinger
+		changed = true
+	}
+	if !reflect.DeepEqual(debugger.Spec.Tolerations, debugger.Status.Tolerations) {
+		newDebugger.Status.Tolerations = debugger.Spec.Tolerations
+		changed = true
+	}
+	if !reflect.DeepEqual(debugger.Spec.Affinity, debugger.Status.Affinity) {
+		newDebugger.Status.Affinity = debugger.Spec.Affinity
+		changed = true
+	}
+	if debugger.Spec.NodeName != debugger.Status.NodeName {
+		newDebugger.Status.NodeName = debugger.Spec.NodeName
+		changed = true
+	}
+	if debugger.Spec.HostNetwork != debugger.Status.HostNetwork {
+		newDebugger.Status.HostNetwork = debugger.Spec.HostNetwork
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	if err := r.Status().Update(context.Background(), newDebugger); err != nil {
+		r.Log.Error(err, "failed to update debugger status")
+		return err
+	}
+	return nil
 }
 
 func (r *DebuggerReconciler) getDebugger(ctx context.Context, name types.NamespacedName) (*myv1.Debugger, error) {
@@ -357,16 +426,9 @@ func (r *DebuggerReconciler) validatePinger(pinger *myv1.Pinger, enablePinger bo
 		return err
 	}
 
-	if pinger.Spec.Interval <= 0 {
-		err := fmt.Errorf("pinger %s interval should be greater than 0", pinger.Name)
-		r.Log.Error(err, "should set pinger interval")
-		return err
-	}
-
 	if pinger.Spec.Ping == "" &&
 		pinger.Spec.TcpPing == "" &&
 		pinger.Spec.UdpPing == "" &&
-		pinger.Spec.Arpping == "" &&
 		pinger.Spec.Dns == "" {
 		err := fmt.Errorf("pinger %s must set at least one kind of ping target", pinger.Name)
 		r.Log.Error(err, "should set ping task")
@@ -392,11 +454,11 @@ func (r *DebuggerReconciler) handleAddOrUpdatePod(req ctrl.Request, debugger *my
 	newDebugger := debugger.DeepCopy()
 	// create
 	if needToCreate {
-		// create deployment
-		newDeploy := r.getDebuggerPod(debugger, pinger, nil)
-		err = r.Create(context.Background(), newDeploy)
+		// create
+		newPod := r.getDebuggerPod(debugger, pinger, nil)
+		err = r.Create(context.Background(), newPod)
 		if err != nil {
-			r.Log.Error(err, "failed to create the new deployment")
+			r.Log.Error(err, "failed to create the new pod")
 			return err
 		}
 		time.Sleep(5 * time.Second)
@@ -404,11 +466,11 @@ func (r *DebuggerReconciler) handleAddOrUpdatePod(req ctrl.Request, debugger *my
 	}
 	// update
 	if r.isChanged(newDebugger) {
-		// update deployment
-		newDeploy := r.getDebuggerPod(debugger, pinger, oldPod.DeepCopy())
-		err = r.Update(context.Background(), newDeploy)
+		// update
+		newPod := r.getDebuggerPod(debugger, pinger, oldPod.DeepCopy())
+		err = r.Update(context.Background(), newPod)
 		if err != nil {
-			r.Log.Error(err, "failed to update the deployment")
+			r.Log.Error(err, "failed to update the pod")
 			return err
 		}
 		time.Sleep(5 * time.Second)
@@ -464,13 +526,11 @@ func (r *DebuggerReconciler) handleAddOrUpdateDaemonset(req ctrl.Request, debugg
 
 func labelsFor(debugger *myv1.Debugger) map[string]string {
 	return map[string]string{
-		EnablePingerLabel: strconv.FormatBool(debugger.Spec.EnablePinger),
-		DebuggerName:      debugger.Name,
-		"app":             "debugger",
+		DebuggerName: debugger.Name,
 	}
 }
 
-func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
+func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinger) []corev1.EnvVar {
 	return []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
@@ -511,6 +571,38 @@ func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
 					FieldPath: "status.hostIP",
 				},
 			},
+		},
+		{
+			Name:  "HOST_NETWORK",
+			Value: strconv.FormatBool(debugger.Spec.HostNetwork),
+		},
+		{
+			Name:  "DS_NAME",
+			Value: debugger.Name,
+		},
+		{
+			Name:  Subnet,
+			Value: debugger.Spec.Subnet,
+		},
+		{
+			Name:  EnableMetrics,
+			Value: strconv.FormatBool(pinger.Spec.EnableMetrics),
+		},
+		{
+			Name:  Ping,
+			Value: pinger.Spec.Ping,
+		},
+		{
+			Name:  TcpPing,
+			Value: pinger.Spec.TcpPing,
+		},
+		{
+			Name:  UdpPing,
+			Value: pinger.Spec.UdpPing,
+		},
+		{
+			Name:  Dns,
+			Value: pinger.Spec.Dns,
 		},
 	}
 }
@@ -650,19 +742,18 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 		newPodAnnotations[key] = value
 	}
 	volumes, volumeMounts := r.getVolumesMounts()
-	envs := r.getEnvs()
+	envs := r.getEnvs(debugger, pinger)
 	containers := []corev1.Container{}
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
 	debuggerContainer.VolumeMounts = volumeMounts
-	// append envs
-	debuggerContainer.Env = append(debuggerContainer.Env, envs...)
+	debuggerContainer.Env = envs
 	containers = append(containers, debuggerContainer)
 	if debugger.Spec.EnablePinger {
 		// pinger container
-		pingerContainer := r.getPingerContainer(pinger)
+		pingerContainer := r.getPingerContainer(pinger, debugger)
 		pingerContainer.VolumeMounts = volumeMounts
-		pingerContainer.Env = append(pingerContainer.Env, envs...)
+		pingerContainer.Env = envs
 		containers = append(containers, pingerContainer)
 	}
 	newPod = &corev1.Pod{
@@ -705,14 +796,12 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
 				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
-		},
-		Command: []string{DebuggerStartCMD},
-		Env: []corev1.EnvVar{
-			{
-				Name:  Subnet,
-				Value: debugger.Spec.Subnet,
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
+				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
 		},
+		Command:         []string{DebuggerStartCMD},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
@@ -729,7 +818,7 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 	return debuggerContainer
 }
 
-func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger) corev1.Container {
+func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger, debugger *myv1.Debugger) corev1.Container {
 	allowPrivilegeEscalation := true
 	privileged := true
 
@@ -738,45 +827,15 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger) corev1.Cont
 		Image: pinger.Spec.Image,
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{
-				corev1.ResourceCPU:    resource.MustParse(pinger.Spec.CPU),
-				corev1.ResourceMemory: resource.MustParse(pinger.Spec.Memory),
+				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
+				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
+			},
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
+				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
 		},
-		Command: []string{PingerStartCMD},
-		Env: []corev1.EnvVar{
-			{
-				Name:  MustReach,
-				Value: strconv.FormatBool(pinger.Spec.MustReach),
-			},
-			{
-				Name:  Interval,
-				Value: strconv.Itoa(pinger.Status.Interval),
-			},
-			{
-				Name:  EnableMetric,
-				Value: strconv.FormatBool(pinger.Spec.EnableMetric),
-			},
-			{
-				Name:  Arpping,
-				Value: pinger.Spec.Arpping,
-			},
-			{
-				Name:  Ping,
-				Value: pinger.Spec.Ping,
-			},
-			{
-				Name:  TcpPing,
-				Value: pinger.Spec.TcpPing,
-			},
-			{
-				Name:  UdpPing,
-				Value: pinger.Spec.UdpPing,
-			},
-			{
-				Name:  Dns,
-				Value: pinger.Spec.Dns,
-			},
-		},
+		Command:         []string{PingerStartCMD},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
@@ -813,24 +872,18 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 
 	containers := []corev1.Container{}
 	volumes, volumeMounts := r.getVolumesMounts()
-	envs := r.getEnvs()
+	envs := r.getEnvs(debugger, pinger)
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
 	debuggerContainer.VolumeMounts = volumeMounts
 	// append envs
-	debuggerContainer.Env = append(debuggerContainer.Env, envs...)
-	dsEnv := corev1.EnvVar{
-		Name:  "DS_NAME",
-		Value: debugger.Name,
-	}
-	debuggerContainer.Env = append(debuggerContainer.Env, dsEnv)
+	debuggerContainer.Env = envs
 	containers = append(containers, debuggerContainer)
 	if debugger.Spec.EnablePinger {
 		// pinger container
-		pingerContainer := r.getPingerContainer(pinger)
+		pingerContainer := r.getPingerContainer(pinger, debugger)
 		pingerContainer.VolumeMounts = volumeMounts
-		pingerContainer.Env = append(pingerContainer.Env, envs...)
-		pingerContainer.Env = append(pingerContainer.Env, dsEnv)
+		pingerContainer.Env = envs
 		containers = append(containers, pingerContainer)
 	}
 

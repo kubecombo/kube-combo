@@ -29,31 +29,18 @@ func CmdMain() {
 
 	ctrl.SetLogger(klog.NewKlogr())
 	ctx := signals.SetupSignalHandler()
-	if config.Mode == "server" {
-		if config.EnableMetrics {
-			go func() {
-				pinger.InitPingerMetrics()
-				metrics.InitKlogMetrics()
-				if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
-					pinger.LogFatalAndExit(err, "failed to run metrics server")
-				}
-				<-ctx.Done()
-			}()
-		}
-
-		if config.TCPPort != 0 {
-			addr := pinger.JoinHostPort("0.0.0.0", config.TCPPort)
-			if err = pinger.TCPConnectivityListen(addr); err != nil {
-				pinger.LogFatalAndExit(err, "failed to start TCP listen on addr %s", addr)
+	if config.Mode == "server" && config.EnableMetrics {
+		go func() {
+			pinger.InitPingerMetrics()
+			metrics.InitKlogMetrics()
+			klog.Info("start metrics server")
+			if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
+				klog.Error(err, "failed to run metrics server")
+				pinger.LogFatalAndExit(err, "failed to run metrics server")
 			}
-		}
-
-		if config.UDPPort != 0 {
-			addr := pinger.JoinHostPort("0.0.0.0", config.UDPPort)
-			if err = pinger.UDPConnectivityListen(addr); err != nil {
-				pinger.LogFatalAndExit(err, "failed to start UDP listen on addr %s", addr)
-			}
-		}
+			<-ctx.Done()
+			klog.Info("stop metrics server")
+		}()
 	}
 	pinger.StartPinger(config, ctx.Done())
 }

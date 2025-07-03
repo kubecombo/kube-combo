@@ -21,28 +21,30 @@ import (
 func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 	errHappens := false
 	withMetrics := config.Mode == "server" && config.EnableMetrics
-	internval := time.Duration(config.Interval) * time.Second
-	timer := time.NewTimer(internval)
-	timer.Stop()
+	interval := time.Duration(config.Interval) * time.Second
+	timer := time.NewTimer(interval)
+	defer timer.Stop()
 
-LOOP:
 	for {
 		if err := check(config, withMetrics); err != nil {
 			klog.Errorf("check failed: %v", err)
 			errHappens = true
 		}
 		if config.Mode != "server" {
+			klog.Infof("pinger breaked, mode: %s", config.Mode)
 			break
 		}
 
-		timer.Reset(internval)
 		select {
 		case <-stopCh:
-			break LOOP
+			klog.Infof("pinger stopped")
+			return
 		case <-timer.C:
+			klog.Infof("pinger check every %d seconds", config.Interval)
 		}
+		timer.Reset(interval)
 	}
-	timer.Stop()
+	klog.Infof("pinger finished checking, errHappens: %v", errHappens)
 	if errHappens && config.ExitCode != 0 {
 		os.Exit(config.ExitCode)
 	}
@@ -67,9 +69,11 @@ func check(config *Configuration, withMetrics bool) error {
 		klog.Errorf("pingPods failed: %v", err)
 		errHappens = true
 	}
-	if err := pingNodes(config, withMetrics); err != nil {
-		klog.Errorf("pingNodes failed: %v", err)
-		errHappens = true
+	if config.EnableNodeIPCheck {
+		if err := pingNodes(config, withMetrics); err != nil {
+			klog.Errorf("pingNodes failed: %v", err)
+			errHappens = true
+		}
 	}
 
 	if err := dnslookup(config, withMetrics); err != nil {
@@ -142,6 +146,10 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 
 func pingPods(config *Configuration, setMetrics bool) error {
 	klog.Infof("start to check pod connectivity")
+	if config.DaemonSetName == "" || config.DaemonSetNamespace == "" {
+		klog.Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
+		return nil
+	}
 	ds, err := config.KubeClient.AppsV1().DaemonSets(config.DaemonSetNamespace).Get(context.Background(), config.DaemonSetName, metav1.GetOptions{})
 	if err != nil {
 		klog.Errorf("failed to get peer ds: %v", err)
@@ -200,7 +208,13 @@ func pingPods(config *Configuration, setMetrics bool) error {
 			}
 		}
 	}
-	return pingErr
+	if pingErr != nil {
+		klog.Errorf("ping pods failed: %v", pingErr)
+		return pingErr
+	} else {
+		klog.Infof("ping pods success")
+	}
+	return nil
 }
 
 func pingExternal(config *Configuration, setMetrics bool) error {

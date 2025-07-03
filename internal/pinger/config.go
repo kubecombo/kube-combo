@@ -29,8 +29,6 @@ type Configuration struct {
 	PodProtocols       []string
 	EnableMetrics      bool
 	Port               int32
-	TCPPort            int32
-	UDPPort            int32
 	LogPerm            string
 
 	// ArpPing   string // TODO
@@ -38,27 +36,27 @@ type Configuration struct {
 	TCPPing   string
 	UDPPing   string
 	DnsLookup string
+
+	// enable Node ip check
+	EnableNodeIPCheck bool
 }
 
 func ParseFlags() (*Configuration, error) {
 	var (
-		argPort = pflag.Int32("port", 8080, "metrics port")
-
-		argTCPPort = pflag.Int32("tcp-port", 54321, "TCP connectivity auto check pod ip tcp port")
-		argUDPPort = pflag.Int32("udp-port", 54322, "UDP connectivity auto check pod ip udp port")
-
+		argPort               = pflag.Int32("port", 8080, "metrics port")
 		argKubeConfigFile     = pflag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information. If not set use the inCluster token.")
 		argDaemonSetNameSpace = pflag.String("ds-namespace", "kube-system", "kube-ovn-pinger daemonset namespace")
 		argDaemonSetName      = pflag.String("ds-name", "kube-ovn-pinger", "kube-ovn-pinger daemonset name")
 		argInterval           = pflag.Int("interval", 5, "interval seconds between consecutive pings")
 		argMode               = pflag.String("mode", "server", "server or job Mode")
-		argEnableMetrics      = pflag.Bool("enable-metrics", true, "Whether to support metrics query")
+		argEnableMetrics      = pflag.Bool("enable-metrics", false, "Whether to support metrics query")
 		argLogPerm            = pflag.String("log-perm", "640", "The permission for the log file")
 		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
 		argPing               = pflag.String("ping", "", "check ping connection to an external address, eg: '1.1.1.1,2.2.2.2'")
 		argTCPPing            = pflag.String("tcpping", "", "target tcp ip and port, eg: '10.16.0.9:80,10.16.0.10:80'")
 		argUDPPing            = pflag.String("udpping", "", "target udp ip and port, eg: '10.16.0.9:53,10.16.0.10:53'")
 		argDnsLookup          = pflag.String("dnslookup", "", "check external dns resolve from pod, eg: 'baidu.com,google.com'")
+		argEnableNodeIPCheck  = pflag.Bool("enable-node-ip-check", false, "Whether to enable node IP check")
 	)
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
 	klog.InitFlags(klogFlags)
@@ -93,13 +91,12 @@ func ParseFlags() (*Configuration, error) {
 		PodName:            os.Getenv("POD_NAME"),
 		EnableMetrics:      *argEnableMetrics,
 
-		TCPPort: *argTCPPort,
-		UDPPort: *argUDPPort,
-
 		Ping:      *argPing,
 		TCPPing:   *argTCPPing,
 		UDPPing:   *argUDPPing,
 		DnsLookup: *argDnsLookup,
+
+		EnableNodeIPCheck: *argEnableNodeIPCheck,
 
 		LogPerm: *argLogPerm,
 	}
@@ -108,7 +105,8 @@ func ParseFlags() (*Configuration, error) {
 	}
 
 	podName := os.Getenv("POD_NAME")
-	for range 3 {
+	for i := range 5 {
+		time.Sleep(3 * time.Second)
 		pod, err := config.KubeClient.CoreV1().Pods(config.DaemonSetNamespace).Get(context.Background(), podName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("failed to get self pod %s/%s: %v", config.DaemonSetNamespace, podName, err)
@@ -126,9 +124,7 @@ func ParseFlags() (*Configuration, error) {
 		if len(pod.Status.ContainerStatuses) != 0 && pod.Status.ContainerStatuses[0].Ready {
 			LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s: podIPs is empty while the container is ready", config.DaemonSetNamespace, podName)
 		}
-
-		klog.Errorf("cannot get Pod IPs now, waiting Pod to be ready")
-		time.Sleep(time.Second)
+		klog.Warningf("try %d, cannot get Pod IPs now, waiting Pod to be ready", i)
 	}
 
 	if len(config.PodProtocols) == 0 {

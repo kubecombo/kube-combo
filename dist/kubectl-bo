@@ -1,0 +1,14 @@
+#!/bin/bash
+# 使用场景：
+# 1. 创建 kube-ovn-debugger 的 daemonset
+# 2. 删除 kube-ovn-debugger 的 daemonset
+# 3. 检查 kube-ovn-debugger 的 daemonset pod running 状态：pinger 会自动执行子网内跨节点 东西向 pod ip 的检查，以及到网关的检查
+# 4. 测试 kube-ovn-debugger 的 daemonset
+
+showHelp(){
+  echo "kubectl bo {subcommand} [option...]"
+  echo "Available Subcommands:"
+  echo "  [ds] [create|delete|check|test]  create/delete/check/test kube-ovn-debugger daemonset"
+  echo "  [reload]  restart all kube-combo components"
+  echo "  [log] {debugger|pinger|all}  save log to ./kubectl-bo-log/"
+}
