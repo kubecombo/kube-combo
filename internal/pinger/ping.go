@@ -40,7 +40,7 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			klog.Infof("pinger stopped")
 			return
 		case <-timer.C:
-			klog.Infof("pinger will check after interval %d seconds", config.Interval)
+			klog.Infof("pinger check every %d seconds", config.Interval)
 		}
 		timer.Reset(interval)
 	}

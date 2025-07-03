@@ -20,8 +20,6 @@ const (
 	ProtocolIPv4 = "IPv4"
 	ProtocolIPv6 = "IPv6"
 	ProtocolDual = "Dual"
-
-	PingerNamespace = "kube_system" // pod running in namespace kube-system
 )
 
 func LogFatalAndExit(err error, format string, a ...any) {
@@ -119,7 +117,7 @@ func CheckProtocol(address string) string {
 }
 
 func InitLogFilePerm(moduleName string, perm os.FileMode) {
-	logPath := "/var/log/kube-ovn/" + moduleName + ".log"
+	logPath := "/var/log/kube-combo/" + moduleName + ".log"
 	if _, err := os.Stat(logPath); os.IsNotExist(err) {
 		f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, perm)
 		if err != nil {
@@ -131,62 +129,4 @@ func InitLogFilePerm(moduleName string, perm os.FileMode) {
 			log.Fatalf("failed to chmod log file: %v", err)
 		}
 	}
-}
-
-func UDPConnectivityListen(endpoint string) error {
-	listenAddr, err := net.ResolveUDPAddr("udp", endpoint)
-	if err != nil {
-		err := fmt.Errorf("failed to resolve udp addr: %w", err)
-		klog.Error(err)
-		return err
-	}
-
-	conn, err := net.ListenUDP("udp", listenAddr)
-	if err != nil {
-		err := fmt.Errorf("failed to listen udp address: %w", err)
-		klog.Error(err)
-		return err
-	}
-
-	buffer := make([]byte, 1024)
-
-	go func() {
-		for {
-			_, clientAddr, err := conn.ReadFromUDP(buffer)
-			if err != nil {
-				klog.Error(err)
-				continue
-			}
-
-			_, err = conn.WriteToUDP([]byte("health check"), clientAddr)
-			if err != nil {
-				klog.Error(err)
-				continue
-			}
-		}
-	}()
-
-	return nil
-}
-
-func TCPConnectivityListen(endpoint string) error {
-	listener, err := net.Listen("tcp", endpoint)
-	if err != nil {
-		err := fmt.Errorf("failed to listen %s, %w", endpoint, err)
-		klog.Error(err)
-		return err
-	}
-
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				klog.Error(err)
-				continue
-			}
-			_ = conn.Close()
-		}
-	}()
-
-	return nil
 }

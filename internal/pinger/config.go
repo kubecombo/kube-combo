@@ -29,8 +29,6 @@ type Configuration struct {
 	PodProtocols       []string
 	EnableMetrics      bool
 	Port               int32
-	TCPPort            int32
-	UDPPort            int32
 	LogPerm            string
 
 	// ArpPing   string // TODO
@@ -45,11 +43,7 @@ type Configuration struct {
 
 func ParseFlags() (*Configuration, error) {
 	var (
-		argPort = pflag.Int32("port", 8080, "metrics port")
-
-		argTCPPort = pflag.Int32("tcp-port", 54321, "TCP connectivity auto check pod ip tcp port")
-		argUDPPort = pflag.Int32("udp-port", 54322, "UDP connectivity auto check pod ip udp port")
-
+		argPort               = pflag.Int32("port", 8080, "metrics port")
 		argKubeConfigFile     = pflag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information. If not set use the inCluster token.")
 		argDaemonSetNameSpace = pflag.String("ds-namespace", "kube-system", "kube-ovn-pinger daemonset namespace")
 		argDaemonSetName      = pflag.String("ds-name", "kube-ovn-pinger", "kube-ovn-pinger daemonset name")
@@ -96,9 +90,6 @@ func ParseFlags() (*Configuration, error) {
 		NodeName:           os.Getenv("NODE_NAME"),
 		PodName:            os.Getenv("POD_NAME"),
 		EnableMetrics:      *argEnableMetrics,
-
-		TCPPort: *argTCPPort,
-		UDPPort: *argUDPPort,
 
 		Ping:      *argPing,
 		TCPPing:   *argTCPPing,
