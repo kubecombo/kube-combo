@@ -50,38 +50,44 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 
 func check(config *Configuration, withMetrics bool) error {
 	errHappens := false
-	var err error
+	var err, happenErr error
 
 	if config.Ping != "" {
 		if err = pingExternal(config, withMetrics); err != nil {
 			klog.Errorf("pingExternal failed: %v", err)
 			errHappens = true
+			happenErr = err
 		}
 	}
 	if config.TCPPing != "" || config.UDPPing != "" {
 		if err = checkAccessTargetIPPorts(config); err != nil {
 			klog.Errorf("checkAccessTargetIPPorts failed: %v", err)
 			errHappens = true
+			happenErr = err
 		}
 	}
 	if err = pingPods(config, withMetrics); err != nil {
 		klog.Errorf("pingPods failed: %v", err)
 		errHappens = true
+		happenErr = err
 	}
 	if config.EnableNodeIPCheck {
 		if err = pingNodes(config, withMetrics); err != nil {
 			klog.Errorf("pingNodes failed: %v", err)
 			errHappens = true
+			happenErr = err
 		}
 	}
 
 	if err = dnslookup(config, withMetrics); err != nil {
 		klog.Errorf("dnslookup failed: %v", err)
 		errHappens = true
+		happenErr = err
 	}
 
 	if errHappens {
-		return err
+		klog.Errorf("check failed, errHappens: %v, happenErr: %v", errHappens, happenErr)
+		return happenErr
 	}
 	return nil
 }
