@@ -208,7 +208,13 @@ func pingPods(config *Configuration, setMetrics bool) error {
 			}
 		}
 	}
-	return pingErr
+	if pingErr != nil {
+		klog.Errorf("ping pods failed: %v", pingErr)
+		return pingErr
+	} else {
+		klog.Infof("ping pods success")
+	}
+	return nil
 }
 
 func pingExternal(config *Configuration, setMetrics bool) error {
