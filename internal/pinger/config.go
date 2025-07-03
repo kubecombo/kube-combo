@@ -49,7 +49,7 @@ func ParseFlags() (*Configuration, error) {
 		argDaemonSetName      = pflag.String("ds-name", "kube-ovn-pinger", "kube-ovn-pinger daemonset name")
 		argInterval           = pflag.Int("interval", 5, "interval seconds between consecutive pings")
 		argMode               = pflag.String("mode", "server", "server or job Mode")
-		argEnableMetrics      = pflag.Bool("enable-metrics", true, "Whether to support metrics query")
+		argEnableMetrics      = pflag.Bool("enable-metrics", false, "Whether to support metrics query")
 		argLogPerm            = pflag.String("log-perm", "640", "The permission for the log file")
 		argExitCode           = pflag.Int("exit-code", -1, "exit code when failure happens")
 		argPing               = pflag.String("ping", "", "check ping connection to an external address, eg: '1.1.1.1,2.2.2.2'")

@@ -153,20 +153,8 @@ func (r *PingerReconciler) syncPinger(ctx context.Context, pinger *myv1.Pinger) 
 		pinger.Status.Image = pinger.Spec.Image
 		needUpdate = true
 	}
-	if pinger.Status.Interval != pinger.Spec.Interval {
-		pinger.Status.Interval = pinger.Spec.Interval
-		needUpdate = true
-	}
-	if pinger.Status.EnableMetric != pinger.Spec.EnableMetric {
-		pinger.Status.EnableMetric = pinger.Spec.EnableMetric
-		needUpdate = true
-	}
-	if pinger.Status.MustReach != pinger.Spec.MustReach {
-		pinger.Status.MustReach = pinger.Spec.MustReach
-		needUpdate = true
-	}
-	if pinger.Status.Arpping != pinger.Spec.Arpping {
-		pinger.Status.Arpping = pinger.Spec.Arpping
+	if pinger.Status.EnableMetrics != pinger.Spec.EnableMetrics {
+		pinger.Status.EnableMetrics = pinger.Spec.EnableMetrics
 		needUpdate = true
 	}
 	if pinger.Status.Ping != pinger.Spec.Ping {
@@ -203,10 +191,7 @@ func (r *PingerReconciler) needSync(pinger *myv1.Pinger) bool {
 		return false
 	}
 	if pinger.Status.Image != pinger.Spec.Image ||
-		pinger.Status.Interval != pinger.Spec.Interval ||
-		pinger.Status.EnableMetric != pinger.Spec.EnableMetric ||
-		pinger.Status.MustReach != pinger.Spec.MustReach ||
-		pinger.Status.Arpping != pinger.Spec.Arpping ||
+		pinger.Status.EnableMetrics != pinger.Spec.EnableMetrics ||
 		pinger.Status.Ping != pinger.Spec.Ping ||
 		pinger.Status.TcpPing != pinger.Spec.TcpPing ||
 		pinger.Status.UdpPing != pinger.Spec.UdpPing ||

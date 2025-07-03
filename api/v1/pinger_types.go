@@ -34,7 +34,7 @@ type PingerSpec struct {
 
 	// enable metric
 	// +kubebuilder:validation:Optional
-	EnableMetric bool `json:"enableMetric"`
+	EnableMetrics bool `json:"enableMetrics"`
 
 	// l3 check ip list, ip1,ip2,ip3
 	// +kubebuilder:validation:Optional
@@ -58,12 +58,12 @@ type PingerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Image        string `json:"image,omitempty"`
-	EnableMetric bool   `json:"enableMetric,omitempty"`
-	Ping         string `json:"ping,omitempty"`
-	TcpPing      string `json:"tcpPing,omitempty"`
-	UdpPing      string `json:"udpPing,omitempty"`
-	Dns          string `json:"dns,omitempty"`
+	Image         string `json:"image,omitempty"`
+	EnableMetrics bool   `json:"enableMetrics,omitempty"`
+	Ping          string `json:"ping,omitempty"`
+	TcpPing       string `json:"tcpPing,omitempty"`
+	UdpPing       string `json:"udpPing,omitempty"`
+	Dns           string `json:"dns,omitempty"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -74,7 +74,7 @@ type PingerStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=ping
-// +kubebuilder:printcolumn:name="EnableMetric",type=boolean,JSONPath=`.spec.enableMetric`
+// +kubebuilder:printcolumn:name="EnableMetrics",type=boolean,JSONPath=`.spec.enableMetrics`
 // +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 // +kubebuilder:printcolumn:name="Ping",type=string,JSONPath=`.spec.ping`
 
