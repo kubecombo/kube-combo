@@ -29,20 +29,18 @@ func CmdMain() {
 
 	ctrl.SetLogger(klog.NewKlogr())
 	ctx := signals.SetupSignalHandler()
-	if config.Mode == "server" {
-		if config.EnableMetrics {
-			go func() {
-				pinger.InitPingerMetrics()
-				metrics.InitKlogMetrics()
-				if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
-					klog.Error(err, "failed to run metrics server")
-					pinger.LogFatalAndExit(err, "failed to run metrics server")
-				}
-				klog.Info("metrics server started")
-				<-ctx.Done()
-				klog.Info("metrics server stopped")
-			}()
-		}
+	if config.Mode == "server" && config.EnableMetrics {
+		go func() {
+			pinger.InitPingerMetrics()
+			metrics.InitKlogMetrics()
+			klog.Info("start metrics server")
+			if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
+				klog.Error(err, "failed to run metrics server")
+				pinger.LogFatalAndExit(err, "failed to run metrics server")
+			}
+			<-ctx.Done()
+			klog.Info("stop metrics server")
+		}()
 	}
 	pinger.StartPinger(config, ctx.Done())
 }
