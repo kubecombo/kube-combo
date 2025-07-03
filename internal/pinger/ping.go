@@ -21,11 +21,10 @@ import (
 func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 	errHappens := false
 	withMetrics := config.Mode == "server" && config.EnableMetrics
-	internval := time.Duration(config.Interval) * time.Second
-	timer := time.NewTimer(internval)
-	timer.Stop()
+	interval := time.Duration(config.Interval) * time.Second
+	timer := time.NewTimer(interval)
+	defer timer.Stop()
 
-LOOP:
 	for {
 		if err := check(config, withMetrics); err != nil {
 			klog.Errorf("check failed: %v", err)
@@ -35,16 +34,15 @@ LOOP:
 			break
 		}
 
-		timer.Reset(internval)
 		select {
 		case <-stopCh:
 			klog.Infof("pinger stopped")
-			break LOOP
+			return
 		case <-timer.C:
-			klog.Infof("pinger will check after interval %d seconds", config.Interval)
+			klog.Infof("pinger will check after interval %d seconds", interval)
 		}
+		timer.Reset(interval)
 	}
-	timer.Stop()
 	if errHappens && config.ExitCode != 0 {
 		os.Exit(config.ExitCode)
 	}
