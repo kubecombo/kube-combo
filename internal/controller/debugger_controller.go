@@ -49,8 +49,8 @@ import (
 
 const (
 	EnablePingerLabel = "kubecombo.com/enable-pinger"
-	DebuggerName      = "debugger"
-	PingerName        = "pinger"
+	DebuggerName      = "debug"
+	PingerName        = "ping"
 
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
