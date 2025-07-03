@@ -31,6 +31,7 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			errHappens = true
 		}
 		if config.Mode != "server" {
+			klog.Infof("pinger breaked, mode: %s", config.Mode)
 			break
 		}
 
@@ -39,10 +40,11 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			klog.Infof("pinger stopped")
 			return
 		case <-timer.C:
-			klog.Infof("pinger will check after interval %d seconds", interval)
+			klog.Infof("pinger will check after interval %d seconds", config.Interval)
 		}
 		timer.Reset(interval)
 	}
+	klog.Infof("pinger finished checking, errHappens: %v", errHappens)
 	if errHappens && config.ExitCode != 0 {
 		os.Exit(config.ExitCode)
 	}
