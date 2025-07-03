@@ -2,7 +2,6 @@ package pinger
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -31,58 +30,58 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			errHappens = true
 		}
 		if config.Mode != "server" {
-			klog.Infof("pinger breaked, mode: %s", config.Mode)
+			klog.Infof("pinger break, mode: %s", config.Mode)
 			break
 		}
-
 		select {
 		case <-stopCh:
 			klog.Infof("pinger stopped")
 			return
 		case <-timer.C:
 			klog.Infof("pinger check every %d seconds", config.Interval)
+			if errHappens && config.ExitCode != 0 {
+				klog.Infof("ping err: %v, exitCode: %d", errHappens, config.ExitCode)
+				os.Exit(config.ExitCode)
+			}
 		}
 		timer.Reset(interval)
-	}
-	klog.Infof("pinger finished checking, errHappens: %v", errHappens)
-	if errHappens && config.ExitCode != 0 {
-		os.Exit(config.ExitCode)
 	}
 }
 
 func check(config *Configuration, withMetrics bool) error {
 	errHappens := false
+	var err error
 
 	if config.Ping != "" {
-		if err := pingExternal(config, withMetrics); err != nil {
+		if err = pingExternal(config, withMetrics); err != nil {
 			klog.Errorf("pingExternal failed: %v", err)
 			errHappens = true
 		}
 	}
 	if config.TCPPing != "" || config.UDPPing != "" {
-		if err := checkAccessTargetIPPorts(config); err != nil {
+		if err = checkAccessTargetIPPorts(config); err != nil {
 			klog.Errorf("checkAccessTargetIPPorts failed: %v", err)
 			errHappens = true
 		}
 	}
-	if err := pingPods(config, withMetrics); err != nil {
+	if err = pingPods(config, withMetrics); err != nil {
 		klog.Errorf("pingPods failed: %v", err)
 		errHappens = true
 	}
 	if config.EnableNodeIPCheck {
-		if err := pingNodes(config, withMetrics); err != nil {
+		if err = pingNodes(config, withMetrics); err != nil {
 			klog.Errorf("pingNodes failed: %v", err)
 			errHappens = true
 		}
 	}
 
-	if err := dnslookup(config, withMetrics); err != nil {
+	if err = dnslookup(config, withMetrics); err != nil {
 		klog.Errorf("dnslookup failed: %v", err)
 		errHappens = true
 	}
 
 	if errHappens {
-		return errors.New("check failed")
+		return err
 	}
 	return nil
 }
