@@ -71,7 +71,7 @@ spec:
               image:
                 type: string
               interval:
-                default: 5
+                default: 3
                 description: defult ping, tcp, udp check interval is 5s
                 type: integer
               memory:

@@ -114,7 +114,8 @@ func ParseFlags() (*Configuration, error) {
 	}
 
 	podName := os.Getenv("POD_NAME")
-	for range 3 {
+	for i := range 5 {
+		time.Sleep(3 * time.Second)
 		pod, err := config.KubeClient.CoreV1().Pods(config.DaemonSetNamespace).Get(context.Background(), podName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("failed to get self pod %s/%s: %v", config.DaemonSetNamespace, podName, err)
@@ -132,9 +133,7 @@ func ParseFlags() (*Configuration, error) {
 		if len(pod.Status.ContainerStatuses) != 0 && pod.Status.ContainerStatuses[0].Ready {
 			LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s: podIPs is empty while the container is ready", config.DaemonSetNamespace, podName)
 		}
-
-		klog.Errorf("cannot get Pod IPs now, waiting Pod to be ready")
-		time.Sleep(time.Second)
+		klog.Warningf("try %d, cannot get Pod IPs now, waiting Pod to be ready", i)
 	}
 
 	if len(config.PodProtocols) == 0 {
