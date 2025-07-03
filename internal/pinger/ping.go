@@ -146,6 +146,10 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 
 func pingPods(config *Configuration, setMetrics bool) error {
 	klog.Infof("start to check pod connectivity")
+	if config.DaemonSetName == "" || config.DaemonSetNamespace == "" {
+		klog.Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
+		return nil
+	}
 	ds, err := config.KubeClient.AppsV1().DaemonSets(config.DaemonSetNamespace).Get(context.Background(), config.DaemonSetName, metav1.GetOptions{})
 	if err != nil {
 		klog.Errorf("failed to get peer ds: %v", err)
