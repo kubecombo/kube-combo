@@ -48,9 +48,8 @@ import (
 )
 
 const (
-	EnablePingerLabel = "kubecombo.com/enable-pinger"
-	DebuggerName      = "debug"
-	PingerName        = "ping"
+	DebuggerName = "debug"
+	PingerName   = "ping"
 
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
@@ -464,9 +463,7 @@ func (r *DebuggerReconciler) handleAddOrUpdateDaemonset(req ctrl.Request, debugg
 
 func labelsFor(debugger *myv1.Debugger) map[string]string {
 	return map[string]string{
-		EnablePingerLabel: strconv.FormatBool(debugger.Spec.EnablePinger),
-		DebuggerName:      debugger.Name,
-		"app":             "debugger",
+		DebuggerName: debugger.Name,
 	}
 }
 
@@ -714,6 +711,10 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
 				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(debugger.Spec.CPU),
+				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
+			},
 		},
 		Command: []string{DebuggerStartCMD},
 		Env: []corev1.EnvVar{
@@ -747,6 +748,10 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger) corev1.Cont
 		Image: pinger.Spec.Image,
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse(pinger.Spec.CPU),
+				corev1.ResourceMemory: resource.MustParse(pinger.Spec.Memory),
+			},
+			Requests: corev1.ResourceList{
 				corev1.ResourceCPU:    resource.MustParse(pinger.Spec.CPU),
 				corev1.ResourceMemory: resource.MustParse(pinger.Spec.Memory),
 			},
