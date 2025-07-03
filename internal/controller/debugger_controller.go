@@ -231,6 +231,13 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 			return SyncStateErrorNoRetry, err
 		}
 	}
+
+	change := r.isChanged(debugger)
+	if !change {
+		r.Log.Info("debugger is up to date, no need to sync", "debugger", debugger.Name)
+		return SyncStateSuccess, nil
+	}
+
 	// create debugger or update
 	if debugger.Spec.WorkloadType == WorkloadTypePod {
 		// deployment for one pod case
@@ -245,7 +252,72 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 			return SyncStateError, err
 		}
 	}
+
+	if err := r.UpdateDebugger(ctx, req, debugger); err != nil {
+		r.Log.Error(err, "failed to update debugger status")
+		return SyncStateError, err
+	}
 	return SyncStateSuccess, nil
+}
+
+func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Request, debugger *myv1.Debugger) error {
+	if debugger == nil {
+		return nil
+	}
+	changed := false
+	newDebugger := debugger.DeepCopy()
+	if debugger.Spec.CPU != debugger.Status.CPU {
+		newDebugger.Status.CPU = debugger.Spec.CPU
+		changed = true
+	}
+	if debugger.Spec.Memory != debugger.Status.Memory {
+		newDebugger.Status.Memory = debugger.Spec.Memory
+		changed = true
+	}
+	if debugger.Spec.Image != debugger.Status.Image {
+		newDebugger.Status.Image = debugger.Spec.Image
+		changed = true
+	}
+	if debugger.Spec.QoSBandwidth != debugger.Status.QoSBandwidth {
+		newDebugger.Status.QoSBandwidth = debugger.Spec.QoSBandwidth
+		changed = true
+	}
+	if debugger.Spec.WorkloadType != debugger.Status.WorkloadType {
+		newDebugger.Status.WorkloadType = debugger.Spec.WorkloadType
+		changed = true
+	}
+	if debugger.Spec.EnablePinger != debugger.Status.EnablePinger {
+		newDebugger.Status.EnablePinger = debugger.Spec.EnablePinger
+		changed = true
+	}
+	if debugger.Spec.Pinger != debugger.Status.Pinger {
+		newDebugger.Status.Pinger = debugger.Spec.Pinger
+		changed = true
+	}
+	if !reflect.DeepEqual(debugger.Spec.Tolerations, debugger.Status.Tolerations) {
+		newDebugger.Status.Tolerations = debugger.Spec.Tolerations
+		changed = true
+	}
+	if !reflect.DeepEqual(debugger.Spec.Affinity, debugger.Status.Affinity) {
+		newDebugger.Status.Affinity = debugger.Spec.Affinity
+		changed = true
+	}
+	if debugger.Spec.NodeName != debugger.Status.NodeName {
+		newDebugger.Status.NodeName = debugger.Spec.NodeName
+		changed = true
+	}
+	if debugger.Spec.HostNetwork != debugger.Status.HostNetwork {
+		newDebugger.Status.HostNetwork = debugger.Spec.HostNetwork
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	if err := r.Status().Update(context.Background(), newDebugger); err != nil {
+		r.Log.Error(err, "failed to update debugger status")
+		return err
+	}
+	return nil
 }
 
 func (r *DebuggerReconciler) getDebugger(ctx context.Context, name types.NamespacedName) (*myv1.Debugger, error) {
@@ -382,11 +454,11 @@ func (r *DebuggerReconciler) handleAddOrUpdatePod(req ctrl.Request, debugger *my
 	newDebugger := debugger.DeepCopy()
 	// create
 	if needToCreate {
-		// create deployment
-		newDeploy := r.getDebuggerPod(debugger, pinger, nil)
-		err = r.Create(context.Background(), newDeploy)
+		// create
+		newPod := r.getDebuggerPod(debugger, pinger, nil)
+		err = r.Create(context.Background(), newPod)
 		if err != nil {
-			r.Log.Error(err, "failed to create the new deployment")
+			r.Log.Error(err, "failed to create the new pod")
 			return err
 		}
 		time.Sleep(5 * time.Second)
@@ -394,11 +466,11 @@ func (r *DebuggerReconciler) handleAddOrUpdatePod(req ctrl.Request, debugger *my
 	}
 	// update
 	if r.isChanged(newDebugger) {
-		// update deployment
-		newDeploy := r.getDebuggerPod(debugger, pinger, oldPod.DeepCopy())
-		err = r.Update(context.Background(), newDeploy)
+		// update
+		newPod := r.getDebuggerPod(debugger, pinger, oldPod.DeepCopy())
+		err = r.Update(context.Background(), newPod)
 		if err != nil {
-			r.Log.Error(err, "failed to update the deployment")
+			r.Log.Error(err, "failed to update the pod")
 			return err
 		}
 		time.Sleep(5 * time.Second)

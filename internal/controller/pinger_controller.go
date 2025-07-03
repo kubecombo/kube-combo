@@ -120,14 +120,15 @@ func (r *PingerReconciler) handleAddOrUpdatePinger(ctx context.Context, req ctrl
 		return SyncStateSuccess, nil
 	}
 
-	if needsync := r.needSync(pinger); !needsync {
+	change := r.isChanged(pinger)
+	if !change {
 		r.Log.Info("pinger is up to date, no need to sync", "pinger", pinger.Name)
 		return SyncStateSuccess, nil
 	}
 
-	if err = r.syncPinger(ctx, pinger); err != nil {
-		r.Log.Error(err, "failed to set router id")
-		return SyncStateErrorNoRetry, err
+	if err = r.updatePinger(ctx, pinger); err != nil {
+		r.Log.Error(err, "failed to set update pinger status", "pinger", pinger.Name)
+		return SyncStateError, err
 	}
 
 	return SyncStateSuccess, nil
@@ -146,7 +147,7 @@ func (r *PingerReconciler) getPinger(ctx context.Context, name types.NamespacedN
 	return pinger, nil
 }
 
-func (r *PingerReconciler) syncPinger(ctx context.Context, pinger *myv1.Pinger) error {
+func (r *PingerReconciler) updatePinger(ctx context.Context, pinger *myv1.Pinger) error {
 	r.Log.Info("sync pinger", "pinger", pinger.Name)
 	needUpdate := false
 	if pinger.Status.Image != pinger.Spec.Image {
@@ -185,7 +186,7 @@ func (r *PingerReconciler) syncPinger(ctx context.Context, pinger *myv1.Pinger) 
 	return nil
 }
 
-func (r *PingerReconciler) needSync(pinger *myv1.Pinger) bool {
+func (r *PingerReconciler) isChanged(pinger *myv1.Pinger) bool {
 	if pinger.DeletionTimestamp != nil {
 		// pinger is being deleted
 		return false
