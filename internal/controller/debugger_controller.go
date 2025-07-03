@@ -667,6 +667,11 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 		pingerContainer := r.getPingerContainer(pinger)
 		pingerContainer.VolumeMounts = volumeMounts
 		pingerContainer.Env = append(pingerContainer.Env, envs...)
+		pingEnv := corev1.EnvVar{
+			Name:  "INTERVAL",
+			Value: strconv.Itoa(pinger.Spec.Interval),
+		}
+		pingerContainer.Env = append(pingerContainer.Env, pingEnv)
 		containers = append(containers, pingerContainer)
 	}
 	newPod = &corev1.Pod{
@@ -835,6 +840,11 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 		pingerContainer.VolumeMounts = volumeMounts
 		pingerContainer.Env = append(pingerContainer.Env, envs...)
 		pingerContainer.Env = append(pingerContainer.Env, dsEnv)
+		pingEnv := corev1.EnvVar{
+			Name:  "INTERVAL",
+			Value: strconv.Itoa(pinger.Spec.Interval),
+		}
+		pingerContainer.Env = append(pingerContainer.Env, pingEnv)
 		containers = append(containers, pingerContainer)
 	}
 

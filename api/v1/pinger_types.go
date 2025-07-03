@@ -50,7 +50,7 @@ type PingerSpec struct {
 
 	// defult ping, tcp, udp check interval is 5s
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=5
+	// +kubebuilder:default:=3
 	Interval int `json:"interval"`
 
 	// enable metric
