@@ -512,6 +512,14 @@ func (r *DebuggerReconciler) getEnvs() []corev1.EnvVar {
 				},
 			},
 		},
+		{
+			Name: "HOST_NETWORK",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "spec.hostNetwork",
+				},
+			},
+		},
 	}
 }
 func (r *DebuggerReconciler) getVolumesMounts() ([]corev1.Volume, []corev1.VolumeMount) {
