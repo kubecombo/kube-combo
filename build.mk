@@ -19,12 +19,14 @@ KUBE_OVN_BASE_IMG ?= kubeovn/kube-ovn-base:v1.12.9-mc
 SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
 IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
 KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
+DEBUGGER_IMG_BASE ?= ${IMAGE_TAG_BASE}-debugger
 
 # Full Image URL
 IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
 SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
+DEBUGGER_IMG ?= $(DEBUGGER_IMG_BASE):v$(VERSION)
 
 ##@ go build
 .PHONY: go-build-amd
@@ -102,6 +104,18 @@ docker-build-keepalived-arm64: ## Build docker keepalived image for arm64.
 docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
+.PHONY: docker-build-debugger-amd64
+docker-build-debugger-amd64: ## Build docker debugger image for amd64.
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.debugger -t ${DEBUGGER_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-build-debugger-arm64
+docker-build-debugger-arm64: ## Build docker debugger image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.debugger -t ${DEBUGGER_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-push-debugger
+docker-push-debugger: ## Push docker debugger image
+	docker push ${DEBUGGER_IMG}
+
 .PHONY: docker-pull-base-amd64
 docker-pull-base-amd64:
 	docker pull --platform linux/amd64 ${KUBE_OVN_BASE_IMG}
@@ -121,15 +135,16 @@ docker-push-all:
 	docker pull ${IMG} && \
 	docker push ${SSL_VPN_IMG} && \
 	docker push ${IPSEC_VPN_IMG} && \
-	docker push ${KEEPALIVED_IMG}
+	docker push ${KEEPALIVED_IMG} && \
+	docker push ${DEBUGGER_IMG}
 
 .PHONY: docker-pull-all
 docker-pull-all:
 	docker pull ${IMG} && \
 	docker pull ${SSL_VPN_IMG} && \
 	docker pull ${IPSEC_VPN_IMG} && \
-	docker pull ${KEEPALIVED_IMG}
-
+	docker pull ${KEEPALIVED_IMG} && \
+	docker pull ${DEBUGGER_IMG}
 
 ##@ run
 
