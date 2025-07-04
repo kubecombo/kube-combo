@@ -1,0 +1,7 @@
+# syntax = docker/dockerfile:experimental
+ARG BASE_TAG
+FROM icoy/kube-combo-base:$BASE_TAG
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY ./dist/debugger-setup/debugger-start.sh /debugger-start.sh
+COPY ./dist/kubectl-ko /usr/bin/kubectl-ko

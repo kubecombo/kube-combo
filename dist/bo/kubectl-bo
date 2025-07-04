@@ -1,9 +1,10 @@
 #!/bin/bash
 # 使用场景：
-# 1. 创建 kube-ovn-debugger 的 daemonset
-# 2. 删除 kube-ovn-debugger 的 daemonset
-# 3. 检查 kube-ovn-debugger 的 daemonset pod running 状态：pinger 会自动执行子网内跨节点 东西向 pod ip 的检查，以及到网关的检查
-# 4. 测试 kube-ovn-debugger 的 daemonset
+# test: 用于一键执行下述任务
+# 1. create: 过滤所有 vlan subnet, 然后创建 debugger & pinger
+# pinger 启动后会自动执行东西向 pod ip 的检查，以及到网关的检查
+# 2. check： 如果 pod 始终处于 running 状态，则认为测试通过
+# 3. delete: 删除所有 debugger & pinger
 
 showHelp(){
   echo "kubectl bo {subcommand} [option...]"
