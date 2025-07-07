@@ -36,15 +36,15 @@ classDiagram
         HandlerAddOrUpdateDaemonset()
         Update()
     }
-    
+
    class Pinger {
         String Image
-        Bool EnableMetrics 
+        Bool EnableMetrics
         String Ping
         String TcpPing
         String UdpPing
         String Dns
-        
+
         Reconcile()
         GetPinger()
         IsChange()
@@ -54,22 +54,21 @@ classDiagram
    class Pod {
         Bool Hostnetwork
         String NodeName
-        
+
         Create()
         Delete()
     }
-    
+
    class DaemonSet {
      Bool Hostnetwork
      Map Selector
      Map Tolerations
      Map Affinity
-     
+
      Create()
      Delete()
     }
 ```
-
 
 Debugger CRD:
 
@@ -78,14 +77,10 @@ Debugger CRD:
 
 Pinger CRD：
 
-1. 持久化维护 ping 测任务：`ping`  `udp`  `tcp`  `nslookup` 
+1. 持久化维护 ping 测任务：`ping`  `udp`  `tcp`  `nslookup`
 2. 可以选择是否启用 metrics
 
-
-
 如果没有 Pinger，Debugger 只会启动一个容器
-
-
 
 ## 2. Sequence
 
@@ -104,7 +99,7 @@ zenuml
     }
 ```
 
-## 3. Ping topo
+## 3. topo
 
 ping gw
 
@@ -126,4 +121,3 @@ columns 1
 ```
 
 默认统一 daemonset 内的 pinger 启动后，不同 node 上的 pod 都会进行互相 ping 测，到交换机网关则需要在 pinger spec 中指定网关 ip，而且 pod 本身启动时 kube-ovn-cni 会自动检测 ping 网关。
-
