@@ -2043,6 +2043,8 @@ spec:
                   - type
                   type: object
                 type: array
+              configMapName:
+                type: string
               cpu:
                 type: string
               enableConfigMap:

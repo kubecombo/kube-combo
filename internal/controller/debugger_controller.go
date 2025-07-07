@@ -548,7 +548,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 	if !debugger.Spec.HostNetwork {
 		subnetName = debugger.Spec.Subnet
 	}
-	return []corev1.EnvVar{
+	envs := []corev1.EnvVar{
 		{
 			Name: "POD_NAME",
 			ValueFrom: &corev1.EnvVarSource{
@@ -601,27 +601,34 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 			Name:  Subnet,
 			Value: subnetName,
 		},
-		{
-			Name:  EnableMetrics,
-			Value: strconv.FormatBool(pinger.Spec.EnableMetrics),
-		},
-		{
-			Name:  Ping,
-			Value: pinger.Spec.Ping,
-		},
-		{
-			Name:  TcpPing,
-			Value: pinger.Spec.TcpPing,
-		},
-		{
-			Name:  UdpPing,
-			Value: pinger.Spec.UdpPing,
-		},
-		{
-			Name:  Dns,
-			Value: pinger.Spec.Dns,
-		},
 	}
+	// pinger envs
+	if pinger != nil {
+		pingerEnvs := []corev1.EnvVar{
+			{
+				Name:  EnableMetrics,
+				Value: strconv.FormatBool(pinger.Spec.EnableMetrics),
+			},
+			{
+				Name:  Ping,
+				Value: pinger.Spec.Ping,
+			},
+			{
+				Name:  TcpPing,
+				Value: pinger.Spec.TcpPing,
+			},
+			{
+				Name:  UdpPing,
+				Value: pinger.Spec.UdpPing,
+			},
+			{
+				Name:  Dns,
+				Value: pinger.Spec.Dns,
+			},
+		}
+		envs = append(envs, pingerEnvs...)
+	}
+	return envs
 }
 func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1.Volume, []corev1.VolumeMount) {
 	volumes := []corev1.Volume{
