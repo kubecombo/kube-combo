@@ -106,21 +106,22 @@ type DebuggerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	WorkloadType    string              `json:"workloadType" patchStrategy:"merge"`
-	CPU             string              `json:"cpu" patchStrategy:"merge"`
-	Memory          string              `json:"memory" patchStrategy:"merge"`
-	QoSBandwidth    string              `json:"qosBandwidth" patchStrategy:"merge"`
-	Subnet          string              `json:"subnet,omitempty" patchStrategy:"merge"`
-	HostNetwork     bool                `json:"hostNetwork,omitempty" patchStrategy:"merge"`
-	Image           string              `json:"image,omitempty" patchStrategy:"merge"`
-	Selector        []string            `json:"selector,omitempty" patchStrategy:"merge"`
-	Tolerations     []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
-	Affinity        corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
-	NodeName        string              `json:"nodeName,omitempty" patchStrategy:"merge"`
-	EnableConfigMap bool                `json:"enableConfigMap,omitempty" patchStrategy:"merge"`
+	WorkloadType string              `json:"workloadType" patchStrategy:"merge"`
+	CPU          string              `json:"cpu" patchStrategy:"merge"`
+	Memory       string              `json:"memory" patchStrategy:"merge"`
+	QoSBandwidth string              `json:"qosBandwidth" patchStrategy:"merge"`
+	Subnet       string              `json:"subnet,omitempty" patchStrategy:"merge"`
+	HostNetwork  bool                `json:"hostNetwork,omitempty" patchStrategy:"merge"`
+	Image        string              `json:"image,omitempty" patchStrategy:"merge"`
+	Selector     []string            `json:"selector,omitempty" patchStrategy:"merge"`
+	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
+	Affinity     corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
+	NodeName     string              `json:"nodeName,omitempty" patchStrategy:"merge"`
 
-	EnablePinger bool   `json:"enablePinger,omitempty" patchStrategy:"merge"`
-	Pinger       string `json:"pinger,omitempty" patchStrategy:"merge"`
+	EnableConfigMap bool   `json:"enableConfigMap,omitempty" patchStrategy:"merge"`
+	ConfigMapName   string `json:"configMapName,omitempty" patchStrategy:"merge"`
+	EnablePinger    bool   `json:"enablePinger,omitempty" patchStrategy:"merge"`
+	Pinger          string `json:"pinger,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

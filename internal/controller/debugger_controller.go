@@ -54,6 +54,10 @@ const (
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
 
+	// mount debugger config map name as a runable script
+	debugScript     = "debug-script"
+	debugScriptPath = "/debug-script.sh"
+
 	// WorkloadTypePod is the workload type for pod
 	WorkloadTypePod = "pod"
 	// WorkloadTypeDaemonset is the workload type for daemonset
@@ -386,6 +390,12 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		}
 	}
 
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName == "" {
+		err := fmt.Errorf("debugger %s enable config map, but configMapName is empty", debugger.Name)
+		r.Log.Error(err, "should set configMapName")
+		return err
+	}
+
 	if debugger.Spec.EnablePinger && debugger.Spec.Pinger == "" {
 		err := fmt.Errorf("debugger %s enable pinger, but pinger is empty", debugger.Name)
 		r.Log.Error(err, "should set pinger info")
@@ -613,7 +623,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 		},
 	}
 }
-func (r *DebuggerReconciler) getVolumesMounts() ([]corev1.Volume, []corev1.VolumeMount) {
+func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1.Volume, []corev1.VolumeMount) {
 	volumes := []corev1.Volume{
 		{
 			Name: OpenvswitchName,
@@ -689,6 +699,31 @@ func (r *DebuggerReconciler) getVolumesMounts() ([]corev1.Volume, []corev1.Volum
 		},
 	}
 
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName != "" {
+		// volumes add config map
+		volumes = append(volumes, corev1.Volume{
+			Name: debugScript,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: debugger.Spec.ConfigMapName,
+					},
+					Items: []corev1.KeyToPath{
+						{
+							Key:  debugScript,
+							Path: debugScriptPath,
+						},
+					},
+					// chmod 0755
+					DefaultMode: func() *int32 {
+						mode := int32(0755)
+						return &mode
+					}(),
+				},
+			},
+		})
+	}
+
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      OpenvswitchName,
@@ -727,6 +762,15 @@ func (r *DebuggerReconciler) getVolumesMounts() ([]corev1.Volume, []corev1.Volum
 			MountPath: VarRunTls,
 		},
 	}
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName != "" {
+		// volume mounts add config map
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      debugScript,
+			MountPath: debugScriptPath,
+			// chmod 0755
+			ReadOnly: true,
+		})
+	}
 	return volumes, volumeMounts
 }
 
@@ -748,7 +792,7 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 	for key, value := range podAnnotations {
 		newPodAnnotations[key] = value
 	}
-	volumes, volumeMounts := r.getVolumesMounts()
+	volumes, volumeMounts := r.getVolumesMounts(debugger)
 	envs := r.getEnvs(debugger, pinger)
 	containers := []corev1.Container{}
 	// debugger container
@@ -878,7 +922,7 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 	}
 
 	containers := []corev1.Container{}
-	volumes, volumeMounts := r.getVolumesMounts()
+	volumes, volumeMounts := r.getVolumesMounts(debugger)
 	envs := r.getEnvs(debugger, pinger)
 	// debugger container
 	debuggerContainer := r.getDebuggerContainer(debugger)
@@ -978,6 +1022,8 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.Image != debugger.Status.Image ||
 		debugger.Spec.QoSBandwidth != debugger.Status.QoSBandwidth ||
 		debugger.Spec.WorkloadType != debugger.Status.WorkloadType ||
+		debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap ||
+		debugger.Spec.ConfigMapName != debugger.Status.ConfigMapName ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
 		debugger.Spec.Pinger != debugger.Status.Pinger {
 		return true
