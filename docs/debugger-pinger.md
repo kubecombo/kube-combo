@@ -78,7 +78,7 @@ Debugger CRD:
 
 Pinger CRD：
 
-1. 持久化维护 ping 测任务：ping udp tcp nslookup 
+1. 持久化维护 ping 测任务：`ping`  `udp`  `tcp`  `nslookup` 
 2. 可以选择是否启用 metrics
 
 
@@ -100,7 +100,7 @@ zenuml
     par {
         kubecombo->DebuggerCRD: get the debugger?
         kubecombo->PingerCRD: get the pinger of debugger spec?
-        kubecombo->Pod: create|update|delete pod
+        kubecombo->Pod: create | update | delete pod
     }
 ```
 
@@ -125,5 +125,5 @@ columns 1
 
 ```
 
-默认统一 daemonset 内的 pinger启动后，不同 node 上的 pod 都会进行互相 ping 测，到交换机网关则需要在 pinger spec 中执行网关 ip
+默认统一 daemonset 内的 pinger 启动后，不同 node 上的 pod 都会进行互相 ping 测，到交换机网关则需要在 pinger spec 中指定网关 ip，而且 pod 本身启动时 kube-ovn-cni 会自动检测 ping 网关。
 
