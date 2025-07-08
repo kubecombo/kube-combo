@@ -27,6 +27,7 @@ kind-load-image:
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(IPSEC_VPN_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(KEEPALIVED_IMG))
 	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(NETSHOOT_IMG))
+	$(call kind_load_image,$(KIND_CLUSTER_NAME),$(DEBUGGER_IMG))
 
 .PHONY: crictl-pull-image
 crictl-pull-image:
@@ -37,6 +38,7 @@ crictl-pull-image:
 	$(call crictl_pull_image,$(IPSEC_VPN_IMG))
 	$(call crictl_pull_image,$(KEEPALIVED_IMG))
 	$(call crictl_pull_image,$(NETSHOOT_IMG))
+	$(call crictl_pull_image,$(DEBUGGER_IMG))
 
 .PHONY: reload
 reload: kind-load-image

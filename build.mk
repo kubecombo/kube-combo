@@ -125,10 +125,10 @@ docker-pull-base-arm64:
 	docker pull --platform linux/arm64 ${KUBE_OVN_BASE_IMG}
 
 .PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64
+docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 docker-build-debugger-amd64
 
 .PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 docker-build-debugger-arm64
 
 .PHONY: docker-push-all
 docker-push-all:
