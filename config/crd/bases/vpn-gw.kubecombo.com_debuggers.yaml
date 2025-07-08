@@ -32,6 +32,9 @@ spec:
     - jsonPath: .spec.workloadType
       name: Workload
       type: string
+    - jsonPath: .spec.configMapName
+      name: CM
+      type: string
     - jsonPath: .spec.pinger
       name: Pinger
       type: string
@@ -975,8 +978,17 @@ spec:
                         x-kubernetes-list-type: atomic
                     type: object
                 type: object
+              configMapName:
+                description: config map name
+                type: string
               cpu:
                 type: string
+              enableConfigMap:
+                description: |-
+                  enable config map
+                  mount config map to pinger pod as a script
+                  if enableConfigMap is true, configMapName must be set
+                type: boolean
               enablePinger:
                 description: |-
                   control pinger pod lifecycle
@@ -2031,8 +2043,12 @@ spec:
                   - type
                   type: object
                 type: array
+              configMapName:
+                type: string
               cpu:
                 type: string
+              enableConfigMap:
+                type: boolean
               enablePinger:
                 type: boolean
               hostNetwork:

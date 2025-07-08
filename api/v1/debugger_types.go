@@ -87,7 +87,18 @@ type DebuggerSpec struct {
 	EnablePinger bool `json:"enablePinger,omitempty"`
 
 	// pinger CRD
+	// +kubebuilder:validation:Optional
 	Pinger string `json:"pinger,omitempty"`
+
+	// enable config map
+	// mount config map to pinger pod as a script
+	// if enableConfigMap is true, configMapName must be set
+	// +kubebuilder:validation:Optional
+	EnableConfigMap bool `json:"enableConfigMap,omitempty"`
+
+	// config map name
+	// +kubebuilder:validation:Optional
+	ConfigMapName string `json:"configMapName,omitempty"`
 }
 
 // DebuggerStatus defines the observed state of Debugger
@@ -106,8 +117,11 @@ type DebuggerStatus struct {
 	Tolerations  []corev1.Toleration `json:"tolerations,omitempty" patchStrategy:"merge"`
 	Affinity     corev1.Affinity     `json:"affinity,omitempty" patchStrategy:"merge"`
 	NodeName     string              `json:"nodeName,omitempty" patchStrategy:"merge"`
-	EnablePinger bool                `json:"enablePinger,omitempty" patchStrategy:"merge"`
-	Pinger       string              `json:"pinger,omitempty" patchStrategy:"merge"`
+
+	EnableConfigMap bool   `json:"enableConfigMap,omitempty" patchStrategy:"merge"`
+	ConfigMapName   string `json:"configMapName,omitempty" patchStrategy:"merge"`
+	EnablePinger    bool   `json:"enablePinger,omitempty" patchStrategy:"merge"`
+	Pinger          string `json:"pinger,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -123,6 +137,7 @@ type DebuggerStatus struct {
 // +kubebuilder:printcolumn:name="HostNetwork",type=boolean,JSONPath=`.spec.hostNetwork`
 // +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
 // +kubebuilder:printcolumn:name="Workload",type=string,JSONPath=`.spec.workloadType`
+// +kubebuilder:printcolumn:name="CM",type=string,JSONPath=`.spec.configMapName`
 // +kubebuilder:printcolumn:name="Pinger",type=string,JSONPath=`.spec.pinger`
 // +kubebuilder:printcolumn:name="Image",type=string,JSONPath=`.spec.image`
 

@@ -30,15 +30,15 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			errHappens = true
 		}
 		if config.Mode != "server" {
-			klog.Infof("pinger break, mode: %s", config.Mode)
+			klog.V(3).Infof("pinger break, mode: %s", config.Mode)
 			break
 		}
 		select {
 		case <-stopCh:
-			klog.Infof("pinger stopped")
+			klog.V(3).Infof("pinger stopped")
 			return
 		case <-timer.C:
-			klog.Infof("pinger check every %ds, errHappens: %v", config.Interval, errHappens)
+			klog.V(3).Infof("pinger check every %ds, errHappens: %v", config.Interval, errHappens)
 			if errHappens && config.ExitCode != 0 {
 				klog.Errorf("exit with code: %d", config.ExitCode)
 				os.Exit(config.ExitCode)
@@ -54,46 +54,46 @@ func check(config *Configuration, withMetrics bool) error {
 
 	if config.Ping != "" {
 		if err = pingExternal(config, withMetrics); err != nil {
-			klog.Errorf("pingExternal failed: %v", err)
+			klog.Errorf("failed to ping: %v", err)
 			errHappens = true
 			happenErr = err
 		}
 	}
 	if config.TCPPing != "" || config.UDPPing != "" {
 		if err = checkAccessTargetIPPorts(config); err != nil {
-			klog.Errorf("checkAccessTargetIPPorts failed: %v", err)
+			klog.Errorf("failed to check access to target ip ports: %v", err)
 			errHappens = true
 			happenErr = err
 		}
 	}
 	if err = pingPods(config, withMetrics); err != nil {
-		klog.Errorf("pingPods failed: %v", err)
+		klog.Errorf("failed to ping pods: %v", err)
 		errHappens = true
 		happenErr = err
 	}
 	if config.EnableNodeIPCheck {
 		if err = pingNodes(config, withMetrics); err != nil {
-			klog.Errorf("pingNodes failed: %v", err)
+			klog.Errorf("failed to ping nodes : %v", err)
 			errHappens = true
 			happenErr = err
 		}
 	}
 
 	if err = dnslookup(config, withMetrics); err != nil {
-		klog.Errorf("dnslookup failed: %v", err)
+		klog.Errorf("failed to dnslookup: %v", err)
 		errHappens = true
 		happenErr = err
 	}
 
 	if errHappens {
-		klog.Errorf("check failed, errHappens: %v, happenErr: %v", errHappens, happenErr)
+		klog.Errorf("failed to check: %v, err: %v", errHappens, happenErr)
 		return happenErr
 	}
 	return nil
 }
 
 func pingNodes(config *Configuration, setMetrics bool) error {
-	klog.Infof("start to check node connectivity")
+	klog.V(3).Infof("start to check node connectivity")
 	nodes, err := config.KubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		klog.Errorf("failed to list nodes, %v", err)
@@ -150,9 +150,9 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 }
 
 func pingPods(config *Configuration, setMetrics bool) error {
-	klog.Infof("start to check pod connectivity")
+	klog.V(3).Infof("start to check pod connectivity")
 	if config.DaemonSetName == "" || config.DaemonSetNamespace == "" {
-		klog.Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
+		klog.V(3).Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
 		return nil
 	}
 	ds, err := config.KubeClient.AppsV1().DaemonSets(config.DaemonSetNamespace).Get(context.Background(), config.DaemonSetName, metav1.GetOptions{})
@@ -214,10 +214,8 @@ func pingPods(config *Configuration, setMetrics bool) error {
 		}
 	}
 	if pingErr != nil {
-		klog.Errorf("ping pods failed: %v", pingErr)
+		klog.Errorf("failed to ping pods: %v", pingErr)
 		return pingErr
-	} else {
-		klog.Infof("ping pods success")
 	}
 	return nil
 }
@@ -233,7 +231,7 @@ func pingExternal(config *Configuration, setMetrics bool) error {
 			continue
 		}
 
-		klog.Infof("start to check ping %s", addr)
+		klog.V(3).Infof("start to check ping %s", addr)
 		pinger, err := goping.NewPinger(addr)
 		if err != nil {
 			klog.Errorf("failed to init pinger, %v", err)
@@ -275,11 +273,10 @@ func pingExternal(config *Configuration, setMetrics bool) error {
 }
 
 func checkAccessTargetIPPorts(config *Configuration) error {
-	klog.Infof("start to check target ip ports connectivity")
+	klog.V(3).Infof("start to check target ip ports connectivity")
 	var checkErr error
 	tcps := strings.SplitSeq(config.TCPPing, ",")
 	for tcp := range tcps {
-		klog.Infof("tcp checking %s", tcp)
 		if err := TCPConnectivityCheck(tcp); err != nil {
 			klog.Errorf("TCP connectivity to %s failed", tcp)
 			checkErr = err
@@ -289,7 +286,6 @@ func checkAccessTargetIPPorts(config *Configuration) error {
 	}
 	udps := strings.SplitSeq(config.UDPPing, ",")
 	for udp := range udps {
-		klog.Infof("udp checking %s", udp)
 		if err := UDPConnectivityCheck(udp); err != nil {
 			klog.Errorf("UDP connectivity to %s failed", udp)
 			checkErr = err
@@ -301,7 +297,7 @@ func checkAccessTargetIPPorts(config *Configuration) error {
 }
 
 func dnslookup(config *Configuration, setMetrics bool) error {
-	klog.Infof("start to dnslookup %s", config.DnsLookup)
+	klog.V(3).Infof("start to dnslookup %s", config.DnsLookup)
 	var checkErr error
 	for dns := range strings.SplitSeq(config.DnsLookup, ",") {
 		t1 := time.Now()
@@ -320,7 +316,7 @@ func dnslookup(config *Configuration, setMetrics bool) error {
 		if setMetrics {
 			SetDnsHealthyMetrics(config.NodeName, float64(elapsed)/float64(time.Millisecond))
 		}
-		klog.Infof("resolve dns %s to %v in %.2fms", dns, addrs, float64(elapsed)/float64(time.Millisecond))
+		klog.Infof("resolve %s to %v in %.2fms", dns, addrs, float64(elapsed)/float64(time.Millisecond))
 	}
 	return checkErr
 }
