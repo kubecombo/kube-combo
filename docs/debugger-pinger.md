@@ -26,8 +26,10 @@ classDiagram
         Map Affinity
         String NodeName
         Bool EnablePinger
-        String Pinger
-
+        String Pinger "pinger name"
+        Bool EnableConfigMap
+        String ConfigMap "cm name"
+        
         Reconcile()
         GetDebugger()
         IsChange()
@@ -80,6 +82,10 @@ Pinger CRD：
 
 1. 持久化维护 ping 测任务：`ping`  `udp`  `tcp`  `nslookup` 
 2. 可以选择是否启用 metrics
+
+
+
+任务如果执行失败，会以 event 的形式记录到 pod
 
 
 
