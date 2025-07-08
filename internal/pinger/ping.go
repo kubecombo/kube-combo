@@ -30,7 +30,7 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			errHappens = true
 		}
 		if config.Mode != "server" {
-			klog.Infof("pinger break, mode: %s", config.Mode)
+			klog.V(3).Infof("pinger break, mode: %s", config.Mode)
 			break
 		}
 		select {
@@ -38,7 +38,7 @@ func StartPinger(config *Configuration, stopCh <-chan struct{}) {
 			klog.V(3).Infof("pinger stopped")
 			return
 		case <-timer.C:
-			klog.Infof("pinger check every %ds, errHappens: %v", config.Interval, errHappens)
+			klog.V(3).Infof("pinger check every %ds, errHappens: %v", config.Interval, errHappens)
 			if errHappens && config.ExitCode != 0 {
 				klog.Errorf("exit with code: %d", config.ExitCode)
 				os.Exit(config.ExitCode)
@@ -152,7 +152,7 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 func pingPods(config *Configuration, setMetrics bool) error {
 	klog.V(3).Infof("start to check pod connectivity")
 	if config.DaemonSetName == "" || config.DaemonSetNamespace == "" {
-		klog.Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
+		klog.V(3).Infof("DaemonSetName %s or DaemonSetNamespace %s is empty, skip ping peer pods", config.DaemonSetName, config.DaemonSetNamespace)
 		return nil
 	}
 	ds, err := config.KubeClient.AppsV1().DaemonSets(config.DaemonSetNamespace).Get(context.Background(), config.DaemonSetName, metav1.GetOptions{})

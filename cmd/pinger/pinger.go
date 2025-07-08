@@ -33,13 +33,13 @@ func CmdMain() {
 		go func() {
 			pinger.InitPingerMetrics()
 			metrics.InitKlogMetrics()
-			klog.Info("start metrics server")
+			klog.V(3).Info("start metrics server")
 			if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
 				klog.Error(err, "failed to run metrics server")
 				pinger.LogFatalAndExit(err, "failed to run metrics server")
 			}
 			<-ctx.Done()
-			klog.Info("stop metrics server")
+			klog.V(3).Info("stop metrics server")
 		}()
 	}
 	pinger.StartPinger(config, ctx.Done())
