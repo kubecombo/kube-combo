@@ -55,7 +55,6 @@ const (
 	PingerStartCMD   = "/pinger-start.sh"
 
 	// mount debugger config map name as a runable script
-	debugScript     = "debug-script"
 	debugScriptPath = "/debug-script.sh"
 
 	// WorkloadTypePod is the workload type for pod
@@ -709,7 +708,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		// volumes add config map
 		volumes = append(volumes, corev1.Volume{
-			Name: debugScript,
+			Name: debugger.Spec.ConfigMap,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -717,7 +716,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 					},
 					Items: []corev1.KeyToPath{
 						{
-							Key:  debugScript,
+							Key:  debugger.Spec.ConfigMap,
 							Path: debugScriptPath,
 						},
 					},
@@ -772,7 +771,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		// volume mounts add config map
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      debugScript,
+			Name:      debugger.Spec.ConfigMap,
 			MountPath: debugScriptPath,
 			// chmod 0755
 			ReadOnly: true,
