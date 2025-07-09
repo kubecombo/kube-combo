@@ -390,9 +390,9 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		}
 	}
 
-	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName == "" {
-		err := fmt.Errorf("debugger %s enable config map, but configMapName is empty", debugger.Name)
-		r.Log.Error(err, "should set configMapName")
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap == "" {
+		err := fmt.Errorf("debugger %s enable config map, but config map is empty", debugger.Name)
+		r.Log.Error(err, "should set config map")
 		return err
 	}
 
@@ -706,14 +706,14 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		},
 	}
 
-	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName != "" {
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		// volumes add config map
 		volumes = append(volumes, corev1.Volume{
 			Name: debugScript,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: debugger.Spec.ConfigMapName,
+						Name: debugger.Spec.ConfigMap,
 					},
 					Items: []corev1.KeyToPath{
 						{
@@ -769,7 +769,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			MountPath: VarRunTls,
 		},
 	}
-	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMapName != "" {
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		// volume mounts add config map
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      debugScript,
@@ -1030,7 +1030,7 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.QoSBandwidth != debugger.Status.QoSBandwidth ||
 		debugger.Spec.WorkloadType != debugger.Status.WorkloadType ||
 		debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap ||
-		debugger.Spec.ConfigMapName != debugger.Status.ConfigMapName ||
+		debugger.Spec.ConfigMap != debugger.Status.ConfigMap ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
 		debugger.Spec.Pinger != debugger.Status.Pinger {
 		return true
