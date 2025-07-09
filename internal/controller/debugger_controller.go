@@ -51,11 +51,10 @@ const (
 	DebuggerName = "debug"
 	PingerName   = "ping"
 
+	ScriptsPath = "scripts"
+
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
-
-	// mount debugger config map name as a runable script
-	debugScriptPath = "/debug-script.sh"
 
 	// WorkloadTypePod is the workload type for pod
 	WorkloadTypePod = "pod"
@@ -213,6 +212,20 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 		r.Log.Error(err, "failed to validate debugger")
 		// invalid spec, no retry
 		return SyncStateErrorNoRetry, err
+	}
+
+	if debugger.Spec.ConfigMap != "" {
+		cmName := debugger.Spec.ConfigMap
+		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
+		if err != nil {
+			r.Log.Error(err, "failed to get config map", "configMap", cmName)
+			return SyncStateError, err
+		}
+		if cm.Data == nil {
+			err := fmt.Errorf("config map %s is empty", cmName)
+			r.Log.Error(err, "should not set empty config map")
+			return SyncStateErrorNoRetry, err
+		}
 	}
 
 	var pinger *myv1.Pinger
@@ -705,31 +718,6 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		},
 	}
 
-	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
-		// volumes add config map
-		volumes = append(volumes, corev1.Volume{
-			Name: debugger.Spec.ConfigMap,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: debugger.Spec.ConfigMap,
-					},
-					Items: []corev1.KeyToPath{
-						{
-							Key:  debugger.Spec.ConfigMap,
-							Path: debugScriptPath,
-						},
-					},
-					// chmod 0755
-					DefaultMode: func() *int32 {
-						mode := int32(0755)
-						return &mode
-					}(),
-				},
-			},
-		})
-	}
-
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      OpenvswitchName,
@@ -769,13 +757,47 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		},
 	}
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
-		// volume mounts add config map
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      debugger.Spec.ConfigMap,
-			MountPath: debugScriptPath,
-			// chmod 0755
-			ReadOnly: true,
+		cmName := debugger.Spec.ConfigMap
+		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
+		if err != nil {
+			r.Log.Error(err, "failed to get config map", "configMap", cmName)
+			return nil, nil
+		}
+		scriptsVolumeMounts := []corev1.VolumeMount{}
+		scriptsVolumeMounts = append(scriptsVolumeMounts, corev1.VolumeMount{
+			Name:      cmName,
+			MountPath: ScriptsPath,
+			ReadOnly:  true,
 		})
+		// volumes add config map
+		items := []corev1.KeyToPath{}
+		for key := range cm.Data {
+			if strings.HasSuffix(key, ".sh") {
+				// only add script file
+				items = append(items, corev1.KeyToPath{
+					Key:  key,
+					Path: key,
+				})
+			}
+		}
+
+		// add config map volumes
+		// mod 0755
+		mod := int32(0755)
+		volumes = append(volumes, corev1.Volume{
+			Name: cmName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: debugger.Spec.ConfigMap,
+					},
+					Items:       items,
+					DefaultMode: &mod,
+				},
+			},
+		})
+		// add config map volume mounts
+		volumeMounts = append(volumeMounts, scriptsVolumeMounts...)
 	}
 	return volumes, volumeMounts
 }
