@@ -995,6 +995,11 @@ spec:
                   enable to start pinger pod
                   disable to stop pinger pod
                 type: boolean
+              hostCheckList:
+                description: |-
+                  host automatically run check list
+                  get, check, and set config
+                type: boolean
               hostNetwork:
                 default: false
                 description: |-
@@ -2050,6 +2055,8 @@ spec:
               enableConfigMap:
                 type: boolean
               enablePinger:
+                type: boolean
+              hostCheckList:
                 type: boolean
               hostNetwork:
                 type: boolean

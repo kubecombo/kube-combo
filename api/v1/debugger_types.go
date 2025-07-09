@@ -97,7 +97,7 @@ type DebuggerSpec struct {
 	EnableConfigMap bool `json:"enableConfigMap,omitempty"`
 
 	// host automatically run check list
-	// get and set conf on os
+	// get, check, and set config
 	HostCheckList bool `json:"hostCheckList,omitempty"`
 	// config map name
 	// +kubebuilder:validation:Optional
