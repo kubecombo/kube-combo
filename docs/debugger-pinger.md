@@ -9,6 +9,7 @@ title: Debugger Pinger CRD
 classDiagram
     note for Debugger "Debugger with(out) Pinger"
     Debugger <|-- Pinger
+    Debugger <|-- ConfigMap
     note for Pinger "tcpping udpping ping nslookup tasks"
     Debugger <|-- Pod
     Debugger <|-- DaemonSet
@@ -29,7 +30,7 @@ classDiagram
         String Pinger "pinger name"
         Bool EnableConfigMap
         String ConfigMap "cm name"
-        
+
         Reconcile()
         GetDebugger()
         IsChange()
@@ -38,6 +39,12 @@ classDiagram
         HandlerAddOrUpdateDaemonset()
         Update()
     }
+
+   class ConfigMap {
+        String Name
+        String Namespace
+        String Data "script content"
+   }
 
    class Pinger {
         String Image

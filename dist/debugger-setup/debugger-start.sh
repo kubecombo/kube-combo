@@ -10,6 +10,7 @@ alias kgn="kubectl get node -A -o wide"
 source <(kubectl completion bash)
 EOF
 
+env
 sleep infinity
 
 ## 1. debug
