@@ -96,6 +96,9 @@ type DebuggerSpec struct {
 	// +kubebuilder:validation:Optional
 	EnableConfigMap bool `json:"enableConfigMap,omitempty"`
 
+	// host automatically run check list
+	// get and set conf on os
+	HostCheckList bool `json:"hostCheckList,omitempty"`
 	// config map name
 	// +kubebuilder:validation:Optional
 	ConfigMap string `json:"configMap,omitempty"`
@@ -122,6 +125,8 @@ type DebuggerStatus struct {
 	ConfigMap       string `json:"configMap,omitempty" patchStrategy:"merge"`
 	EnablePinger    bool   `json:"enablePinger,omitempty" patchStrategy:"merge"`
 	Pinger          string `json:"pinger,omitempty" patchStrategy:"merge"`
+
+	HostCheckList bool `json:"hostCheckList,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

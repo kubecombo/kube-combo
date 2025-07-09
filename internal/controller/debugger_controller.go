@@ -606,6 +606,10 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 			Value: strconv.FormatBool(debugger.Spec.HostNetwork),
 		},
 		{
+			Name:  "HOST_CHECK_LIST",
+			Value: strconv.FormatBool(debugger.Spec.HostCheckList),
+		},
+		{
 			Name:  "DS_NAME",
 			Value: dsName,
 		},
@@ -1053,6 +1057,7 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap ||
 		debugger.Spec.ConfigMap != debugger.Status.ConfigMap ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
+		debugger.Spec.HostCheckList != debugger.Status.HostCheckList ||
 		debugger.Spec.Pinger != debugger.Status.Pinger {
 		return true
 	}

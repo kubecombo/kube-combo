@@ -4,4 +4,5 @@ FROM icoy/kube-combo-base:$BASE_TAG
 ARG DEBIAN_FRONTEND=noninteractive
 RUN mkdir /scripts
 COPY ./dist/debugger-setup/debugger-start.sh /debugger-start.sh
+COPY ./dist/debugger-setup/check-list.sh /check-list.sh
 COPY ./dist/kubectl-ko /usr/bin/kubectl-ko

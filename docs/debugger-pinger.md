@@ -30,6 +30,7 @@ classDiagram
         String Pinger "pinger name"
         Bool EnableConfigMap
         String ConfigMap "cm name"
+        Bool HostCheckList "host run check list"
 
         Reconcile()
         GetDebugger()
