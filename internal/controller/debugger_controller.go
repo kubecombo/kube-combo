@@ -103,6 +103,9 @@ const (
 
 	VarRunTls = "/var/run/tls"
 	TlsName   = "kube-ovn-tls"
+
+	SystemdPath = "/lib/systemd/system"
+	SystemdName = "host-run-systemd"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -713,6 +716,14 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
+			Name: SystemdName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: SystemdPath,
+				},
+			},
+		},
+		{
 			Name: TlsName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
@@ -754,6 +765,10 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		{
 			Name:      LocalTimeName,
 			MountPath: EtcLocalTime,
+		},
+		{
+			Name:      SystemdName,
+			MountPath: SystemdPath,
 		},
 		{
 			Name:      TlsName,
