@@ -104,8 +104,12 @@ const (
 	VarRunTls = "/var/run/tls"
 	TlsName   = "kube-ovn-tls"
 
-	SystemdPath = "/lib/systemd/system"
-	SystemdName = "host-run-systemd"
+	EtcSystemdPath = "/etc/systemd/system"
+	EtcSystemdName = "host-run-etc-systemd"
+	RunSystemdPath = "/run/systemd/system"
+	RunSystemdName = "host-run-run-systemd"
+	LibSystemdPath = "/lib/systemd/system"
+	LibSystemdName = "host-run-lib-systemd"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -716,10 +720,26 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
-			Name: SystemdName,
+			Name: EtcSystemdName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: SystemdPath,
+					Path: EtcSystemdPath,
+				},
+			},
+		},
+		{
+			Name: RunSystemdName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: RunSystemdPath,
+				},
+			},
+		},
+		{
+			Name: LibSystemdName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: LibSystemdPath,
 				},
 			},
 		},
@@ -767,8 +787,16 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			MountPath: EtcLocalTime,
 		},
 		{
-			Name:      SystemdName,
-			MountPath: SystemdPath,
+			Name:      EtcSystemdName,
+			MountPath: EtcSystemdPath,
+		},
+		{
+			Name:      RunSystemdName,
+			MountPath: RunSystemdPath,
+		},
+		{
+			Name:      LibSystemdName,
+			MountPath: LibSystemdPath,
 		},
 		{
 			Name:      TlsName,
