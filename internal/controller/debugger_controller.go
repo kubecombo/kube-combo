@@ -898,7 +898,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		}
 		volumeMounts = append(volumeMounts, sysVolumeMounts...)
 	}
-  
+
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		cmName := debugger.Spec.ConfigMap
 		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
