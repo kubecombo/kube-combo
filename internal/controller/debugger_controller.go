@@ -106,19 +106,25 @@ const (
 )
 
 const (
-	// enable sys
-	EtcSystemdPath = "/etc/systemd/system"
-	EtcSystemdName = "etc-systemd"
-	LibSystemdPath = "/lib/systemd/system"
-	LibSystemdName = "lib-systemd"
-	JournalPath    = "/var/log/journal"
-	JournalName    = "var-log-journal"
-	RootRunPath    = "/run"
-	RootRunName    = "root-run"
-	UsrSbinPath    = "/usr/sbin/"
-	UsrSbinName    = "usr-sbin"
-	CgroupPath     = "/sys/fs/cgroup"
-	CgroupName     = "cgroup"
+	// enable sys system
+	EtcSystemdPath         = "/etc/systemd/system"
+	EtcSystemdName         = "etc-systemd"
+	RunSystemdPath         = "/run/systemd/system"
+	RunSystemdName         = "run-systemd"
+	VarRunSystemdPath      = "/var/run/systemd/system"
+	VarRunSystemdName      = "var-run-systemd"
+	UsrLocalLibSystemdPath = "/usr/local/lib/systemd/system"
+	UsrLocalLibSystemdName = "usr-local-lib-systemd"
+	UsrLibSystemdPath      = "/usr/lib/systemd/system"
+	UsrLibSystemdName      = "usr-lib-systemd"
+	LibSystemdPath         = "/lib/systemd/system"
+	LibSystemdName         = "lib-systemd"
+
+	// enable sys *
+	CgroupPath  = "/sys/fs/cgroup"
+	CgroupName  = "cgroup"
+	JournalPath = "/var/log/journal"
+	JournalName = "var-log-journal"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -787,26 +793,42 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 	if debugger.Spec.EnableSys {
 		sysVolumes := []corev1.Volume{
 			{
-				Name: UsrSbinName,
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: UsrSbinPath,
-					},
-				},
-			},
-			{
-				Name: CgroupName,
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: CgroupPath,
-					},
-				},
-			},
-			{
 				Name: EtcSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
 						Path: EtcSystemdPath,
+					},
+				},
+			},
+			{
+				Name: RunSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: RunSystemdPath,
+					},
+				},
+			},
+			{
+				Name: VarRunSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: VarRunSystemdPath,
+					},
+				},
+			},
+			{
+				Name: UsrLocalLibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: UsrLocalLibSystemdPath,
+					},
+				},
+			},
+			{
+				Name: UsrLibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: UsrLibSystemdPath,
 					},
 				},
 			},
@@ -819,10 +841,10 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 				},
 			},
 			{
-				Name: RootRunName,
+				Name: CgroupName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: RootRunPath,
+						Path: CgroupPath,
 					},
 				},
 			},
@@ -838,31 +860,35 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		volumes = append(volumes, sysVolumes...)
 		sysVolumeMounts := []corev1.VolumeMount{
 			{
-				Name:      UsrSbinName,
-				MountPath: UsrSbinPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      CgroupName,
-				MountPath: CgroupPath,
-				ReadOnly:  true,
-			},
-			{
 				Name:      EtcSystemdName,
 				MountPath: EtcSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      RunSystemdName,
+				MountPath: RunSystemdPath,
+			},
+			{
+				Name:      VarRunSystemdName,
+				MountPath: VarRunSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      UsrLocalLibSystemdName,
+				MountPath: UsrLocalLibSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      UsrLibSystemdName,
+				MountPath: UsrLibSystemdPath,
 			},
 			{
 				Name:      LibSystemdName,
 				MountPath: LibSystemdPath,
 			},
 			{
-				Name:      RootRunName,
-				MountPath: RootRunPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      RootRunName,
-				MountPath: RootRunPath,
+				Name:      CgroupName,
+				MountPath: CgroupPath,
 				ReadOnly:  true,
 			},
 			{
