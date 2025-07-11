@@ -103,7 +103,10 @@ const (
 
 	VarRunTls = "/var/run/tls"
 	TlsName   = "kube-ovn-tls"
+)
 
+const (
+	// enable sys
 	EtcSystemdPath = "/etc/systemd/system"
 	EtcSystemdName = "etc-systemd"
 	LibSystemdPath = "/lib/systemd/system"
@@ -620,7 +623,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 		},
 		{
 			Name:  "HOST_CHECK_LIST",
-			Value: strconv.FormatBool(debugger.Spec.HostCheckList),
+			Value: strconv.FormatBool(debugger.Spec.EnableSys),
 		},
 		{
 			Name:  "DS_NAME",
@@ -710,14 +713,6 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
-			Name: LocalTimeName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: LocalTime,
-				},
-			},
-		},
-		{
 			Name: KubeComboLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
@@ -726,50 +721,10 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
-			Name: UsrSbinName,
+			Name: LocalTimeName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: UsrSbinPath,
-				},
-			},
-		},
-		{
-			Name: CgroupName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: CgroupPath,
-				},
-			},
-		},
-		{
-			Name: EtcSystemdName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: EtcSystemdPath,
-				},
-			},
-		},
-		{
-			Name: LibSystemdName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: LibSystemdPath,
-				},
-			},
-		},
-		{
-			Name: RootRunName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: RootRunPath,
-				},
-			},
-		},
-		{
-			Name: JournalName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: JournalPath,
+					Path: LocalTime,
 				},
 			},
 		},
@@ -782,7 +737,6 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 	}
-
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      OpenvswitchName,
@@ -820,42 +774,103 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			ReadOnly:  true,
 		},
 		{
-			Name:      UsrSbinName,
-			MountPath: UsrSbinPath,
-			ReadOnly:  true,
-		},
-		{
-			Name:      CgroupName,
-			MountPath: CgroupPath,
-			ReadOnly:  true,
-		},
-		{
-			Name:      EtcSystemdName,
-			MountPath: EtcSystemdPath,
-		},
-		{
-			Name:      LibSystemdName,
-			MountPath: LibSystemdPath,
-		},
-		{
 			Name:      LocalTimeName,
 			MountPath: LocalTime,
 			ReadOnly:  true,
-		},
-		{
-			Name:      RootRunName,
-			MountPath: RootRunPath,
-			ReadOnly:  true,
-		},
-		{
-			Name:      JournalName,
-			MountPath: JournalPath,
 		},
 		{
 			Name:      TlsName,
 			MountPath: VarRunTls,
 			ReadOnly:  true,
 		},
+	}
+	if debugger.Spec.EnableSys {
+		sysVolumes := []corev1.Volume{
+			{
+				Name: UsrSbinName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: UsrSbinPath,
+					},
+				},
+			},
+			{
+				Name: CgroupName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: CgroupPath,
+					},
+				},
+			},
+			{
+				Name: EtcSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: EtcSystemdPath,
+					},
+				},
+			},
+			{
+				Name: LibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: LibSystemdPath,
+					},
+				},
+			},
+			{
+				Name: RootRunName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: RootRunPath,
+					},
+				},
+			},
+			{
+				Name: JournalName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: JournalPath,
+					},
+				},
+			},
+		}
+		volumes = append(volumes, sysVolumes...)
+		sysVolumeMounts := []corev1.VolumeMount{
+			{
+				Name:      UsrSbinName,
+				MountPath: UsrSbinPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      CgroupName,
+				MountPath: CgroupPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      EtcSystemdName,
+				MountPath: EtcSystemdPath,
+			},
+			{
+				Name:      LibSystemdName,
+				MountPath: LibSystemdPath,
+			},
+			{
+				Name:      RootRunName,
+				MountPath: RootRunPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      RootRunName,
+				MountPath: RootRunPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      JournalName,
+				MountPath: JournalPath,
+			},
+		}
+		volumeMounts = append(volumeMounts, sysVolumeMounts...)
 	}
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		cmName := debugger.Spec.ConfigMap
@@ -1154,7 +1169,7 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap ||
 		debugger.Spec.ConfigMap != debugger.Status.ConfigMap ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
-		debugger.Spec.HostCheckList != debugger.Status.HostCheckList ||
+		debugger.Spec.EnableSys != debugger.Status.EnableSys ||
 		debugger.Spec.Pinger != debugger.Status.Pinger {
 		return true
 	}
