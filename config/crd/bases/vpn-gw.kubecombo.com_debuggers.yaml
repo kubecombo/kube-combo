@@ -26,6 +26,9 @@ spec:
     - jsonPath: .spec.hostNetwork
       name: HostNetwork
       type: boolean
+    - jsonPath: .spec.enableSys
+      name: EnableSys
+      type: boolean
     - jsonPath: .spec.subnet
       name: Subnet
       type: string
@@ -995,9 +998,12 @@ spec:
                   enable to start pinger pod
                   disable to stop pinger pod
                 type: boolean
-              hostCheckList:
+              enableSys:
                 description: |-
-                  host automatically run check list
+                  enable sys will give more permissions
+                  and mount more host directory to debugger pod
+                  to run:
+                  1. host automatically run check list
                   get, check, and set config
                 type: boolean
               hostNetwork:
@@ -2056,7 +2062,7 @@ spec:
                 type: boolean
               enablePinger:
                 type: boolean
-              hostCheckList:
+              enableSys:
                 type: boolean
               hostNetwork:
                 type: boolean
