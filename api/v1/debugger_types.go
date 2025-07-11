@@ -96,9 +96,12 @@ type DebuggerSpec struct {
 	// +kubebuilder:validation:Optional
 	EnableConfigMap bool `json:"enableConfigMap,omitempty"`
 
-	// host automatically run check list
+	// enable sys will give more permissions
+	// and mount more host directory to debugger pod
+	// to run:
+	// 1. host automatically run check list
 	// get, check, and set config
-	HostCheckList bool `json:"hostCheckList,omitempty"`
+	EnableSys bool `json:"enableSys,omitempty"`
 	// config map name
 	// +kubebuilder:validation:Optional
 	ConfigMap string `json:"configMap,omitempty"`
@@ -126,7 +129,7 @@ type DebuggerStatus struct {
 	EnablePinger    bool   `json:"enablePinger,omitempty" patchStrategy:"merge"`
 	Pinger          string `json:"pinger,omitempty" patchStrategy:"merge"`
 
-	HostCheckList bool `json:"hostCheckList,omitempty" patchStrategy:"merge"`
+	EnableSys bool `json:"enableSys,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -140,6 +143,7 @@ type DebuggerStatus struct {
 // +kubebuilder:printcolumn:name="CPU",type=string,JSONPath=`.spec.cpu`
 // +kubebuilder:printcolumn:name="Memory",type=string,JSONPath=`.spec.memory`
 // +kubebuilder:printcolumn:name="HostNetwork",type=boolean,JSONPath=`.spec.hostNetwork`
+// +kubebuilder:printcolumn:name="EnableSys",type=boolean,JSONPath=`.spec.enableSys`
 // +kubebuilder:printcolumn:name="Subnet",type=string,JSONPath=`.spec.subnet`
 // +kubebuilder:printcolumn:name="Workload",type=string,JSONPath=`.spec.workloadType`
 // +kubebuilder:printcolumn:name="ConfigMap",type=string,JSONPath=`.spec.configMap`
