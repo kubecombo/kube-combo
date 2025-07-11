@@ -98,18 +98,24 @@ const (
 	VarLogKubeCombo = "/var/log/kube-combo"
 	KubeComboLog    = "host-log-kube-combo"
 
-	EtcLocalTime  = "/etc/localtime"
+	LocalTime     = "/etc/localtime"
 	LocalTimeName = "localtime"
 
 	VarRunTls = "/var/run/tls"
 	TlsName   = "kube-ovn-tls"
 
 	EtcSystemdPath = "/etc/systemd/system"
-	EtcSystemdName = "host-run-etc-systemd"
-	RunSystemdPath = "/run/systemd/system"
-	RunSystemdName = "host-run-run-systemd"
+	EtcSystemdName = "etc-systemd"
 	LibSystemdPath = "/lib/systemd/system"
-	LibSystemdName = "host-run-lib-systemd"
+	LibSystemdName = "lib-systemd"
+	JournalPath    = "/var/log/journal"
+	JournalName    = "var-log-journal"
+	RootRunPath    = "/run"
+	RootRunName    = "root-run"
+	UsrSbinPath    = "/usr/sbin/"
+	UsrSbinName    = "usr-sbin"
+	CgroupPath     = "/sys/fs/cgroup"
+	CgroupName     = "cgroup"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -704,6 +710,14 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
+			Name: LocalTimeName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: LocalTime,
+				},
+			},
+		},
+		{
 			Name: KubeComboLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
@@ -712,10 +726,18 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
-			Name: LocalTimeName,
+			Name: UsrSbinName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: EtcLocalTime,
+					Path: UsrSbinPath,
+				},
+			},
+		},
+		{
+			Name: CgroupName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: CgroupPath,
 				},
 			},
 		},
@@ -728,18 +750,26 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 		{
-			Name: RunSystemdName,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: RunSystemdPath,
-				},
-			},
-		},
-		{
 			Name: LibSystemdName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
 					Path: LibSystemdPath,
+				},
+			},
+		},
+		{
+			Name: RootRunName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: RootRunPath,
+				},
+			},
+		},
+		{
+			Name: JournalName,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: JournalPath,
 				},
 			},
 		},
@@ -757,50 +787,74 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		{
 			Name:      OpenvswitchName,
 			MountPath: VarRunOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OvnName,
 			MountPath: VarRunOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OpenvswitchConfig,
 			MountPath: EtcOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OpenvswitchLog,
 			MountPath: VarLogOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OvnLog,
 			MountPath: VarLogOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      KubeOvnLog,
 			MountPath: VarLogKubeOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      KubeComboLog,
 			MountPath: VarLogKubeCombo,
+			ReadOnly:  true,
 		},
 		{
-			Name:      LocalTimeName,
-			MountPath: EtcLocalTime,
+			Name:      UsrSbinName,
+			MountPath: UsrSbinPath,
+			ReadOnly:  true,
+		},
+		{
+			Name:      CgroupName,
+			MountPath: CgroupPath,
+			ReadOnly:  true,
 		},
 		{
 			Name:      EtcSystemdName,
 			MountPath: EtcSystemdPath,
 		},
 		{
-			Name:      RunSystemdName,
-			MountPath: RunSystemdPath,
-		},
-		{
 			Name:      LibSystemdName,
 			MountPath: LibSystemdPath,
 		},
 		{
+			Name:      LocalTimeName,
+			MountPath: LocalTime,
+			ReadOnly:  true,
+		},
+		{
+			Name:      RootRunName,
+			MountPath: RootRunPath,
+			ReadOnly:  true,
+		},
+		{
+			Name:      JournalName,
+			MountPath: JournalPath,
+		},
+		{
 			Name:      TlsName,
 			MountPath: VarRunTls,
+			ReadOnly:  true,
 		},
 	}
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
