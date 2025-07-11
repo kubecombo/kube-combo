@@ -2,7 +2,7 @@
 ARG BASE_TAG
 FROM icoy/kube-combo-base:$BASE_TAG
 ARG DEBIAN_FRONTEND=noninteractive
-RUN mkdir -p /scripts /systemctl
-COPY ./dist/systemctl/*.py /systemctl/
+RUN mkdir -p /scripts
+COPY ./dist/systemctl/* /
 COPY ./dist/debugger-setup/*.sh /
 COPY ./dist/kubectl-ko /usr/bin/kubectl-ko
