@@ -116,7 +116,7 @@ func (r *PingerReconciler) handleAddOrUpdatePinger(ctx context.Context, req ctrl
 		return SyncStateError, err
 	}
 	if pinger == nil {
-		// ka is deleted
+		// pinger is deleted
 		return SyncStateSuccess, nil
 	}
 
