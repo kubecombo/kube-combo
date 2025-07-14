@@ -32,6 +32,7 @@ import (
 
 	myv1 "github.com/kubecombo/kube-combo/api/v1"
 	"github.com/kubecombo/kube-combo/internal/controller"
+	"github.com/kubecombo/kube-combo/versions"
 )
 
 var (
@@ -47,6 +48,8 @@ func init() {
 }
 
 func CmdMain() {
+	setupLog.Info("version", versions.String())
+
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
