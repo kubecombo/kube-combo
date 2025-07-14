@@ -777,7 +777,6 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		{
 			Name:      KubeComboLog,
 			MountPath: VarLogKubeCombo,
-			ReadOnly:  true,
 		},
 		{
 			Name:      LocalTimeName,
