@@ -71,6 +71,7 @@ func check(config *Configuration, withMetrics bool) error {
 		errHappens = true
 		happenErr = err
 	}
+
 	if config.EnableNodeIPCheck {
 		if err = pingNodes(config, withMetrics); err != nil {
 			klog.Errorf("failed to ping nodes : %v", err)
@@ -79,10 +80,12 @@ func check(config *Configuration, withMetrics bool) error {
 		}
 	}
 
-	if err = dnslookup(config, withMetrics); err != nil {
-		klog.Errorf("failed to dnslookup: %v", err)
-		errHappens = true
-		happenErr = err
+	if config.DnsLookup != "" {
+		if err = dnslookup(config, withMetrics); err != nil {
+			klog.Errorf("failed to dnslookup: %v", err)
+			errHappens = true
+			happenErr = err
+		}
 	}
 
 	if errHappens {
