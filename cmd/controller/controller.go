@@ -48,8 +48,6 @@ func init() {
 }
 
 func CmdMain() {
-	setupLog.Info("version", versions.String())
-
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -84,6 +82,8 @@ func CmdMain() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	// source code version
+	setupLog.Info(versions.String())
 	restConfig := ctrl.GetConfigOrDie()
 	kubeClient, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
