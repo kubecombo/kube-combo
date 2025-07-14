@@ -11,9 +11,12 @@ import (
 
 	"github.com/kubecombo/kube-combo/internal/metrics"
 	"github.com/kubecombo/kube-combo/internal/pinger"
+	"github.com/kubecombo/kube-combo/versions"
 )
 
 func CmdMain() {
+	klog.Info(versions.String())
+
 	defer klog.Flush()
 
 	config, err := pinger.ParseFlags()
