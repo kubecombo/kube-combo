@@ -98,9 +98,7 @@ type DebuggerSpec struct {
 
 	// enable sys will give more permissions
 	// and mount more host directory to debugger pod
-	// to run:
-	// 1. host automatically run check list
-	// get, check, and set config
+	// case 1. host automatically run check list, get, check, and set config
 	EnableSys bool `json:"enableSys,omitempty"`
 	// config map name
 	// +kubebuilder:validation:Optional
