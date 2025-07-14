@@ -98,11 +98,33 @@ const (
 	VarLogKubeCombo = "/var/log/kube-combo"
 	KubeComboLog    = "host-log-kube-combo"
 
-	EtcLocalTime  = "/etc/localtime"
+	LocalTime     = "/etc/localtime"
 	LocalTimeName = "localtime"
 
 	VarRunTls = "/var/run/tls"
 	TlsName   = "kube-ovn-tls"
+)
+
+const (
+	// enable sys system
+	EtcSystemdPath         = "/etc/systemd/system"
+	EtcSystemdName         = "etc-systemd"
+	RunSystemdPath         = "/run/systemd/system"
+	RunSystemdName         = "run-systemd"
+	VarRunSystemdPath      = "/var/run/systemd/system"
+	VarRunSystemdName      = "var-run-systemd"
+	UsrLocalLibSystemdPath = "/usr/local/lib/systemd/system"
+	UsrLocalLibSystemdName = "usr-local-lib-systemd"
+	UsrLibSystemdPath      = "/usr/lib/systemd/system"
+	UsrLibSystemdName      = "usr-lib-systemd"
+	LibSystemdPath         = "/lib/systemd/system"
+	LibSystemdName         = "lib-systemd"
+
+	// enable sys *
+	CgroupPath  = "/sys/fs/cgroup"
+	CgroupName  = "cgroup"
+	JournalPath = "/var/log/journal"
+	JournalName = "var-log-journal"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -607,7 +629,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 		},
 		{
 			Name:  "HOST_CHECK_LIST",
-			Value: strconv.FormatBool(debugger.Spec.HostCheckList),
+			Value: strconv.FormatBool(debugger.Spec.EnableSys),
 		},
 		{
 			Name:  "DS_NAME",
@@ -708,7 +730,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			Name: LocalTimeName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: EtcLocalTime,
+					Path: LocalTime,
 				},
 			},
 		},
@@ -721,45 +743,162 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			},
 		},
 	}
-
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      OpenvswitchName,
 			MountPath: VarRunOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OvnName,
 			MountPath: VarRunOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OpenvswitchConfig,
 			MountPath: EtcOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OpenvswitchLog,
 			MountPath: VarLogOpenvswitch,
+			ReadOnly:  true,
 		},
 		{
 			Name:      OvnLog,
 			MountPath: VarLogOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      KubeOvnLog,
 			MountPath: VarLogKubeOvn,
+			ReadOnly:  true,
 		},
 		{
 			Name:      KubeComboLog,
 			MountPath: VarLogKubeCombo,
+			ReadOnly:  true,
 		},
 		{
 			Name:      LocalTimeName,
-			MountPath: EtcLocalTime,
+			MountPath: LocalTime,
+			ReadOnly:  true,
 		},
 		{
 			Name:      TlsName,
 			MountPath: VarRunTls,
+			ReadOnly:  true,
 		},
 	}
+	if debugger.Spec.EnableSys {
+		sysVolumes := []corev1.Volume{
+			{
+				Name: EtcSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: EtcSystemdPath,
+					},
+				},
+			},
+			{
+				Name: RunSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: RunSystemdPath,
+					},
+				},
+			},
+			{
+				Name: VarRunSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: VarRunSystemdPath,
+					},
+				},
+			},
+			{
+				Name: UsrLocalLibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: UsrLocalLibSystemdPath,
+					},
+				},
+			},
+			{
+				Name: UsrLibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: UsrLibSystemdPath,
+					},
+				},
+			},
+			{
+				Name: LibSystemdName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: LibSystemdPath,
+					},
+				},
+			},
+			{
+				Name: CgroupName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: CgroupPath,
+					},
+				},
+			},
+			{
+				Name: JournalName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: JournalPath,
+					},
+				},
+			},
+		}
+		volumes = append(volumes, sysVolumes...)
+		sysVolumeMounts := []corev1.VolumeMount{
+			{
+				Name:      EtcSystemdName,
+				MountPath: EtcSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      RunSystemdName,
+				MountPath: RunSystemdPath,
+			},
+			{
+				Name:      VarRunSystemdName,
+				MountPath: VarRunSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      UsrLocalLibSystemdName,
+				MountPath: UsrLocalLibSystemdPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      UsrLibSystemdName,
+				MountPath: UsrLibSystemdPath,
+			},
+			{
+				Name:      LibSystemdName,
+				MountPath: LibSystemdPath,
+			},
+			{
+				Name:      CgroupName,
+				MountPath: CgroupPath,
+				ReadOnly:  true,
+			},
+			{
+				Name:      JournalName,
+				MountPath: JournalPath,
+			},
+		}
+		volumeMounts = append(volumeMounts, sysVolumeMounts...)
+	}
+
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		cmName := debugger.Spec.ConfigMap
 		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
@@ -1057,7 +1196,7 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap ||
 		debugger.Spec.ConfigMap != debugger.Status.ConfigMap ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
-		debugger.Spec.HostCheckList != debugger.Status.HostCheckList ||
+		debugger.Spec.EnableSys != debugger.Status.EnableSys ||
 		debugger.Spec.Pinger != debugger.Status.Pinger {
 		return true
 	}
