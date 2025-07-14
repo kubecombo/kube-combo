@@ -291,14 +291,20 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 		}
 	}
 
-	if err := r.UpdateDebugger(ctx, req, debugger); err != nil {
+	if err := r.UpdateDebugger(ctx, req); err != nil {
 		r.Log.Error(err, "failed to update debugger status")
 		return SyncStateError, err
 	}
 	return SyncStateSuccess, nil
 }
 
-func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Request, debugger *myv1.Debugger) error {
+func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Request) error {
+	// fetch new debugger
+	debugger, err := r.getDebugger(ctx, req.NamespacedName)
+	if err != nil {
+		r.Log.Error(err, "failed to get debugger")
+		return err
+	}
 	if debugger == nil {
 		return nil
 	}
