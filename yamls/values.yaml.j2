@@ -1,0 +1,63 @@
+# Default values for kubecombo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  manifestsPath: "{{ global_manifestsPath }}"
+  registry:
+    address: "{{ global_registry_address }}"
+    imagePullSecrets: []
+  images:
+    kubecombo:
+      repository: "{{ global_images_kubecombo_repository }}"
+      tag: "{{ global_images_kubecombo_tag }}"
+    openvpn:
+      repository: "{{ global_images_openvpn_repository }}"
+      tag: "{{ global_images_openvpn_tag }}"
+    strongswan:
+      repository: "{{ global_images_strongswan_repository }}"
+      tag: "{{ global_images_strongswan_tag }}"
+
+kubebuilder:
+  registry:
+    address: "{{ kubebuilder_registry_address }}"
+    imagePullSecrets: []
+  images:
+    repository: "{{ kubebuilder_images_repository }}"
+    tag: "{{ kubebuilder_images_tag }}"
+
+image:
+  pullPolicy: IfNotPresent
+
+namespace: kube-system
+replicaCount: 1
+MASTER_NODES_LABEL: "{{ MASTER_NODES_LABEL }}"
+
+func:
+  ENABLE_SSL_VPN: false
+  ENABLE_IPSEC_VPN: false
+
+sslvpn:
+  sslVpnSubnetCidr: 169.254.220.0/24
+  sslVpnCipher: AES-256-GCM
+  sslVpnAuth: SHA1
+  sslVpnProto: udp
+  dhPemData: "LS0tLS1CRUdJTiBESCBQQVJBTUVURVJTLS0tLS0KTUlJQkNBS0NBUUVBMEMvaVE2WmlabURTd0t6WUhRcFpaYURkVDZNeE1MbjB2VFlyMk51dlR5QnFONzlDeU03VwpsZUxPTFlLazh2WTVmVFJSbXE1dUxiZm1IQjEwUno5Ym8xYjI3MG1SOXptZ0tvbkY1TEUwdGRvZE43bU9jOG4zCnJXb2h2K3JaRDlSc2tRR0gyUExQaHRnUm9HZG41Q1Y4TXVUWXNJOXhVMktiNkExd1grbjg1eHJHRnptN1JzQWYKR0tTWWF5YzJXeUVWSWVKUEd4K0xib3VHRytZZUlWTGZEbDV0eG81Q0RxSUtoZ3Y4Qm1VVDJCWVVkdDFRcTRjcQp0Q25iYkNLc2ZlajgvR1orOEd2Qk1uRTFFUDNPLytXUGtISDFJbk4rWHRuQmo4K3R2U1Y5QTg4NzUzMFhBc05OCitzWXRlNGVvSUpCOHh5cFFmeWF5N0tKTkZ2KzRDZ2FoRHdJQkFnPT0KLS0tLS1FTkQgREggUEFSQU1FVEVSUy0tLS0tCg=="
+  algorithm: RSA
+  size: 2048
+  encoding: PKCS1
+  SSLVPN_NODES_LABEL: ""
+
+ipsecvpn:
+  defaultPSK: ""
+  auth: psk
+  espProposals: aes256-sha256-modp1536
+  ikeProposals: aes256-sha256-modp1536
+  ikeVersion: 2
+  localVIP: 100.65.150.181
+  localGateway: 100.65.150.1
+  localGatewayNic: eth0
+  localEIP: 172.19.0.103
+  localPrivateCidrs: 172.21.0.0/16
+  remoteEIP: 172.19.0.101
+  remotePrivateCidrs: 10.1.0.0/24
+  IPSECVPN_NODES_LABEL: ""
