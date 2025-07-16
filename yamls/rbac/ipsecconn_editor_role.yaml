@@ -1,0 +1,24 @@
+# permissions for end users to edit ipsecconns.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ipsecconn-editor-role
+rules:
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - ipsecconns
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - ipsecconns/status
+  verbs:
+  - get

@@ -1,0 +1,20 @@
+# permissions for end users to view pingers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pinger-viewer-role
+rules:
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - pingers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - vpn-gw.kubecombo.com
+  resources:
+  - pingers/status
+  verbs:
+  - get
