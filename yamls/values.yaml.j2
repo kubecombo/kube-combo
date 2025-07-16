@@ -9,13 +9,13 @@ global:
   images:
     kubecombo:
       repository: "{{ global_images_kubecombo_repository }}"
-      tag: "{{ global_images_kubecombo_tag }}"
+      tag: "{{ global_images_tag }}"
     openvpn:
       repository: "{{ global_images_openvpn_repository }}"
-      tag: "{{ global_images_openvpn_tag }}"
+      tag: "{{ global_images_tag }}"
     strongswan:
       repository: "{{ global_images_strongswan_repository }}"
-      tag: "{{ global_images_strongswan_tag }}"
+      tag: "{{ global_images_tag }}"
 
 kubebuilder:
   registry:
@@ -45,7 +45,7 @@ sslvpn:
   algorithm: RSA
   size: 2048
   encoding: PKCS1
-  SSLVPN_NODES_LABEL: ""
+  SSLVPN_NODES_LABEL: "{{ SSLVPN_NODES_LABEL }}"
 
 ipsecvpn:
   defaultPSK: ""
@@ -60,4 +60,4 @@ ipsecvpn:
   localPrivateCidrs: 172.21.0.0/16
   remoteEIP: 172.19.0.101
   remotePrivateCidrs: 10.1.0.0/24
-  IPSECVPN_NODES_LABEL: ""
+  IPSECVPN_NODES_LABEL: "{{ IPSECVPN_NODES_LABEL }}"

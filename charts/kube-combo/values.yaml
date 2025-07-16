@@ -2,28 +2,28 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
-  manifestsPath: /etc/kubernetes/manifests
+  manifestsPath: "/etc/kubernetes/manifests"
   registry:
-    address: docker.io/icoy
+    address: "docker.io/icoy"
     imagePullSecrets: []
   images:
     kubecombo:
-      repository: kube-combo-controller
-      tag: v1.3.0
+      repository: "kube-combo-controller"
+      tag: "v1.3.0"
     openvpn:
-      repository: kube-combo-openvpn
-      tag: v1.3.0
+      repository: "kube-combo-openvpn"
+      tag: "v1.3.0"
     strongswan:
-      repository: kube-combo-strongswan
-      tag: v1.3.0
+      repository: "kube-combo-strongswan"
+      tag: "v1.3.0"
 
 kubebuilder:
   registry:
-    address: gcr.io/kubebuilder
+    address: "gcr.io/kubebuilder"
     imagePullSecrets: []
   images:
-    repository: kube-rbac-proxy
-    tag: v0.13.1
+    repository: "kube-rbac-proxy"
+    tag: "v0.13.1"
 
 image:
   pullPolicy: IfNotPresent

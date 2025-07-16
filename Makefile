@@ -3,6 +3,7 @@ VERSION ?= 1.3.0
 
 -include build.mk
 -include kind.mk
+-include chart.mk
 
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
