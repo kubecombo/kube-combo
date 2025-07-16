@@ -105,6 +105,8 @@ Pinger CRD：
 
 config data 中设计为 map：
 
+```bash
+
 node1:
   disk:
     sdb1:
@@ -115,6 +117,10 @@ node1:
     eth1:
     eth2:
       err: "link down" (错误码)
+node2:
+...
+
+```
 
 operator 会检测 runAt 任务是否执行完毕，如果执行完毕，则会逐个更新 configmap
 
