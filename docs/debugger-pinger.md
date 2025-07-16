@@ -139,8 +139,10 @@ operator 会检测 runAt 任务是否执行完毕，如果执行完毕，则会�
 - `/scripts/svc` svc 检查相关脚本
 - `/scripts/svc/errlog` svc 检查相关 log: 按照 runAt 命名
 
-每个一级业务目录下设计一个 errlog，只存储出现执行错误的命令和返回信息，便于精确定位
+每个一级业务目录下设计一个 errlog，只存储出现执行错误的命令和返回信息，便于精确定位。
+
 正常执行的 log 不持久化存储，不需要考虑维护问题。
+
 而且 pod 的 log 是可读的。
 
 ### 1.4 UI
@@ -148,6 +150,10 @@ operator 会检测 runAt 任务是否执行完毕，如果执行完毕，则会�
 - 1.基于 runAt 的 configmap 展示一级概览
 - 2.可以查看 pod log
 - 3.可以 exec pod 精确查看业务 errlog（每个业务只有一个 err log 文件）
+
+### 1.5 pod 自清理机制
+
+这种巡检 pod 本身并不重要，可以考虑每天凌晨重建一次，释放一下 log
 
 ## 2. Sequence
 
