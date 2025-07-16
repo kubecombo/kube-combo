@@ -8,3 +8,4 @@ chart:
 	$(KUSTOMIZE) build yamls/rbac > ./charts/kube-combo/templates/kube-combo-rbac.yaml
 	$(KUSTOMIZE) build yamls/default > ./charts/kube-combo/templates/kube-combo-controller.yaml
 	@cat ./yamls/manager/append-nodeSelector.yaml >> ./charts/kube-combo/templates/kube-combo-controller.yaml
+	@sed -i "s/^\([[:space:]]*replicas:[[:space:]]*\)'{{\(.*\)}}'/\1{{\2}}/" ./charts/kube-combo/templates/kube-combo-controller.yaml
