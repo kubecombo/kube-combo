@@ -31,7 +31,7 @@ classDiagram
         Bool EnableConfigMap
         String ConfigMap "cm name"
         Bool EnableSys "systemctl permissions"
-        String RunAt "timestamp"
+        String RunAt "configmap string"
 
         Reconcile()
         GetDebugger()
@@ -95,15 +95,26 @@ Pinger CRD：
 
 如果没有 Pinger，Debugger 只会启动一个容器
 
-### 1.1 巡检任务执行方式
+### 1.1 巡检任务执行方式(Pod 开始即运行｜exec 运行)
 
-- 常规巡检：DS pod 常驻，基于 debugger spec runAt 手动或者定时触发所有任务执行。结果: 1. 一级概览通过 configmap 反馈， 2. 二级详情只能进入 pod 内部查看具体业务脚本的 log。
+名字可以改
+
+- 常规巡检：DS pod 常驻，基于 debugger spec runAt手动或者定时触发所有任务执行。
 - （客户）自定义脚本巡检：Job pod 类型，用户可以通过 ConfigMap 注入脚本，脚本执行一次即完成。结果只能通过 logs 查看。
 - （客户）自定义 pinger 巡检： 通过 pinger crd 维护 ping 测任务。异常结果只能通过 pod 状态和 logs 查看（log 足够可读性）。
 
-### 1.2 一级概览 configmap 设计
+### 1.2 一级概览任务下发，结果返回（展示）
 
-config data 中设计为 map：
+- 任务下发基于 runAtOnce 的 configmap，configmap 的名字可以是一个时间，内容是巡检列表
+- 返回通过 HTTP POST 
+
+### 通过 HTTP POST 
+
+各个 node 上 pod 检测完毕后， 直接 post  data 到前端，data 设计为 map：
+
+node 为 key，value 为 map
+
+**这个结构体前端定的，类似 alert 流程**
 
 ```bash
 
@@ -122,7 +133,7 @@ node2:
 
 ```
 
-operator 会检测 runAt 任务是否执行完毕，如果执行完毕，则会逐个更新 configmap
+
 
 ### 1.3 脚本目录设计
 
@@ -147,9 +158,9 @@ operator 会检测 runAt 任务是否执行完毕，如果执行完毕，则会�
 
 ### 1.4 UI
 
-- 1.基于 runAt 的 configmap 展示一级概览
+- 1.基于各个 node 的 pod 分布式返回的结果展示一级概览
 - 2.可以查看 pod log
-- 3.可以 exec pod 精确查看业务 errlog（每个业务只有一个 err log 文件）
+- 3.可以 exec busybox pod 精确查看业务 errlog（每个业务只有一个 err log 文件）（已经有该功能）
 
 ### 1.5 权限与限制
 
@@ -172,6 +183,8 @@ zenuml
     par {
         kubecombo->DebuggerCRD: get the debugger?
         kubecombo->PingerCRD: get the pinger of debugger spec?
+        kubecombo->Pod: exec into pod to run tasks list?
+        kubecombo->Pod: curl to post result to UI？
         kubecombo->Pod: create | update | delete pod
     }
 ```
