@@ -1,0 +1,9 @@
+      nodeSelector:
+        kubernetes.io/os: "linux"
+        {{- if .Values.MASTER_NODES_LABEL }}
+          {{- with splitList "=" .Values.MASTER_NODES_LABEL }}
+            {{- if eq (len .) 2 }}
+        {{ index . 0 }}: "{{ index . 1 }}"
+            {{- end }}
+          {{- end }}
+        {{- end }}

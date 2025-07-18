@@ -2,35 +2,35 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
-  manifestsPath: "/etc/kubernetes/manifests"
+  manifestsPath: "{{ global_manifestsPath }}"
   registry:
-    address: "docker.io/icoy"
+    address: "{{ global_registry_address }}"
     imagePullSecrets: []
   images:
     kubecombo:
-      repository: "kube-combo-controller"
-      tag: "v1.3.0"
+      repository: "{{ global_images_kubecombo_repository }}"
+      tag: "{{ global_images_tag }}"
     openvpn:
-      repository: "kube-combo-openvpn"
-      tag: "v1.3.0"
+      repository: "{{ global_images_openvpn_repository }}"
+      tag: "{{ global_images_tag }}"
     strongswan:
-      repository: "kube-combo-strongswan"
-      tag: "v1.3.0"
+      repository: "{{ global_images_strongswan_repository }}"
+      tag: "{{ global_images_tag }}"
 
 kubebuilder:
   registry:
-    address: "gcr.io/kubebuilder"
+    address: "{{ kubebuilder_registry_address }}"
     imagePullSecrets: []
   images:
-    repository: "kube-rbac-proxy"
-    tag: "v0.13.1"
+    repository: "{{ kubebuilder_images_repository }}"
+    tag: "{{ kubebuilder_images_tag }}"
 
 image:
   pullPolicy: IfNotPresent
 
 namespace: kube-system
 replicaCount: 1
-MASTER_NODES_LABEL: ""
+MASTER_NODES_LABEL: "{{ MASTER_NODES_LABEL }}"
 
 func:
   ENABLE_SSL_VPN: false
@@ -45,7 +45,7 @@ sslvpn:
   algorithm: RSA
   size: 2048
   encoding: PKCS1
-  SSLVPN_NODES_LABEL: ""
+  SSLVPN_NODES_LABEL: "{{ SSLVPN_NODES_LABEL }}"
 
 ipsecvpn:
   defaultPSK: ""
@@ -60,4 +60,4 @@ ipsecvpn:
   localPrivateCidrs: 172.21.0.0/16
   remoteEIP: 172.19.0.101
   remotePrivateCidrs: 10.1.0.0/24
-  IPSECVPN_NODES_LABEL: ""
+  IPSECVPN_NODES_LABEL: "{{ IPSECVPN_NODES_LABEL }}"

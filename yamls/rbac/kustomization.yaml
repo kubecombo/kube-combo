@@ -1,4 +1,4 @@
-namespace: kube-system
+namespace: '{{.Values.namespace}}'
 
 namePrefix: kube-combo-
 
