@@ -127,6 +127,22 @@ jobs:
           name: image-strongswan-${{ matrix.arch }}-${{ matrix.branch }}
           path: image-strongswan-${{ matrix.arch }}.tar
           retention-days: 7
+
+      - name: Build-Debugger
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        run: |
+          VERSION=$(make print-version)
+          make docker-build-debugger-${{ matrix.arch }}
+          docker tag icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }}
+          docker save icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }} -o image-debugger-${{ matrix.arch }}.tar
+
+      - name: Upload image to artifact
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-debugger-${{ matrix.arch }}-${{ matrix.branch }}
+          path: image-debugger-${{ matrix.arch }}.tar
+          retention-days: 7
   push:
     strategy:
       fail-fast: false
@@ -179,6 +195,18 @@ jobs:
         with:
           name: image-strongswan-arm64-${{ matrix.branch }}
 
+      - name: Download debugger amd64 image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-debugger-amd64-${{ matrix.branch }}
+
+      - name: Download debugger arm64 image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-debugger-arm64-${{ matrix.branch }}
+
       - name: Load Image
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
         run: |
@@ -188,6 +216,8 @@ jobs:
           docker load --input image-openvpn-arm64.tar
           docker load --input image-strongswan-amd64.tar
           docker load --input image-strongswan-arm64.tar
+          docker load --input image-debugger-amd64.tar
+          docker load --input image-debugger-arm64.tar
 
       - name: Push
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
@@ -210,3 +240,7 @@ jobs:
           docker push icoy/kube-combo-strongswan:v$TAG-arm64
           docker manifest create icoy/kube-combo-strongswan:v$TAG icoy/kube-combo-strongswan:v$TAG-amd64 icoy/kube-combo-strongswan:v$TAG-arm64
           docker manifest push icoy/kube-combo-strongswan:v$TAG
+          docker push icoy/kube-combo-debugger:v$TAG-amd64
+          docker push icoy/kube-combo-debugger:v$TAG-arm64
+          docker manifest create icoy/kube-combo-debugger:v$TAG icoy/kube-combo-debugger:v$TAG-amd64 icoy/kube-combo-debugger:v$TAG-arm64
+          docker manifest push icoy/kube-combo-debugger:v$TAG
