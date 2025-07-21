@@ -133,8 +133,8 @@ jobs:
         run: |
           VERSION=$(make print-version)
           make docker-build-debugger-${{ matrix.arch }}
-          docker tag icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }}
-          docker save icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-strongswan:v$VERSION-${{ matrix.arch }} -o image-debugger-${{ matrix.arch }}.tar
+          docker tag icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-debugger:v$VERSION-${{ matrix.arch }}
+          docker save icoy/kube-combo-debugger:v$VERSION icoy/kube-combo-debugger:v$VERSION-${{ matrix.arch }} -o image-debugger-${{ matrix.arch }}.tar
 
       - name: Upload image to artifact
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
