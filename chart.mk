@@ -34,6 +34,7 @@ jinja2:
 rsync: manifests
 	rsync -av --exclude='kustomization.yaml' config/default/ yamls/default/
 	rsync -av --exclude='kustomization.yaml' config/manager/ yamls/manager/
+	rsync -av --exclude='kustomization.yaml' config/rbac/ yamls/rbac/
 
 .PHONY: chart
 chart: jinja2 rsync kustomize
