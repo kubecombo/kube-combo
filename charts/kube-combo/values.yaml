@@ -5,7 +5,6 @@ global:
   manifestsPath: "/etc/kubernetes/manifests"
   registry:
     address: "docker.io/icoy"
-    imagePullSecrets: []
   images:
     kubecombo:
       repository: "kube-combo-controller"
@@ -20,7 +19,6 @@ global:
 kubebuilder:
   registry:
     address: "gcr.io/kubebuilder"
-    imagePullSecrets: []
   images:
     repository: "kube-rbac-proxy"
     tag: "v0.13.1"

@@ -44,4 +44,8 @@ chart: jinja2 rsync kustomize
 	$(KUSTOMIZE) build yamls/rbac > ./charts/kube-combo/templates/kube-combo-rbac.yaml
 	$(KUSTOMIZE) build yamls/default > ./charts/kube-combo/templates/kube-combo-controller.yaml
 	@cat ./yamls/manager/append-nodeSelector.yaml >> ./charts/kube-combo/templates/kube-combo-controller.yaml
-	@sed -i "s/^\([[:space:]]*replicas:[[:space:]]*\)'{{\(.*\)}}'/\1{{\2}}/" ./charts/kube-combo/templates/kube-combo-controller.yaml
+	sed -i 's/HELM_NAMESPACE/{{.Values.namespace}}/g' ./charts/kube-combo/templates/*
+	sed -i 's/HELM_REPLICAS/{{.Values.replicaCount}}/g' ./charts/kube-combo/templates/*
+	sed -i 's#HELM_RBAC_PROXY_IMAGE#{{.Values.kubebuilder.registry.address}}/{{.Values.kubebuilder.images.repository}}:{{.Values.kubebuilder.images.tag}}#g' ./charts/kube-combo/templates/*
+	sed -i 's#HELM_KUBECOMBO_IMAGE#{{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}#g' ./charts/kube-combo/templates/*
+	sed -i 's/HELM_IMAGE_PULL_POLICY/{{.Values.image.pullPolicy}}/g' ./charts/kube-combo/templates/*

@@ -5,7 +5,6 @@ global:
   manifestsPath: "{{ GLOBAL_MANIFESTSPATH }}"
   registry:
     address: "{{ GLOBAL_REGISTRY_ADDRESS }}"
-    imagePullSecrets: []
   images:
     kubecombo:
       repository: "{{ GLOBAL_IMAGES_KUBECOMBO_REPOSITORY }}"
@@ -20,7 +19,6 @@ global:
 kubebuilder:
   registry:
     address: "{{ KUBEBUILDER_REGISTRY_ADDRESS }}"
-    imagePullSecrets: []
   images:
     repository: "{{ KUBEBUILDER_IMAGES_REPOSITORY }}"
     tag: "{{ KUBEBUILDER_IMAGES_TAG }}"
