@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       control-plane: kubecombo-controller-manager
-  replicas: "{{.Values.replicaCount}}"
+  replicas: 1
   template:
     metadata:
       annotations:
@@ -24,8 +24,7 @@ spec:
             - /controller
           args:
             - --leader-elect
-          image: "{{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}"
-          imagePullPolicy: "{{.Values.image.pullPolicy}}"
+          image: controller
           name: manager
           securityContext:
             allowPrivilegeEscalation: false

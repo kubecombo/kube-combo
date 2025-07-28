@@ -30,8 +30,13 @@ jinja2:
 	test -s $(LOCALBIN)/jinja2 || \
 	pip install --target $(LOCALBIN)/jinja2 jinja2-cli
 
+.PHONY: rsync
+rsync: manifests
+	rsync -av --exclude='kustomization.yaml' config/default/ yamls/default/
+	rsync -av --exclude='kustomization.yaml' config/manager/ yamls/manager/
+
 .PHONY: chart
-chart: jinja2 kustomize
+chart: jinja2 rsync kustomize
 	$(JINJA2) ./yamls/Chart.yaml.j2 -D APP_VERSION=v$(VERSION) > ./charts/kube-combo/Chart.yaml
 	$(JINJA2) ./yamls/values.yaml.j2 ./yamls/values.yaml -D GLOBAL_IMAGES_TAG=v$(VERSION) > ./charts/kube-combo/values.yaml
 	$(KUSTOMIZE) build config/crd > ./charts/kube-combo/templates/kube-combo-crd.yaml

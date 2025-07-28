@@ -31,8 +31,7 @@ spec:
             capabilities:
               drop:
                 - "ALL"
-          image: "{{.Values.kubebuilder.registry.address}}/{{.Values.kubebuilder.images.repository}}:{{.Values.kubebuilder.images.tag}}"
-          imagePullPolicy: "{{.Values.image.pullPolicy}}"
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
           args:
             - "--secure-listen-address=0.0.0.0:8443"
             - "--upstream=http://127.0.0.1:8080/"
@@ -51,7 +50,6 @@ spec:
               memory: 64Mi
         - name: manager
           args:
-            - "--k8s-manifests-path={{ .Values.global.manifestsPath }}"
             - "--health-probe-bind-address=:8081"
             - "--metrics-bind-address=127.0.0.1"
             - "--leader-elect"

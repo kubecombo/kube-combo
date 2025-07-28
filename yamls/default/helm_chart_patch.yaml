@@ -1,0 +1,27 @@
+- op: replace
+  path: /metadata/namespace
+  value: HELM_NAMESPACE
+
+- op: replace
+  path: /spec/replicas
+  value: HELM_REPLICAS
+
+- op: replace
+  path: /spec/template/spec/containers/0/image
+  value: HELM_RBAC_PROXY_IMAGE
+
+- op: add
+  path: /spec/template/spec/containers/0/imagePullPolicy
+  value: HELM_IMAGE_PULL_POLICY
+
+- op: replace
+  path: /spec/template/spec/containers/1/image
+  value: HELM_KUBECOMBO_IMAGE
+
+- op: add
+  path: /spec/template/spec/containers/1/imagePullPolicy
+  value: HELM_IMAGE_PULL_POLICY
+
+- op: add
+  path: /spec/template/spec/containers/1/args/-
+  value: "--k8s-manifests-path={{ .Values.global.manifestsPath }}"

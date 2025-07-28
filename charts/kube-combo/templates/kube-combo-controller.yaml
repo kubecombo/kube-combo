@@ -4,9 +4,9 @@ metadata:
   labels:
     control-plane: kubecombo-controller-manager
   name: kube-combo-controller-manager
-  namespace: '{{.Values.namespace}}'
+  namespace: HELM_NAMESPACE
 spec:
-  replicas: {{.Values.replicaCount}}
+  replicas: HELM_REPLICAS
   selector:
     matchLabels:
       control-plane: kubecombo-controller-manager
@@ -39,8 +39,8 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: '{{.Values.kubebuilder.registry.address}}/{{.Values.kubebuilder.images.repository}}:{{.Values.kubebuilder.images.tag}}'
-        imagePullPolicy: '{{.Values.image.pullPolicy}}'
+        image: HELM_RBAC_PROXY_IMAGE
+        imagePullPolicy: HELM_IMAGE_PULL_POLICY
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -59,14 +59,14 @@ spec:
             drop:
             - ALL
       - args:
-        - --k8s-manifests-path={{ .Values.global.manifestsPath }}
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1
         - --leader-elect
+        - --k8s-manifests-path={{ .Values.global.manifestsPath }}
         command:
         - /controller
-        image: '{{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}'
-        imagePullPolicy: '{{.Values.image.pullPolicy}}'
+        image: HELM_KUBECOMBO_IMAGE
+        imagePullPolicy: HELM_IMAGE_PULL_POLICY
         livenessProbe:
           httpGet:
             path: /healthz
@@ -96,12 +96,3 @@ spec:
         runAsNonRoot: true
       serviceAccountName: kube-combo-controller-manager
       terminationGracePeriodSeconds: 10
-      nodeSelector:
-        kubernetes.io/os: "linux"
-        {{- if .Values.MASTER_NODES_LABEL }}
-          {{- with splitList "=" .Values.MASTER_NODES_LABEL }}
-            {{- if eq (len .) 2 }}
-        {{ index . 0 }}: "{{ index . 1 }}"
-            {{- end }}
-          {{- end }}
-        {{- end }}
