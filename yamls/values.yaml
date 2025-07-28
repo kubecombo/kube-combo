@@ -1,13 +1,11 @@
-# app_version: "v1.3.0"
-global_manifestsPath: /etc/kubernetes/manifests
-global_registry_address: docker.io/icoy
-global_images_kubecombo_repository: kube-combo-controller
-global_images_openvpn_repository: kube-combo-openvpn
-global_images_strongswan_repository: kube-combo-strongswan
-# global_images_tag: v1.3.0
-kubebuilder_registry_address: gcr.io/kubebuilder
-kubebuilder_images_repository: kube-rbac-proxy
-kubebuilder_images_tag: v0.13.1
-MASTER_NODES_LABEL: ""
-SSLVPN_NODES_LABEL: ""
-IPSECVPN_NODES_LABEL: ""
+KUBEBUILDER_IMAGES_REPOSITORY = kube-rbac-proxy
+KUBEBUILDER_IMAGES_TAG = v0.13.1
+GLOBAL_REGISTRY_ADDRESS = docker.io/icoy
+IPSECVPN_NODES_LABEL = ""
+GLOBAL_IMAGES_STRONGSWAN_REPOSITORY = kube-combo-strongswan
+MASTER_NODES_LABEL = ""
+GLOBAL_IMAGES_KUBECOMBO_REPOSITORY = kube-combo-controller
+KUBEBUILDER_REGISTRY_ADDRESS = gcr.io/kubebuilder
+GLOBAL_MANIFESTSPATH = /etc/kubernetes/manifests
+SSLVPN_NODES_LABEL = ""
+GLOBAL_IMAGES_OPENVPN_REPOSITORY = kube-combo-openvpn
