@@ -1,5 +1,5 @@
 # Adds namespace to all resources.
-namespace: '{{.Values.namespace}}'
+namespace: "{{.Values.namespace}}"
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named
@@ -15,7 +15,7 @@ namePrefix: kube-combo-
 #    someName: someValue
 
 resources:
-- ../manager
+  - ../manager
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
 # - ../webhook
@@ -24,10 +24,18 @@ resources:
 # [PROMETHEUS] To enable prometheus monitor, uncomment all sections with 'PROMETHEUS'.
 #- ../prometheus
 
-  # Protect the /metrics endpoint by putting it behind auth.
-  # If you want your controller-manager to expose the /metrics
-  # endpoint w/o any authn/z, please comment the following line.
+# Protect the /metrics endpoint by putting it behind auth.
+# If you want your controller-manager to expose the /metrics
+# endpoint w/o any authn/z, please comment the following line.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
-- path: manager_auth_proxy_patch.yaml
+  - path: manager_auth_proxy_patch.yaml
+
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: kube-combo-controller-manager
+    path: helm_chart_patch.yaml

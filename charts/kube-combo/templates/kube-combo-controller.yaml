@@ -4,7 +4,7 @@ metadata:
   labels:
     control-plane: kubecombo-controller-manager
   name: kube-combo-controller-manager
-  namespace: '{{.Values.namespace}}'
+  namespace: {{.Values.namespace}}
 spec:
   replicas: {{.Values.replicaCount}}
   selector:
@@ -39,8 +39,8 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: '{{.Values.kubebuilder.registry.address}}/{{.Values.kubebuilder.images.repository}}:{{.Values.kubebuilder.images.tag}}'
-        imagePullPolicy: '{{.Values.image.pullPolicy}}'
+        image: {{.Values.kubebuilder.registry.address}}/{{.Values.kubebuilder.images.repository}}:{{.Values.kubebuilder.images.tag}}
+        imagePullPolicy: {{.Values.image.pullPolicy}}
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -59,14 +59,14 @@ spec:
             drop:
             - ALL
       - args:
-        - --k8s-manifests-path={{ .Values.global.manifestsPath }}
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1
         - --leader-elect
+        - --k8s-manifests-path={{ .Values.global.manifestsPath }}
         command:
         - /controller
-        image: '{{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}'
-        imagePullPolicy: '{{.Values.image.pullPolicy}}'
+        image: {{.Values.global.registry.address}}/{{.Values.global.images.kubecombo.repository}}:{{.Values.global.images.kubecombo.tag}}
+        imagePullPolicy: {{.Values.image.pullPolicy}}
         livenessProbe:
           httpGet:
             path: /healthz

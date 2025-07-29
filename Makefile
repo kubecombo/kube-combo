@@ -47,9 +47,6 @@ CERT_MANAGER_CAINJECTOR ?= quay.io/jetstack/cert-manager-cainjector:v1.17.0
 CERT_MANAGER_CONTROLLER ?= quay.io/jetstack/cert-manager-controller:v1.17.0
 CERT_MANAGER_WEBHOOK ?= quay.io/jetstack/cert-manager-webhook:v1.17.0
 
-# netshoot
-NETSHOOT_IMG ?= docker.io/nicolaka/netshoot:latest
-
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)

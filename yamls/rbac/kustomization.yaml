@@ -1,6 +1,7 @@
-namespace: '{{.Values.namespace}}'
+namespace: kube-system
 
-namePrefix: kube-combo-
+namePrefix:
+  kube-combo-
 
   # All RBAC will be applied under this service account in
   # the deployment namespace. You may comment out this resource
@@ -15,18 +16,40 @@ namePrefix: kube-combo-
   # not used by the Project itself. You can comment the following lines
   # if you do not want those helpers be installed with your Project.
 resources:
-- service_account.yaml
-- role.yaml
-- role_binding.yaml
-- leader_election_role.yaml
-- leader_election_role_binding.yaml
-- auth_proxy_service.yaml
-- auth_proxy_role.yaml
-- auth_proxy_role_binding.yaml
-- auth_proxy_client_clusterrole.yaml
-- pinger_editor_role.yaml
-- pinger_viewer_role.yaml
-- debugger_editor_role.yaml
-- debugger_viewer_role.yaml
+  - service_account.yaml
+  - role.yaml
+  - role_binding.yaml
+  - leader_election_role.yaml
+  - leader_election_role_binding.yaml
+  - auth_proxy_service.yaml
+  - auth_proxy_role.yaml
+  - auth_proxy_role_binding.yaml
+  - auth_proxy_client_clusterrole.yaml
+  - pinger_editor_role.yaml
+  - pinger_viewer_role.yaml
+  - debugger_editor_role.yaml
+  - debugger_viewer_role.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+patchesJson6902:
+  - target:
+      version: v1
+      kind: ServiceAccount
+      name: kube-combo-controller-manager
+    path: helm_chart_patch.yaml
+  - target:
+      version: v1
+      kind: Service
+      name: kube-combo-controller-manager-metrics-service
+    path: helm_chart_patch.yaml
+  - target:
+      version: v1
+      kind: Role
+      name: kube-combo-leader-election-role
+    path: helm_chart_patch.yaml
+  - target:
+      version: v1
+      kind: RoleBinding
+      name: kube-combo-leader-election-rolebinding
+    path: helm_chart_patch.yaml

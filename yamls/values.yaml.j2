@@ -2,28 +2,26 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
-  manifestsPath: "{{ global_manifestsPath }}"
+  manifestsPath: "{{ GLOBAL_MANIFESTSPATH }}"
   registry:
-    address: "{{ global_registry_address }}"
-    imagePullSecrets: []
+    address: "{{ GLOBAL_REGISTRY_ADDRESS }}"
   images:
     kubecombo:
-      repository: "{{ global_images_kubecombo_repository }}"
-      tag: "{{ global_images_tag }}"
+      repository: "{{ GLOBAL_IMAGES_KUBECOMBO_REPOSITORY }}"
+      tag: "{{ GLOBAL_IMAGES_TAG }}"
     openvpn:
-      repository: "{{ global_images_openvpn_repository }}"
-      tag: "{{ global_images_tag }}"
+      repository: "{{ GLOBAL_IMAGES_OPENVPN_REPOSITORY }}"
+      tag: "{{ GLOBAL_IMAGES_TAG }}"
     strongswan:
-      repository: "{{ global_images_strongswan_repository }}"
-      tag: "{{ global_images_tag }}"
+      repository: "{{ GLOBAL_IMAGES_STRONGSWAN_REPOSITORY }}"
+      tag: "{{ GLOBAL_IMAGES_TAG }}"
 
 kubebuilder:
   registry:
-    address: "{{ kubebuilder_registry_address }}"
-    imagePullSecrets: []
+    address: "{{ KUBEBUILDER_REGISTRY_ADDRESS }}"
   images:
-    repository: "{{ kubebuilder_images_repository }}"
-    tag: "{{ kubebuilder_images_tag }}"
+    repository: "{{ KUBEBUILDER_IMAGES_REPOSITORY }}"
+    tag: "{{ KUBEBUILDER_IMAGES_TAG }}"
 
 image:
   pullPolicy: IfNotPresent
