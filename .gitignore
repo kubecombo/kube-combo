@@ -26,4 +26,4 @@ Dockerfile.cross
 *.swp
 *.swo
 *~
-./yamls/values.yaml
+yamls/values.yaml
