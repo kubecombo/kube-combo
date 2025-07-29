@@ -12,9 +12,8 @@ HELM_MASTER_NODES_LABEL=""
 HELM_SSLVPN_NODES_LABEL=""
 HELM_IPSECVPN_NODES_LABEL=""
 
-.PHONY: print-helm-vars
-
-print-helm-vars:
+.PHONY: helm-vars
+helm-vars:
 	@$(foreach V,$(.VARIABLES), \
 		$(if $(and $(filter HELM_%,$(V)), \
 			$(filter-out environment% default automatic, $(origin $V))), \
@@ -22,8 +21,14 @@ print-helm-vars:
 		))
 	@true
 
+.PHONY: print-helm-vars
+print-helm-vars:
+	@$(MAKE) -s helm-vars > $(JINJA2_YAML)
+	@true
+
 ## Tool Binaries
 JINJA2 ?= $(LOCALBIN)/jinja2/bin/jinja2
+JINJA2_YAML ?= ./yamls/values.yaml
 
 .PHONY: jinja2
 jinja2: 
@@ -37,9 +42,9 @@ rsync: manifests
 	rsync -av --exclude='kustomization.yaml' config/rbac/ yamls/rbac/
 
 .PHONY: chart
-chart: jinja2 rsync kustomize
+chart: jinja2 rsync kustomize print-helm-vars
 	$(JINJA2) ./yamls/Chart.yaml.j2 -D APP_VERSION=v$(VERSION) > ./charts/kube-combo/Chart.yaml
-	$(JINJA2) ./yamls/values.yaml.j2 ./yamls/values.yaml -D GLOBAL_IMAGES_TAG=v$(VERSION) > ./charts/kube-combo/values.yaml
+	$(JINJA2) ./yamls/values.yaml.j2 -D GLOBAL_IMAGES_TAG=v$(VERSION) $(JINJA2_YAML) > ./charts/kube-combo/values.yaml
 	$(KUSTOMIZE) build config/crd > ./charts/kube-combo/templates/kube-combo-crd.yaml
 	$(KUSTOMIZE) build yamls/rbac > ./charts/kube-combo/templates/kube-combo-rbac.yaml
 	$(KUSTOMIZE) build yamls/default > ./charts/kube-combo/templates/kube-combo-controller.yaml
