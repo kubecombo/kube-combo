@@ -37,11 +37,30 @@
                 {
                     "key": "CPU0",
                     "value": "90",
-                    "note": "CPU使用率较高"
+                    "note": "CPU温度较高"
                 },
                 {
                     "key": "CPU1",
                     "value": "50",
+                    "note": ""
+                }
+            ]
+        }
+    ],
+    "Memory": [
+        {
+            "detection": "MEMORY USAGE",
+            "nodename": "NODE1",
+            "description": "The current memory usage percentage.",
+            "results": [
+                {
+                    "key": "Total",
+                    "value": "16GB",
+                    "note": ""
+                },
+                {
+                    "key": "Used",
+                    "value": "8GB",
                     "note": ""
                 }
             ]
