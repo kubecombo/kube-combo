@@ -2,11 +2,38 @@
   "nodename": "{{ nodename }}",
   "timestamp": "{{ timestamp }}",
   "CPU": [
+    {%- set sections = [] %}
+
+    {%- if cpu_model_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU MODEL",
+        "description": "A type of CPU model used in the system.",
+        "results": cpu_model_results
+      }) %}
+    {%- endif %}
+
+    {%- if cpu_usage_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU USAGE",
+        "description": "The current CPU usage percentage.",
+        "results": cpu_usage_results
+      }) %}
+    {%- endif %}
+
+    {%- if cpu_temp_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU TEMPERATURE",
+        "description": "The current temperature of the CPU in degrees Celsius.",
+        "results": cpu_temp_results
+      }) %}
+    {%- endif %}
+
+    {%- for section in sections %}
     {
-      "detection": "CPU MODEL",
-      "description": "A type of CPU model used in the system.",
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
       "results": [
-        {% for result in cpu_model_results -%}
+        {%- for result in section.results %}
         {
           "key": "{{ result.key }}",
           "value": "{{ result.value }}",
@@ -14,35 +41,12 @@
         }{% if not loop.last %},{% endif %}
         {%- endfor %}
       ]
-    },
-    {
-      "detection": "CPU USAGE",
-      "description": "The current CPU usage percentage.",
-      "results": [
-        {% for result in cpu_usage_results -%}
-        {
-          "key": "{{ result.key }}",
-          "value": "{{ result.value }}",
-          "err": "{{ result.err }}"
-        }{% if not loop.last %},{% endif %}
-        {%- endfor %}
-      ]
-    },
-    {
-      "detection": "CPU TEMPERATURE",
-      "description": "The current temperature of the CPU in degrees Celsius.",
-      "results": [
-        {% for result in cpu_temp_results -%}
-        {
-          "key": "{{ result.key }}",
-          "value": "{{ result.value }}",
-          "err": "{{ result.err }}"
-        }{% if not loop.last %},{% endif %}
-        {%- endfor %}
-      ]
-    }
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
   ],
+
   "Memory": [
+    {%- if memory_usage_results %}
     {
       "detection": "MEMORY USAGE",
       "description": "The current memory usage percentage.",
@@ -56,5 +60,6 @@
         {%- endfor %}
       ]
     }
+    {%- endif %}
   ]
 }
