@@ -1,0 +1,60 @@
+{
+  "nodename": "{{ nodename }}",
+  "timestamp": "{{ timestamp }}",
+  "CPU": [
+    {
+      "detection": "CPU MODEL",
+      "description": "A type of CPU model used in the system.",
+      "results": [
+        {% for result in cpu_model_results -%}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    },
+    {
+      "detection": "CPU USAGE",
+      "description": "The current CPU usage percentage.",
+      "results": [
+        {% for result in cpu_usage_results -%}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    },
+    {
+      "detection": "CPU TEMPERATURE",
+      "description": "The current temperature of the CPU in degrees Celsius.",
+      "results": [
+        {% for result in cpu_temp_results -%}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }
+  ],
+  "Memory": [
+    {
+      "detection": "MEMORY USAGE",
+      "description": "The current memory usage percentage.",
+      "results": [
+        {% for result in memory_usage_results -%}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }
+  ]
+}
