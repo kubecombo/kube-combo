@@ -1,0 +1,31 @@
+nodename: NODE1
+timestamp: "2023-10-01T12:00:00Z"
+
+cpu_model_results:
+  - key: Hygon
+    value: x86_64
+    err: ""
+
+cpu_usage_results:
+  - key: CPU0
+    value: "90"
+    err: "CPU使用率较高"
+  - key: CPU1
+    value: "50"
+    err: ""
+
+cpu_temp_results:
+  - key: CPU0
+    value: "90"
+    err: "CPU温度较高"
+  - key: CPU1
+    value: "50"
+    err: ""
+
+memory_usage_results:
+  - key: Total
+    value: 16GB
+    err: ""
+  - key: Used
+    value: 8GB
+    err: ""

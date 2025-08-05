@@ -1,67 +1,67 @@
 {
-    "nodename": "NODE1",
-    "timestamp": "2023-10-01T12:00:00Z",
-    "CPU": [
+  "nodename": "NODE1",
+  "timestamp": "2023-10-01T12:00:00Z",
+  "CPU": [
+    {
+      "detection": "CPU MODEL",
+      "description": "A type of CPU model used in the system.",
+      "results": [
         {
-            "detection": "CPU MODEL",
-            "description": "A type of CPU model used in the system.",
-            "results": [
-                {
-                    "key": "Hygon",
-                    "value": "x86_64",
-                    "err": ""
-                }
-            ]
+          "key": "Hygon",
+          "value": "x86_64",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "CPU USAGE",
+      "description": "The current CPU usage percentage.",
+      "results": [
+        {
+          "key": "CPU0",
+          "value": "90",
+          "err": "CPU使用率较高"
         },
         {
-            "detection": "CPU USAGE",
-            "description": "The current CPU usage percentage.",
-            "results": [
-                {
-                    "key": "CPU0",
-                    "value": "90",
-                    "err": "CPU使用率较高"
-                },
-                {
-                    "key": "CPU1",
-                    "value": "50",
-                    "err": ""
-                }
-            ]
+          "key": "CPU1",
+          "value": "50",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "CPU TEMPERATURE",
+      "description": "The current temperature of the CPU in degrees Celsius.",
+      "results": [
+        {
+          "key": "CPU0",
+          "value": "90",
+          "err": "CPU温度较高"
         },
         {
-            "detection": "CPU TEMPERATURE",
-            "description": "The current temperature of the CPU in degrees Celsius.",
-            "results": [
-                {
-                    "key": "CPU0",
-                    "value": "90",
-                    "err": "CPU温度较高"
-                },
-                {
-                    "key": "CPU1",
-                    "value": "50",
-                    "err": ""
-                }
-            ]
+          "key": "CPU1",
+          "value": "50",
+          "err": ""
         }
-    ],
-    "Memory": [
+      ]
+    }
+  ],
+  "Memory": [
+    {
+      "detection": "MEMORY USAGE",
+      "description": "The current memory usage percentage.",
+      "results": [
         {
-            "detection": "MEMORY USAGE",
-            "description": "The current memory usage percentage.",
-            "results": [
-                {
-                    "key": "Total",
-                    "value": "16GB",
-                    "err": ""
-                },
-                {
-                    "key": "Used",
-                    "value": "8GB",
-                    "err": ""
-                }
-            ]
+          "key": "Total",
+          "value": "16GB",
+          "err": ""
+        },
+        {
+          "key": "Used",
+          "value": "8GB",
+          "err": ""
         }
-    ]
+      ]
+    }
+  ]
 }
