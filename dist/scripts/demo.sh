@@ -5,11 +5,16 @@
 source "$(dirname "${BASH_SOURCE[0]}")/log.sh"
 
 # shellcheck disable=SC2034
-LOG_LEVEL=1           # 设置日志级别为 debug
+# 设置日志级别为 debug
+LOG_LEVEL=1
+
 # shellcheck disable=SC2034
-LOG_FLAG=false         # 关闭文件日志
+# 关闭文件日志
+LOG_FLAG=false
+
 # shellcheck disable=SC2034
-LOG_FILE="./demo.log" # 设置日志文件位置
+# 设置日志文件位置
+LOG_FILE="./demo.log"
 
 # 模拟任务开始
 log_info "开始执行任务..."
