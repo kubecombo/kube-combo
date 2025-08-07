@@ -1,0 +1,79 @@
+{
+  "nodename": "{{ nodename }}",
+  "timestamp": "{{ timestamp }}",
+  "network-configuration": [
+    {%- set sections = [] %}
+
+    {%- if storage_communication_network_port_results %}
+      {%- set _ = sections.append({
+        "detection": "Storage Communication Network Port",
+        "description": "Detect whether the storage communication network ports between different hosts are connected. In the case of link aggregation, a single link failure will not affect the connectivity result of the aggregated port.",
+        "results": storage_communication_network_port_results
+      }) %} 
+    {%- endif %}
+
+    {%- if link_aggregation_connectivity_results %}
+      {%- set _ = sections.append({
+        "detection": "Link Aggregation Connectivity",
+        "description": "In the case of link aggregation, detect whether a single link is connected. If a single link is disconnected, the storage communication network port is still in a connected state, but the performance will decrease.",
+        "results": link_aggregation_connectivity_results
+      }) %} 
+    {%- endif %}
+
+    {%- if latency_detection_results %}
+      {%- set _ = sections.append({
+        "detection": "Latency Detection",
+        "description": "Detect whether the average network latency between the storage networks of each host is: 1200us or more: (ICMP) 600us or more when RDMA is enabled.",
+        "results": latency_detection_results
+      }) %} 
+    {%- endif %}
+
+    {%- if ip_conflict_detection_results %}
+      {%- set _ = sections.append({
+        "detection": "IP Conflict Detection",
+        "description": "Detect if there is an IP conflict in the virtual storage port.",
+        "results": ip_conflict_detection_results
+      }) %} 
+    {%- endif %}
+
+    {%- if negotiated_rate_results %}
+      {%- set _ = sections.append({
+        "detection": "Negotiated Rate",
+        "description": "Detect whether the negotiated rates of the storage communication network ports of each node in the cluster are consistent and reach 10 Gigabit.",
+        "results": negotiated_rate_results
+      }) %} 
+    {%- endif %}
+
+    {%- if mtu_consistency_results %}
+      {%- set _ = sections.append({
+        "detection": "MTU Consistency",
+        "description": "Detect whether the MTU of the storage network ports is consistent. If the MTU is inconsistent, packet loss may occur, leading to a sharp decline in storage performance.",
+        "results": mtu_consistency_results
+      }) %} 
+    {%- endif %}
+
+    {%- if network_port_aggregation_mode_results %}
+      {%- set _ = sections.append({
+        "detection": "Network Port Aggregation Mode Consistency",
+        "description": "Check if the network port aggregation modes of the same network plane are consistent.",
+        "results": network_port_aggregation_mode_results
+      }) %} 
+    {%- endif %}
+
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}
