@@ -1,0 +1,71 @@
+{
+  "nodename": "{{ nodename }}",
+  "timestamp": "{{ timestamp }}",
+  "network-card": [
+    {%- set sections = [] %}
+
+    {%- if network_port_packet_loss_results %}
+      {%- set _ = sections.append({
+        "detection": "NETWORK PORT PACKET LOSS",
+        "description": "The packet loss results for network ports.",
+        "results": network_port_packet_loss_results
+      }) %} 
+    {%- endif %}
+
+    {%- if network_port_connection_mode_results %}
+      {%- set _ = sections.append({
+        "detection": "NETWORK PORT CONNECTION MODE",
+        "description": "The current network port connection mode.",
+        "results": network_port_connection_mode_results
+      }) %} 
+    {%- endif %}
+
+    {%- if full_duplex_mode_results %}
+      {%- set _ = sections.append({
+        "detection": "FULL DUPLEX MODE",
+        "description": "The results related to full-duplex network communication.",
+        "results": full_duplex_mode_results
+      }) %} 
+    {%- endif %}
+
+    {%- if network_port_speed_results %}
+      {%- set _ = sections.append({
+        "detection": "NETWORK PORT SPEED",
+        "description": "The speed of the network port.",
+        "results": network_port_speed_results
+      }) %} 
+    {%- endif %}
+
+    {%- if network_card_conflict_results %}
+      {%- set _ = sections.append({
+        "detection": "NETWORK CARD CONFLICT",
+        "description": "The results related to conflicts with the network card.",
+        "results": network_card_conflict_results
+      }) %} 
+    {%- endif %}
+
+    {%- if unplugged_and_disconnection_results %}
+      {%- set _ = sections.append({
+        "detection": "NETWORK CARD DISCONNECTION",
+        "description": "The results of the network card unplugging or disconnection.",
+        "results": unplugged_and_disconnection_results
+      }) %} 
+    {%- endif %}
+
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}
