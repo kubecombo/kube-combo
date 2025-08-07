@@ -338,6 +338,18 @@ func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Reques
 		newDebugger.Status.Pinger = debugger.Spec.Pinger
 		changed = true
 	}
+	if debugger.Spec.EnableConfigMap != debugger.Status.EnableConfigMap {
+		newDebugger.Status.EnableConfigMap = debugger.Spec.EnableConfigMap
+		changed = true
+	}
+	if debugger.Spec.ConfigMap != debugger.Status.ConfigMap {
+		newDebugger.Status.ConfigMap = debugger.Spec.ConfigMap
+		changed = true
+	}
+	if debugger.Spec.EnableSys != debugger.Status.EnableSys {
+		newDebugger.Status.EnableSys = debugger.Spec.EnableSys
+		changed = true
+	}
 	if !reflect.DeepEqual(debugger.Spec.Tolerations, debugger.Status.Tolerations) {
 		newDebugger.Status.Tolerations = debugger.Spec.Tolerations
 		changed = true
