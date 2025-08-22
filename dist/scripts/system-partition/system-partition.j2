@@ -1,0 +1,80 @@
+{
+    "nodename": "{{ nodename }}",
+    "timestamp": "{{ timestamp }}",
+    "System Partition": [
+        {%- set sections = [] %}
+
+        {%- if _root_usage %}
+          {%- set _ = sections.append({
+            "detection": "_root",
+            "description": "The current usage rate of the / partition in the system",
+            "results": _root_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _boot_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_boot",
+            "description": "The current usage rate of the /boot partition in the system",
+            "results": _boot_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _boot_efi_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_boot_efi",
+            "description": "The current usage rate of the /boot/efi partition in the system",
+            "results": _boot_efi_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _apps_data_etcd_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_apps_data_etcd",
+            "description": "The current usage rate of the /apps/data/etcd partition in the system",
+            "results": _apps_data_etcd_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _var_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_var",
+            "description": "The current usage rate of the /var partition in the system",
+            "results": _var_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _apps_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_apps",
+            "description": "The current usage rate of the /apps partition in the system",
+            "results": _apps_usage
+          }) %}
+        {%- endif %}
+
+        {%- if _k8s_temp_usage: %}
+          {%- set _ = sections.append({
+            "detection": "_k8s_temp",
+            "description": "The current usage rate of the /k8s_temp partition in the system",
+            "results": _k8s_temp_usage
+          }) %}
+        {%- endif %}
+
+
+        {%- for section in sections %}
+        {
+          "detection": "{{ section.detection }}",
+          "description": "{{ section.description }}",
+          "results": [
+            {%- for result in section.results %}
+            {
+              "key": "{{ result.key }}",
+              "value": "{{ result.value }}",
+              "err": "{{ result.err }}"
+              }{% if not loop.last %},{% endif %}
+            {%- endfor %}
+        ]
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    ]
+}
