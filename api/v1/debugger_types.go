@@ -100,9 +100,14 @@ type DebuggerSpec struct {
 	// and mount more host directory to debugger pod
 	// case 1. host automatically run check list, get, check, and set config
 	EnableSys bool `json:"enableSys,omitempty"`
+
 	// config map name
 	// +kubebuilder:validation:Optional
 	ConfigMap string `json:"configMap,omitempty"`
+
+	// specified detection task
+	// +kubebuilder:validation:Optional
+	RunAt string `json:"runAt,omitempty"`
 }
 
 // DebuggerStatus defines the observed state of Debugger
@@ -128,6 +133,8 @@ type DebuggerStatus struct {
 	Pinger          string `json:"pinger,omitempty" patchStrategy:"merge"`
 
 	EnableSys bool `json:"enableSys,omitempty" patchStrategy:"merge"`
+
+	RunAt string `json:"runAt,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status
