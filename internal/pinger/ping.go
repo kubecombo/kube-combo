@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kubecombo/kube-combo/internal/util"
 	goping "github.com/prometheus-community/pro-bing"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -106,7 +107,7 @@ func pingNodes(config *Configuration, setMetrics bool) error {
 	var pingErr error
 	for _, no := range nodes.Items {
 		for _, addr := range no.Status.Addresses {
-			if addr.Type == v1.NodeInternalIP && slices.Contains(config.PodProtocols, CheckProtocol(addr.Address)) {
+			if addr.Type == v1.NodeInternalIP && slices.Contains(config.PodProtocols, util.CheckProtocol(addr.Address)) {
 				func(nodeIP, nodeName string) {
 					pinger, err := goping.NewPinger(nodeIP)
 					if err != nil {
@@ -172,7 +173,7 @@ func pingPods(config *Configuration, setMetrics bool) error {
 	var pingErr error
 	for _, pod := range pods.Items {
 		for _, podIP := range pod.Status.PodIPs {
-			if slices.Contains(config.PodProtocols, CheckProtocol(podIP.IP)) {
+			if slices.Contains(config.PodProtocols, util.CheckProtocol(podIP.IP)) {
 				func(podIP, podName, nodeIP, nodeName string) {
 					pinger, err := goping.NewPinger(podIP)
 					if err != nil {
@@ -230,7 +231,7 @@ func pingExternal(config *Configuration, setMetrics bool) error {
 	var checkErr error
 	addresses := strings.SplitSeq(config.Ping, ",")
 	for addr := range addresses {
-		if !slices.Contains(config.PodProtocols, CheckProtocol(addr)) {
+		if !slices.Contains(config.PodProtocols, util.CheckProtocol(addr)) {
 			continue
 		}
 
@@ -280,7 +281,7 @@ func checkAccessTargetIPPorts(config *Configuration) error {
 	var checkErr error
 	tcps := strings.SplitSeq(config.TCPPing, ",")
 	for tcp := range tcps {
-		if err := TCPConnectivityCheck(tcp); err != nil {
+		if err := util.TCPConnectivityCheck(tcp); err != nil {
 			klog.Errorf("TCP connectivity to %s failed", tcp)
 			checkErr = err
 		} else {
@@ -289,7 +290,7 @@ func checkAccessTargetIPPorts(config *Configuration) error {
 	}
 	udps := strings.SplitSeq(config.UDPPing, ",")
 	for udp := range udps {
-		if err := UDPConnectivityCheck(udp); err != nil {
+		if err := util.UDPConnectivityCheck(udp); err != nil {
 			klog.Errorf("UDP connectivity to %s failed", udp)
 			checkErr = err
 		} else {

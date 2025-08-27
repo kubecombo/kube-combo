@@ -1,4 +1,4 @@
-package pinger
+package util
 
 import (
 	"fmt"
@@ -10,16 +10,6 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-)
-
-const (
-	ProtocolTCP  = "tcp"
-	ProtocolUDP  = "udp"
-	ProtocolSCTP = "sctp"
-
-	ProtocolIPv4 = "IPv4"
-	ProtocolIPv6 = "IPv6"
-	ProtocolDual = "Dual"
 )
 
 func LogFatalAndExit(err error, format string, a ...any) {

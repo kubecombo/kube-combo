@@ -1,17 +1,12 @@
-package pinger
+package debugger
 
 import (
-	"context"
 	"flag"
 	"os"
-	"time"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 )
 
@@ -59,6 +54,7 @@ func ParseFlags() (*Configuration, error) {
 		argDnsLookup          = pflag.String("dnslookup", "", "check external dns resolve from pod, eg: 'baidu.com,google.com'")
 		argEnableNodeIPCheck  = pflag.Bool("enable-node-ip-check", false, "Whether to enable node IP check")
 	)
+
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
 	klog.InitFlags(klogFlags)
 
@@ -101,67 +97,7 @@ func ParseFlags() (*Configuration, error) {
 
 		LogPerm: *argLogPerm,
 	}
-	if err := config.initKubeClient(); err != nil {
-		return nil, err
-	}
 
-	podName := os.Getenv("POD_NAME")
-	for i := range 5 {
-		time.Sleep(3 * time.Second)
-		pod, err := config.KubeClient.CoreV1().Pods(config.DaemonSetNamespace).Get(context.Background(), podName, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("failed to get self pod %s/%s: %v", config.DaemonSetNamespace, podName, err)
-			return nil, err
-		}
-
-		if len(pod.Status.PodIPs) != 0 {
-			config.PodProtocols = make([]string, len(pod.Status.PodIPs))
-			for i, podIP := range pod.Status.PodIPs {
-				config.PodProtocols[i] = util.CheckProtocol(podIP.IP)
-			}
-			break
-		}
-
-		if len(pod.Status.ContainerStatuses) != 0 && pod.Status.ContainerStatuses[0].Ready {
-			util.LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s: podIPs is empty while the container is ready", config.DaemonSetNamespace, podName)
-		}
-		klog.Warningf("try %d, cannot get Pod IPs now, waiting Pod to be ready", i)
-	}
-
-	if len(config.PodProtocols) == 0 {
-		util.LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s after 3 attempts", config.DaemonSetNamespace, podName)
-	}
-
-	klog.Infof("pinger config is %+v", config)
+	klog.Infof("debugger config is %+v", config)
 	return config, nil
-}
-
-func (config *Configuration) initKubeClient() error {
-	var cfg *rest.Config
-	var err error
-	if config.KubeConfigFile == "" {
-		cfg, err = rest.InClusterConfig()
-		if err != nil {
-			klog.Errorf("use in cluster config failed %v", err)
-			return err
-		}
-	} else {
-		cfg, err = clientcmd.BuildConfigFromFlags("", config.KubeConfigFile)
-		if err != nil {
-			klog.Errorf("use --kubeconfig %s failed %v", config.KubeConfigFile, err)
-			return err
-		}
-	}
-	cfg.Timeout = 15 * time.Second
-	cfg.QPS = 1000
-	cfg.Burst = 2000
-	cfg.ContentType = "application/vnd.kubernetes.protobuf"
-	cfg.AcceptContentTypes = "application/vnd.kubernetes.protobuf,application/json"
-	kubeClient, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		klog.Errorf("init kubernetes client failed %v", err)
-		return err
-	}
-	config.KubeClient = kubeClient
-	return nil
 }
