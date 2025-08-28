@@ -51,7 +51,10 @@ const (
 	DebuggerName = "debug"
 	PingerName   = "ping"
 
+	// custom script mount directory
 	ScriptsPath = "scripts"
+	// an inspection task list mounting directory
+	RunAtPath = "jobs"
 
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
@@ -169,7 +172,6 @@ type DebuggerReconciler struct {
 func (r *DebuggerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
 	// delete debugger itself, its owned deploy will be deleted automatically
 	namespacedName := req.NamespacedName.String()
 	r.Log.Info("start reconcile", "debugger", namespacedName)
@@ -366,6 +368,10 @@ func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Reques
 		newDebugger.Status.HostNetwork = debugger.Spec.HostNetwork
 		changed = true
 	}
+	if debugger.Spec.RunAt != debugger.Status.RunAt {
+		newDebugger.Status.RunAt = debugger.Spec.RunAt
+		changed = true
+	}
 	if !changed {
 		return nil
 	}
@@ -412,11 +418,13 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		r.Log.Error(err, "should set cpu")
 		return err
 	}
+
 	if debugger.Spec.Memory == "" {
 		err := errors.New("debugger pod memory is required")
 		r.Log.Error(err, "should set memory")
 		return err
 	}
+
 	if debugger.Spec.Image == "" {
 		err := fmt.Errorf("debugger %s image is required", debugger.Name)
 		r.Log.Error(err, "should set image")
@@ -428,6 +436,7 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		r.Log.Error(err, "should set workload type")
 		return err
 	}
+
 	if debugger.Spec.WorkloadType != WorkloadTypeDaemonset && debugger.Spec.WorkloadType != WorkloadTypePod {
 		err := fmt.Errorf("debugger %s workload type is invalid, should be daemonset or pod", debugger.Name)
 		r.Log.Error(err, "should set valid workload type")
@@ -686,6 +695,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 	}
 	return envs
 }
+
 func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1.Volume, []corev1.VolumeMount) {
 	volumes := []corev1.Volume{
 		{
@@ -923,12 +933,13 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 			r.Log.Error(err, "failed to get config map", "configMap", cmName)
 			return nil, nil
 		}
-		scriptsVolumeMounts := []corev1.VolumeMount{}
-		scriptsVolumeMounts = append(scriptsVolumeMounts, corev1.VolumeMount{
-			Name:      cmName,
-			MountPath: ScriptsPath,
-			ReadOnly:  true,
-		})
+		scriptsVolumeMounts := []corev1.VolumeMount{
+			{
+				Name:      cmName,
+				MountPath: ScriptsPath,
+				ReadOnly:  true,
+			},
+		}
 		// volumes add config map
 		items := []corev1.KeyToPath{}
 		for key := range cm.Data {
@@ -959,6 +970,35 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		// add config map volume mounts
 		volumeMounts = append(volumeMounts, scriptsVolumeMounts...)
 	}
+
+	if debugger.Spec.RunAt != "" {
+		cmName := debugger.Spec.RunAt
+		_, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
+		if err != nil {
+			r.Log.Error(err, "failed to get config map", "configMap", cmName)
+			return nil, nil
+		}
+		scriptsVolumeMounts := []corev1.VolumeMount{
+			{
+				Name:      cmName,
+				MountPath: RunAtPath,
+				ReadOnly:  true,
+			},
+		}
+		volumes = append(volumes, corev1.Volume{
+			Name: cmName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: debugger.Spec.RunAt,
+					},
+				},
+			},
+		})
+		// add config map volume mounts
+		volumeMounts = append(volumeMounts, scriptsVolumeMounts...)
+	}
+
 	return volumes, volumeMounts
 }
 
@@ -1090,6 +1130,7 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger, debugger *m
 	}
 	return pingerContainer
 }
+
 func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinger *myv1.Pinger, oldDs *appsv1.DaemonSet) (newDs *appsv1.DaemonSet) {
 	namespacedName := fmt.Sprintf("%s/%s", debugger.Namespace, debugger.Name)
 	r.Log.Info("start daemonsetForDebugger", "debugger", namespacedName)
@@ -1214,19 +1255,16 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.ConfigMap != debugger.Status.ConfigMap ||
 		debugger.Spec.EnablePinger != debugger.Status.EnablePinger ||
 		debugger.Spec.EnableSys != debugger.Status.EnableSys ||
-		debugger.Spec.Pinger != debugger.Status.Pinger {
+		debugger.Spec.Pinger != debugger.Status.Pinger ||
+		debugger.Spec.NodeName != debugger.Status.NodeName ||
+		debugger.Spec.HostNetwork != debugger.Status.HostNetwork ||
+		debugger.Spec.RunAt != debugger.Status.RunAt {
 		return true
 	}
 	if !reflect.DeepEqual(debugger.Spec.Tolerations, debugger.Status.Tolerations) {
 		return true
 	}
 	if !reflect.DeepEqual(debugger.Spec.Affinity, debugger.Status.Affinity) {
-		return true
-	}
-	if debugger.Spec.NodeName != debugger.Status.NodeName {
-		return true
-	}
-	if debugger.Spec.HostNetwork != debugger.Status.HostNetwork {
 		return true
 	}
 	return false
