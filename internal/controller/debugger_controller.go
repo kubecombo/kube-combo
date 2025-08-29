@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/kubecombo/kube-combo/internal/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -45,89 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	myv1 "github.com/kubecombo/kube-combo/api/v1"
-)
-
-const (
-	DebuggerName = "debug"
-	PingerName   = "ping"
-
-	// custom script mount directory
-	ScriptsPath = "scripts"
-	// an inspection task list mounting directory
-	RunAtPath = "jobs"
-
-	DebuggerStartCMD = "/debugger-start.sh"
-	PingerStartCMD   = "/pinger-start.sh"
-
-	// WorkloadTypePod is the workload type for pod
-	WorkloadTypePod = "pod"
-	// WorkloadTypeDaemonset is the workload type for daemonset
-	WorkloadTypeDaemonset = "daemonset"
-	// debugger env
-	Subnet = "SUBNET"
-	// pinger env
-	Ping    = "PING"
-	TcpPing = "TCP_PING"
-	UdpPing = "UDP_PING"
-	Dns     = "DNS"
-
-	EnableMetrics = "ENABLE_METRICS"
-
-	// service account
-	ServiceAccountName = "kube-ovn-app"
-)
-
-// volume mounts
-const (
-	// volume path and name
-	VarRunOpenvswitch = "/var/run/openvswitch"
-	OpenvswitchName   = "host-run-ovs"
-
-	VarRunOvn = "/var/run/ovn"
-	OvnName   = "host-run-ovn"
-
-	EtcOpenvswitch    = "/etc/openvswitch"
-	OpenvswitchConfig = "host-config-openvswitch"
-
-	VarLogOpenvswitch = "/var/log/openvswitch"
-	OpenvswitchLog    = "host-log-openvswitch"
-
-	VarLogOvn = "/var/log/ovn"
-	OvnLog    = "host-log-ovn"
-
-	VarLogKubeOvn = "/var/log/kube-ovn"
-	KubeOvnLog    = "host-log-kube-ovn"
-
-	VarLogKubeCombo = "/var/log/kube-combo"
-	KubeComboLog    = "host-log-kube-combo"
-
-	LocalTime     = "/etc/localtime"
-	LocalTimeName = "localtime"
-
-	VarRunTls = "/var/run/tls"
-	TlsName   = "kube-ovn-tls"
-)
-
-const (
-	// enable sys system
-	EtcSystemdPath         = "/etc/systemd/system"
-	EtcSystemdName         = "etc-systemd"
-	RunSystemdPath         = "/run/systemd/system"
-	RunSystemdName         = "run-systemd"
-	VarRunSystemdPath      = "/var/run/systemd/system"
-	VarRunSystemdName      = "var-run-systemd"
-	UsrLocalLibSystemdPath = "/usr/local/lib/systemd/system"
-	UsrLocalLibSystemdName = "usr-local-lib-systemd"
-	UsrLibSystemdPath      = "/usr/lib/systemd/system"
-	UsrLibSystemdName      = "usr-lib-systemd"
-	LibSystemdPath         = "/lib/systemd/system"
-	LibSystemdName         = "lib-systemd"
-
-	// enable sys *
-	CgroupPath  = "/sys/fs/cgroup"
-	CgroupName  = "cgroup"
-	JournalPath = "/var/log/journal"
-	JournalName = "var-log-journal"
 )
 
 // DebuggerReconciler reconciles a Debugger object
@@ -279,7 +197,7 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 	}
 
 	// create debugger or update
-	if debugger.Spec.WorkloadType == WorkloadTypePod {
+	if debugger.Spec.WorkloadType == util.WorkloadTypePod {
 		// deployment for one pod case
 		if err := r.handleAddOrUpdatePod(req, debugger, pinger); err != nil {
 			r.Log.Error(err, "failed to handleAddOrUpdateDeploy")
@@ -437,13 +355,13 @@ func (r *DebuggerReconciler) validateDebugger(debugger *myv1.Debugger) error {
 		return err
 	}
 
-	if debugger.Spec.WorkloadType != WorkloadTypeDaemonset && debugger.Spec.WorkloadType != WorkloadTypePod {
+	if debugger.Spec.WorkloadType != util.WorkloadTypeDaemonset && debugger.Spec.WorkloadType != util.WorkloadTypePod {
 		err := fmt.Errorf("debugger %s workload type is invalid, should be daemonset or pod", debugger.Name)
 		r.Log.Error(err, "should set valid workload type")
 		return err
 	}
 
-	if debugger.Spec.WorkloadType == WorkloadTypeDaemonset {
+	if debugger.Spec.WorkloadType == util.WorkloadTypeDaemonset {
 		if debugger.Spec.NodeName != "" {
 			err := fmt.Errorf("debugger %s daemonset not need node name", debugger.Name)
 			r.Log.Error(err, "should not set node name for daemonset debugger pod")
@@ -597,13 +515,13 @@ func (r *DebuggerReconciler) handleAddOrUpdateDaemonset(req ctrl.Request, debugg
 
 func labelsFor(debugger *myv1.Debugger) map[string]string {
 	return map[string]string{
-		DebuggerName: debugger.Name,
+		util.DebuggerName: debugger.Name,
 	}
 }
 
 func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinger) []corev1.EnvVar {
 	var dsName, subnetName string
-	if debugger.Spec.WorkloadType == WorkloadTypeDaemonset {
+	if debugger.Spec.WorkloadType == util.WorkloadTypeDaemonset {
 		dsName = debugger.Name
 	}
 	if !debugger.Spec.HostNetwork {
@@ -663,7 +581,7 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 			Value: dsName,
 		},
 		{
-			Name:  Subnet,
+			Name:  util.Subnet,
 			Value: subnetName,
 		},
 	}
@@ -671,23 +589,23 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 	if pinger != nil {
 		pingerEnvs := []corev1.EnvVar{
 			{
-				Name:  EnableMetrics,
+				Name:  util.EnableMetrics,
 				Value: strconv.FormatBool(pinger.Spec.EnableMetrics),
 			},
 			{
-				Name:  Ping,
+				Name:  util.Ping,
 				Value: pinger.Spec.Ping,
 			},
 			{
-				Name:  TcpPing,
+				Name:  util.TcpPing,
 				Value: pinger.Spec.TcpPing,
 			},
 			{
-				Name:  UdpPing,
+				Name:  util.UdpPing,
 				Value: pinger.Spec.UdpPing,
 			},
 			{
-				Name:  Dns,
+				Name:  util.Dns,
 				Value: pinger.Spec.Dns,
 			},
 		}
@@ -699,187 +617,187 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1.Volume, []corev1.VolumeMount) {
 	volumes := []corev1.Volume{
 		{
-			Name: OpenvswitchName,
+			Name: util.OpenvswitchName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarRunOpenvswitch,
+					Path: util.VarRunOpenvswitch,
 				},
 			},
 		},
 		{
-			Name: OvnName,
+			Name: util.OvnName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarRunOvn,
+					Path: util.VarRunOvn,
 				},
 			},
 		},
 		{
-			Name: OpenvswitchConfig,
+			Name: util.OpenvswitchConfig,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: EtcOpenvswitch,
+					Path: util.EtcOpenvswitch,
 				},
 			},
 		},
 		{
-			Name: OpenvswitchLog,
+			Name: util.OpenvswitchLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarLogOpenvswitch,
+					Path: util.VarLogOpenvswitch,
 				},
 			},
 		},
 		{
-			Name: OvnLog,
+			Name: util.OvnLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarLogOvn,
+					Path: util.VarLogOvn,
 				},
 			},
 		},
 		{
-			Name: KubeOvnLog,
+			Name: util.KubeOvnLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarLogKubeOvn,
+					Path: util.VarLogKubeOvn,
 				},
 			},
 		},
 		{
-			Name: KubeComboLog,
+			Name: util.KubeComboLog,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarLogKubeCombo,
+					Path: util.VarLogKubeCombo,
 				},
 			},
 		},
 		{
-			Name: LocalTimeName,
+			Name: util.LocalTimeName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: LocalTime,
+					Path: util.LocalTime,
 				},
 			},
 		},
 		{
-			Name: TlsName,
+			Name: util.TlsName,
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: VarRunTls,
+					Path: util.VarRunTls,
 				},
 			},
 		},
 	}
 	volumeMounts := []corev1.VolumeMount{
 		{
-			Name:      OpenvswitchName,
-			MountPath: VarRunOpenvswitch,
+			Name:      util.OpenvswitchName,
+			MountPath: util.VarRunOpenvswitch,
 			ReadOnly:  true,
 		},
 		{
-			Name:      OvnName,
-			MountPath: VarRunOvn,
+			Name:      util.OvnName,
+			MountPath: util.VarRunOvn,
 			ReadOnly:  true,
 		},
 		{
-			Name:      OpenvswitchConfig,
-			MountPath: EtcOpenvswitch,
+			Name:      util.OpenvswitchConfig,
+			MountPath: util.EtcOpenvswitch,
 			ReadOnly:  true,
 		},
 		{
-			Name:      OpenvswitchLog,
-			MountPath: VarLogOpenvswitch,
+			Name:      util.OpenvswitchLog,
+			MountPath: util.VarLogOpenvswitch,
 			ReadOnly:  true,
 		},
 		{
-			Name:      OvnLog,
-			MountPath: VarLogOvn,
+			Name:      util.OvnLog,
+			MountPath: util.VarLogOvn,
 			ReadOnly:  true,
 		},
 		{
-			Name:      KubeOvnLog,
-			MountPath: VarLogKubeOvn,
+			Name:      util.KubeOvnLog,
+			MountPath: util.VarLogKubeOvn,
 			ReadOnly:  true,
 		},
 		{
-			Name:      KubeComboLog,
-			MountPath: VarLogKubeCombo,
+			Name:      util.KubeComboLog,
+			MountPath: util.VarLogKubeCombo,
 		},
 		{
-			Name:      LocalTimeName,
-			MountPath: LocalTime,
+			Name:      util.LocalTimeName,
+			MountPath: util.LocalTime,
 			ReadOnly:  true,
 		},
 		{
-			Name:      TlsName,
-			MountPath: VarRunTls,
+			Name:      util.TlsName,
+			MountPath: util.VarRunTls,
 			ReadOnly:  true,
 		},
 	}
 	if debugger.Spec.EnableSys {
 		sysVolumes := []corev1.Volume{
 			{
-				Name: EtcSystemdName,
+				Name: util.EtcSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: EtcSystemdPath,
+						Path: util.EtcSystemdPath,
 					},
 				},
 			},
 			{
-				Name: RunSystemdName,
+				Name: util.RunSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: RunSystemdPath,
+						Path: util.RunSystemdPath,
 					},
 				},
 			},
 			{
-				Name: VarRunSystemdName,
+				Name: util.VarRunSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: VarRunSystemdPath,
+						Path: util.VarRunSystemdPath,
 					},
 				},
 			},
 			{
-				Name: UsrLocalLibSystemdName,
+				Name: util.UsrLocalLibSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: UsrLocalLibSystemdPath,
+						Path: util.UsrLocalLibSystemdPath,
 					},
 				},
 			},
 			{
-				Name: UsrLibSystemdName,
+				Name: util.UsrLibSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: UsrLibSystemdPath,
+						Path: util.UsrLibSystemdPath,
 					},
 				},
 			},
 			{
-				Name: LibSystemdName,
+				Name: util.LibSystemdName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: LibSystemdPath,
+						Path: util.LibSystemdPath,
 					},
 				},
 			},
 			{
-				Name: CgroupName,
+				Name: util.CgroupName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: CgroupPath,
+						Path: util.CgroupPath,
 					},
 				},
 			},
 			{
-				Name: JournalName,
+				Name: util.JournalName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: JournalPath,
+						Path: util.JournalPath,
 					},
 				},
 			},
@@ -887,40 +805,40 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		volumes = append(volumes, sysVolumes...)
 		sysVolumeMounts := []corev1.VolumeMount{
 			{
-				Name:      EtcSystemdName,
-				MountPath: EtcSystemdPath,
+				Name:      util.EtcSystemdName,
+				MountPath: util.EtcSystemdPath,
 				ReadOnly:  true,
 			},
 			{
-				Name:      RunSystemdName,
-				MountPath: RunSystemdPath,
+				Name:      util.RunSystemdName,
+				MountPath: util.RunSystemdPath,
 			},
 			{
-				Name:      VarRunSystemdName,
-				MountPath: VarRunSystemdPath,
+				Name:      util.VarRunSystemdName,
+				MountPath: util.VarRunSystemdPath,
 				ReadOnly:  true,
 			},
 			{
-				Name:      UsrLocalLibSystemdName,
-				MountPath: UsrLocalLibSystemdPath,
+				Name:      util.UsrLocalLibSystemdName,
+				MountPath: util.UsrLocalLibSystemdPath,
 				ReadOnly:  true,
 			},
 			{
-				Name:      UsrLibSystemdName,
-				MountPath: UsrLibSystemdPath,
+				Name:      util.UsrLibSystemdName,
+				MountPath: util.UsrLibSystemdPath,
 			},
 			{
-				Name:      LibSystemdName,
-				MountPath: LibSystemdPath,
+				Name:      util.LibSystemdName,
+				MountPath: util.LibSystemdPath,
 			},
 			{
-				Name:      CgroupName,
-				MountPath: CgroupPath,
+				Name:      util.CgroupName,
+				MountPath: util.CgroupPath,
 				ReadOnly:  true,
 			},
 			{
-				Name:      JournalName,
-				MountPath: JournalPath,
+				Name:      util.JournalName,
+				MountPath: util.JournalPath,
 			},
 		}
 		volumeMounts = append(volumeMounts, sysVolumeMounts...)
@@ -936,7 +854,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		scriptsVolumeMounts := []corev1.VolumeMount{
 			{
 				Name:      cmName,
-				MountPath: ScriptsPath,
+				MountPath: util.ScriptsPath,
 				ReadOnly:  true,
 			},
 		}
@@ -981,7 +899,7 @@ func (r *DebuggerReconciler) getVolumesMounts(debugger *myv1.Debugger) ([]corev1
 		scriptsVolumeMounts := []corev1.VolumeMount{
 			{
 				Name:      cmName,
-				MountPath: RunAtPath,
+				MountPath: util.RunAtPath,
 				ReadOnly:  true,
 			},
 		}
@@ -1013,9 +931,9 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 		newPodAnnotations = oldPod.Annotations
 	}
 	podAnnotations := map[string]string{
-		KubeovnLogicalSwitchAnnotation: debugger.Spec.Subnet,
-		KubeovnIngressRateAnnotation:   debugger.Spec.QoSBandwidth,
-		KubeovnEgressRateAnnotation:    debugger.Spec.QoSBandwidth,
+		util.KubeovnLogicalSwitchAnnotation: debugger.Spec.Subnet,
+		util.KubeovnIngressRateAnnotation:   debugger.Spec.QoSBandwidth,
+		util.KubeovnEgressRateAnnotation:    debugger.Spec.QoSBandwidth,
 	}
 	for key, value := range podAnnotations {
 		newPodAnnotations[key] = value
@@ -1050,8 +968,8 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 			HostNetwork:   debugger.Spec.HostNetwork, // host network pod
 			HostPID:       debugger.Spec.HostNetwork, // host network pod see host pid
 			// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-			ServiceAccountName:       ServiceAccountName, // use kube-ovn service account
-			DeprecatedServiceAccount: ServiceAccountName, // use kube-ovn service account
+			ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
+			DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
 		},
 	}
 
@@ -1068,7 +986,7 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 	privileged := true
 
 	debuggerContainer := corev1.Container{
-		Name:  DebuggerName,
+		Name:  util.DebuggerName,
 		Image: debugger.Spec.Image,
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{
@@ -1080,7 +998,7 @@ func (r *DebuggerReconciler) getDebuggerContainer(debugger *myv1.Debugger) corev
 				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
 		},
-		Command:         []string{DebuggerStartCMD},
+		Command:         []string{util.DebuggerStartCMD},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
@@ -1102,7 +1020,7 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger, debugger *m
 	privileged := true
 
 	pingerContainer := corev1.Container{
-		Name:  PingerName,
+		Name:  util.PingerName,
 		Image: pinger.Spec.Image,
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{
@@ -1114,7 +1032,7 @@ func (r *DebuggerReconciler) getPingerContainer(pinger *myv1.Pinger, debugger *m
 				corev1.ResourceMemory: resource.MustParse(debugger.Spec.Memory),
 			},
 		},
-		Command:         []string{PingerStartCMD},
+		Command:         []string{util.PingerStartCMD},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		SecurityContext: &corev1.SecurityContext{
 			Privileged:               &privileged,
@@ -1142,9 +1060,9 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 		newPodAnnotations = oldDs.Annotations
 	}
 	podAnnotations := map[string]string{
-		KubeovnLogicalSwitchAnnotation: debugger.Spec.Subnet,
-		KubeovnIngressRateAnnotation:   debugger.Spec.QoSBandwidth,
-		KubeovnEgressRateAnnotation:    debugger.Spec.QoSBandwidth,
+		util.KubeovnLogicalSwitchAnnotation: debugger.Spec.Subnet,
+		util.KubeovnIngressRateAnnotation:   debugger.Spec.QoSBandwidth,
+		util.KubeovnEgressRateAnnotation:    debugger.Spec.QoSBandwidth,
 	}
 	for key, value := range podAnnotations {
 		newPodAnnotations[key] = value
@@ -1190,8 +1108,8 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 					HostNetwork: debugger.Spec.HostNetwork, // host network pod
 					HostPID:     debugger.Spec.HostNetwork, // host network pod see host pid
 					// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-					ServiceAccountName:       ServiceAccountName, // use kube-ovn service account
-					DeprecatedServiceAccount: ServiceAccountName, // use kube-ovn service account
+					ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
+					DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
 					SecurityContext: &corev1.PodSecurityContext{
 						// run as root user
 						RunAsUser: &[]int64{0}[0],
