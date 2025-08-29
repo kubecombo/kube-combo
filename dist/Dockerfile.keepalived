@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:experimental
 ARG BASE_TAG
 FROM icoy/kube-combo-base:$BASE_TAG
+
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
