@@ -143,6 +143,22 @@ jobs:
           name: image-debugger-${{ matrix.arch }}-${{ matrix.branch }}
           path: image-debugger-${{ matrix.arch }}.tar
           retention-days: 7
+
+      - name: Build-Pinger
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        run: |
+          VERSION=$(make print-version)
+          make docker-build-pinger-${{ matrix.arch }}
+          docker tag icoy/kube-combo-pinger:v$VERSION icoy/kube-combo-pinger:v$VERSION-${{ matrix.arch }}
+          docker save icoy/kube-combo-pinger:v$VERSION icoy/kube-combo-pinger:v$VERSION-${{ matrix.arch }} -o image-pinger-${{ matrix.arch }}.tar
+
+      - name: Upload image to artifact
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-pinger-${{ matrix.arch }}-${{ matrix.branch }}
+          path: image-pinger-${{ matrix.arch }}.tar
+          retention-days: 7
   push:
     strategy:
       fail-fast: false
@@ -207,6 +223,18 @@ jobs:
         with:
           name: image-debugger-arm64-${{ matrix.branch }}
 
+      - name: Download pinger amd64 image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-pinger-amd64-${{ matrix.branch }}
+
+      - name: Download pinger arm64 image
+        if: (github.event.inputs.branch || matrix.branch) == matrix.branch
+        uses: actions/download-artifact@v4
+        with:
+          name: image-pinger-arm64-${{ matrix.branch }}
+
       - name: Load Image
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
         run: |
@@ -218,6 +246,8 @@ jobs:
           docker load --input image-strongswan-arm64.tar
           docker load --input image-debugger-amd64.tar
           docker load --input image-debugger-arm64.tar
+          docker load --input image-pinger-amd64.tar
+          docker load --input image-pinger-arm64.tar
 
       - name: Push
         if: (github.event.inputs.branch || matrix.branch) == matrix.branch
@@ -244,3 +274,7 @@ jobs:
           docker push icoy/kube-combo-debugger:v$TAG-arm64
           docker manifest create icoy/kube-combo-debugger:v$TAG icoy/kube-combo-debugger:v$TAG-amd64 icoy/kube-combo-debugger:v$TAG-arm64
           docker manifest push icoy/kube-combo-debugger:v$TAG
+          docker push icoy/kube-combo-pinger:v$TAG-amd64
+          docker push icoy/kube-combo-pinger:v$TAG-arm64
+          docker manifest create icoy/kube-combo-pinger:v$TAG icoy/kube-combo-pinger:v$TAG-amd64 icoy/kube-combo-pinger:v$TAG-arm64
+          docker manifest push icoy/kube-combo-pinger:v$TAG
