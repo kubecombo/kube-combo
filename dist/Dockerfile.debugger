@@ -7,4 +7,4 @@ COPY ./dist/scripts/ /runAt
 COPY ./dist/systemctl/* /
 COPY ./dist/debugger-setup/*.sh /
 COPY ./dist/kubectl-ko /usr/bin/kubectl-ko
-COPY ../bin/kube-combo-cmd /debugger
+COPY ./bin/kube-combo-cmd /debugger

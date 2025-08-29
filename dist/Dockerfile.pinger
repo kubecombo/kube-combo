@@ -3,5 +3,5 @@ ARG BASE_TAG
 FROM icoy/kube-combo-base:$BASE_TAG
 
 WORKDIR /
-COPY ../bin/kube-combo-cmd /pinger
-COPY ./pinger-setup/pinger-start.sh /pinger-start.sh
+COPY ./bin/kube-combo-cmd /pinger
+COPY ./dist/pinger-setup/pinger-start.sh /pinger-start.sh
