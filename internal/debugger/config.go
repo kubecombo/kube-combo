@@ -1,12 +1,21 @@
 package debugger
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 )
+
+type Task struct {
+	Detection string `json:"detection"`
+	Script    string `json:"script"`
+	Args      string `json:"args"`
+}
 
 type Configuration struct {
 	TaskFile string
@@ -44,4 +53,20 @@ func ParseFlags() (*Configuration, error) {
 
 	klog.Infof("debugger config is %+v", config)
 	return config, nil
+}
+
+func loadTasks(filePath string) (map[string][]Task, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	var tasks map[string][]Task
+	decoder := json.NewDecoder(f)
+	if err := decoder.Decode(&tasks); err != nil {
+		return nil, fmt.Errorf("failed to decode json: %v", err)
+	}
+
+	return tasks, nil
 }
