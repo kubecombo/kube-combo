@@ -1,0 +1,21 @@
+{
+    "CPU": [
+        {
+            "detection": "CPU MODEL",
+            "script": "xxx",
+            "args": "yyy"
+        },
+        {
+            "detection": "CPU USAGE",
+            "script": "xxx",
+            "args": "yyy"
+        }
+    ],
+    "Memory": [
+        {
+            "detection": "MEMORY USAGE",
+            "script": "xxx",
+            "args": "yyy"
+        }
+    ]
+}

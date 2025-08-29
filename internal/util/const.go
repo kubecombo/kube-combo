@@ -177,3 +177,8 @@ const (
 	KeepalivedStartUpCMD      = "/configure.sh"
 	KeepAlivedServer          = "keepalived"
 )
+
+// const for debugger
+const (
+	DetectionScriptsPath = "/runAt"
+)
