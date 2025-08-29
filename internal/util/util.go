@@ -120,3 +120,14 @@ func InitLogFilePerm(moduleName string, perm os.FileMode) {
 		}
 	}
 }
+
+func CheckFileExistence(path string) error {
+	_, err := os.Stat(path)
+	if err == nil {
+		return nil
+	}
+	if os.IsNotExist(err) {
+		return fmt.Errorf("TaskFile %s does not exist", path)
+	}
+	return fmt.Errorf("failed to access TaskFile %s: %v", path, err)
+}

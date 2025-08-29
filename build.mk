@@ -157,3 +157,8 @@ run-controller: manifests generate fmt vet install ## Run kube-combo controller 
 run-pinger: manifests generate fmt vet ## Run kube-combo pinger from your host.
 	go mod tidy
 	go run ./run/pinger/main.go
+
+.PHONY: run-debugger
+run-debugger: manifests generate fmt vet ## Run kube-combo pinger from your host.
+	go mod tidy
+	go run ./run/debugger/main.go --task=test.json 
