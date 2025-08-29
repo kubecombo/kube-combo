@@ -20,6 +20,7 @@ SSL_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-openvpn
 IPSEC_VPN_IMG_BASE ?= ${IMAGE_TAG_BASE}-strongswan
 KEEPALIVED_IMG_BASE ?= ${IMAGE_TAG_BASE}-keepalived
 DEBUGGER_IMG_BASE ?= ${IMAGE_TAG_BASE}-debugger
+PINGER_IMG_BASE ?= ${IMAGE_TAG_BASE}-pinger
 
 # Full Image URL
 IMG ?= $(IMAGE_TAG_BASE)-controller:v$(VERSION)
@@ -27,6 +28,7 @@ SSL_VPN_IMG ?= $(SSL_VPN_IMG_BASE):v$(VERSION)
 IPSEC_VPN_IMG ?= $(IPSEC_VPN_IMG_BASE):v$(VERSION)
 KEEPALIVED_IMG ?= $(KEEPALIVED_IMG_BASE):v$(VERSION)
 DEBUGGER_IMG ?= $(DEBUGGER_IMG_BASE):v$(VERSION)
+PINGER_IMG ?= $(PINGER_IMG_BASE):v$(VERSION)
 
 ##@ go build
 .PHONY: go-build-amd
@@ -63,10 +65,6 @@ docker-build-base-arm64: ## Build docker kube-combo-base image for arm64.
 .PHONY: docker-push-base
 docker-push-base: ## Push docker kube-combo image.
 	docker push ${BASE_IMG}
-
-.PHONY: docker-pull-base
-docker-pull-base:
-	docker pull ${BASE_IMG}
 
 .PHONY: docker-build-ssl-vpn-amd64
 docker-build-ssl-vpn-amd64: ## Build docker ssl-vpn image for amd64.
@@ -105,16 +103,56 @@ docker-push-keepalived: ## Push docker keepalived image
 	docker push ${KEEPALIVED_IMG}
 
 .PHONY: docker-build-debugger-amd64
-docker-build-debugger-amd64: ## Build docker debugger image for amd64.
+docker-build-debugger-amd64: go-build-amd ## Build docker debugger image for amd64.
 	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.debugger -t ${DEBUGGER_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-build-debugger-arm64
-docker-build-debugger-arm64: ## Build docker debugger image for arm64.
+docker-build-debugger-arm64: go-build-arm ## Build docker debugger image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.debugger -t ${DEBUGGER_IMG} --build-arg BASE_TAG=v${VERSION} .
 
 .PHONY: docker-push-debugger
 docker-push-debugger: ## Push docker debugger image
 	docker push ${DEBUGGER_IMG}
+
+.PHONY: docker-build-pinger-amd64
+docker-build-pinger-amd64: go-build-amd ## Build docker pinger image for amd64.
+	docker buildx build --network host --load --platform linux/amd64 -f ./dist/Dockerfile.pinger -t ${PINGER_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-build-pinger-arm64
+docker-build-pinger-arm64: go-build-arm ## Build docker pinger image for arm64.
+	docker buildx build --network host --load --platform linux/arm64 -f ./dist/Dockerfile.pinger -t ${PINGER_IMG} --build-arg BASE_TAG=v${VERSION} .
+
+.PHONY: docker-push-pinger
+docker-push-pinger: ## Push docker pinger image
+	docker push ${PINGER_IMG}
+
+.PHONY: docker-build-all-amd64
+docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 docker-build-debugger-amd64 docker-build-pinger-amd64 ## Build all images for amd64.
+
+.PHONY: docker-build-all-arm64
+docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 docker-build-debugger-arm64 docker-build-pinger-arm64 ## Build all images for arm64.
+
+.PHONY: docker-push-all 
+docker-push-all: ## Push all docker images
+	docker pull ${IMG} && \
+	docker push ${SSL_VPN_IMG} && \
+	docker push ${IPSEC_VPN_IMG} && \
+	docker push ${KEEPALIVED_IMG} && \
+	docker push ${DEBUGGER_IMG} && \
+	docker push ${PINGER_IMG}
+
+.PHONY: docker-pull-all
+docker-pull-all:
+	docker pull ${IMG} && \
+	docker pull ${SSL_VPN_IMG} && \
+	docker pull ${IPSEC_VPN_IMG} && \
+	docker pull ${KEEPALIVED_IMG} && \
+	docker pull ${DEBUGGER_IMG} && \
+	docker pull ${PINGER_IMG} 
+
+.PHONY: docker-pull-base
+docker-pull-base:
+	docker pull ${BASE_IMG}
 
 .PHONY: docker-pull-base-amd64
 docker-pull-base-amd64:
@@ -123,28 +161,6 @@ docker-pull-base-amd64:
 .PHONY: docker-pull-base-arm64
 docker-pull-base-arm64:
 	docker pull --platform linux/arm64 ${KUBE_OVN_BASE_IMG}
-
-.PHONY: docker-build-all-amd64
-docker-build-all-amd64: docker-build-amd64 docker-build-base-amd64 docker-build-ssl-vpn-amd64 docker-build-ipsec-vpn-amd64 docker-build-keepalived-amd64 docker-build-debugger-amd64
-
-.PHONY: docker-build-all-arm64
-docker-build-all-arm64: docker-build-arm64 docker-build-base-arm64 docker-build-ssl-vpn-arm64 docker-build-ipsec-vpn-arm64 docker-build-keepalived-arm64 docker-build-debugger-arm64
-
-.PHONY: docker-push-all
-docker-push-all:
-	docker pull ${IMG} && \
-	docker push ${SSL_VPN_IMG} && \
-	docker push ${IPSEC_VPN_IMG} && \
-	docker push ${KEEPALIVED_IMG} && \
-	docker push ${DEBUGGER_IMG}
-
-.PHONY: docker-pull-all
-docker-pull-all:
-	docker pull ${IMG} && \
-	docker pull ${SSL_VPN_IMG} && \
-	docker pull ${IPSEC_VPN_IMG} && \
-	docker pull ${KEEPALIVED_IMG} && \
-	docker pull ${DEBUGGER_IMG}
 
 ##@ run
 
