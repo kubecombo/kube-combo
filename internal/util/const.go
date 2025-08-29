@@ -17,9 +17,9 @@ const (
 	PingerName   = "ping"
 
 	// custom script mount directory
-	ScriptsPath = "scripts"
+	ScriptsPath = "/scripts"
 	// an inspection task list mounting directory
-	RunAtPath = "tasks"
+	RunAtPath = "/tasks"
 
 	DebuggerStartCMD = "/debugger-start.sh"
 	PingerStartCMD   = "/pinger-start.sh"
