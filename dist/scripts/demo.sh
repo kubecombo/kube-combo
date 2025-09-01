@@ -24,16 +24,16 @@ log_debug "当前执行路径为: $(pwd)"
 
 # 模拟检查条件
 if [ -f "/etc/passwd" ]; then
-    log_info "/etc/passwd 文件存在"
+	log_info  "/etc/passwd 文件存在"
 else
-    log_warn "/etc/passwd 文件不存在"
+	log_warn  "/etc/passwd 文件不存在"
 fi
 
 # 模拟错误情况
 command_not_found_output=$(non_existing_command 2>&1)
 # shellcheck disable=SC2181
 if [ $? -ne 0 ]; then
-    log_err "命令执行失败：$command_not_found_output"
+	log_err  "命令执行失败：$command_not_found_output"
 fi
 
 # 模拟警告
