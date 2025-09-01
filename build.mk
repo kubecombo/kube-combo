@@ -2,6 +2,7 @@
 
 COMMIT = git-$(shell git rev-parse --short HEAD)
 DATE = $(shell date +"%Y-%m-%d_%H:%M:%S")
+ARCH = $(shell uname -m)
 
 GOLDFLAGS = -extldflags '-z now' -X github.com/kubecombo/kube-combo/versions.COMMIT=$(COMMIT) -X github.com/kubecombo/kube-combo/versions.VERSION=$(RELEASE_TAG) -X github.com/kubecombo/kube-combo/versions.BUILDDATE=$(DATE)
 ifdef DEBUG
@@ -176,5 +177,14 @@ run-pinger: manifests generate fmt vet ## Run kube-combo pinger from your host.
 
 .PHONY: run-debugger
 run-debugger: manifests generate fmt vet ## Run kube-combo pinger from your host.
-	go mod tidy
-	go run ./run/debugger/main.go --task=test.json 
+	@echo "Detected architecture: $(ARCH)"
+ifeq ($(ARCH),x86_64)
+	@$(MAKE) go-build-amd
+	@$(MAKE) docker-build-debugger-amd64
+else ifeq ($(ARCH),aarch64)
+	@$(MAKE) go-build-arm
+	@$(MAKE) docker-build-debugger-arm64
+else
+	$(error Unsupported architecture: $(ARCH))
+endif
+	docker run -it --rm ${DEBUGGER_IMG} bash -c "mkdir -p /var/log/kube-combo && /debugger --task-dir=/runAt --task=task.json"

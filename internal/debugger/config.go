@@ -1,31 +1,26 @@
 package debugger
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
-	"os"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 )
 
-type Task struct {
-	Detection string `json:"detection"`
-	Script    string `json:"script"`
-	Args      string `json:"args"`
-}
-
 type Configuration struct {
-	TaskFile string
-	LogPerm  string
+	TaskFile       string
+	TaskFilePath   string
+	ScriptFilePath string
+	LogPerm        string
 }
 
 func ParseFlags() (*Configuration, error) {
 	var (
-		argTaskFile = pflag.String("task", "", "Path to debugger task file")
-		argLogPerm  = pflag.String("log-perm", "640", "The permission for the log file")
+		argTaskFile       = pflag.String("task", "", "File name for debugger task file")
+		argTaskFilePath   = pflag.String("task-dir", util.RunAtPath, "Path to debugger task file")
+		argScriptFilePath = pflag.String("script-dir", util.DetectionScriptsPath, "Path to debugger script file")
+		argLogPerm        = pflag.String("log-perm", "640", "The permission for the log file")
 	)
 
 	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
@@ -47,26 +42,12 @@ func ParseFlags() (*Configuration, error) {
 	pflag.Parse()
 
 	config := &Configuration{
-		TaskFile: *argTaskFile,
-		LogPerm:  *argLogPerm,
+		TaskFile:       *argTaskFile,
+		TaskFilePath:   *argTaskFilePath,
+		ScriptFilePath: *argScriptFilePath,
+		LogPerm:        *argLogPerm,
 	}
 
 	klog.Infof("debugger config is %+v", config)
 	return config, nil
-}
-
-func loadTasks(filePath string) (map[string][]Task, error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %v", err)
-	}
-	defer f.Close()
-
-	var tasks map[string][]Task
-	decoder := json.NewDecoder(f)
-	if err := decoder.Decode(&tasks); err != nil {
-		return nil, fmt.Errorf("failed to decode json: %v", err)
-	}
-
-	return tasks, nil
 }

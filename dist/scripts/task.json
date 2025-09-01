@@ -1,21 +1,56 @@
 {
-    "CPU": [
-        {
-            "detection": "CPU MODEL",
-            "script": "xxx",
-            "args": "yyy"
-        },
-        {
-            "detection": "CPU USAGE",
-            "script": "xxx",
-            "args": "yyy"
-        }
-    ],
-    "Memory": [
-        {
-            "detection": "MEMORY USAGE",
-            "script": "xxx",
-            "args": "yyy"
-        }
-    ]
+    "TIMESTAMP": "2025-09-01T13:00:00Z",
+    "Tasks": {
+        "RAID": [
+            "RAID_CARD_STATUS"
+        ],
+        "CPU": [
+            "CPU_MODEL",
+            "CPU_USAGE_RATE",
+            "CPU_TEMPERATURE",
+            "CPU_LOAD"
+        ],
+        "Network_Card": [
+            "NETWORK_PORT_PACKET_LOSS",
+            "NETWORK_PORT_CONNECTION_MODE",
+            "FULL-DUPLEX_MODE",
+            "NETWORK_PORT_SPEED",
+            "NETWORK_CARD_CONFLICT",
+            "UNPLUGGED_AND_DISCONNECTION"
+        ],
+        "Memory": [
+            "MEMORY_FREQUENCY",
+            "MEMORY_MANUFACTURER",
+            "MEMORY_READ-WRITE_PERFORMANCE",
+            "MEMORY_LOOSENING_ANOMALY",
+            "MEMORY_SIZE_ANOMALY",
+            "MEMORY_USAGE_RATE"
+        ],
+        "Basic_Disk_Function": [
+            "DISK_STATUS",
+            "DISK_BUSYNESS",
+            "SSD_LIFESPAN",
+            "SSD_INTERFACE_MODE",
+            "DISK_PERFORMANCE",
+            "IO_ERROR"
+        ],
+        "System_Partition": [
+            "DISK_USAGE"
+        ],
+        "Control_Node_Status": [
+            "OFFLINE_CONTROL_NODE",
+            "CONTROL_NODE_BASIC_COMPONENT",
+            "CLUSTER_TIME_SYNCHRONIZATION_SERVICE",
+            "CONTROL_NODE_MANAGEMENT_SERVICE"
+        ],
+        "Network_Configuration": [
+            "STORAGE_COMMUNICATION_NETWORK_PORT_CONNECTIVITY",
+            "LINK_AGGREGATION_CONNECTIVITY",
+            "LATENCY",
+            "IP_CONFLICT",
+            "NEGOTIATED_RATE",
+            "MTU_CONSISTENCY",
+            "NETWORK_PORT_AGGREGATION_MODE_CONSISTENCY"
+        ]
+    }
 }

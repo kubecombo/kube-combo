@@ -1,7 +1,6 @@
 package debugger
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/kubecombo/kube-combo/internal/util"
@@ -14,24 +13,37 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		return
 	}
 
-	TaskFilePath := filepath.Join(util.RunAtPath, config.TaskFile)
-	if err := util.CheckFileExistence(TaskFilePath); err != nil {
+	taskFilePath := filepath.Join(config.TaskFilePath, config.TaskFile)
+	if err := util.CheckFileExistence(taskFilePath); err != nil {
 		klog.Error(err)
 		return
 	}
-	klog.Info("TaskFile exists:", TaskFilePath)
+	klog.Info("TaskFile exists:", taskFilePath)
 
-	tasks, err := loadTasks(TaskFilePath)
+	metrics, err := loadMetrics(taskFilePath)
 	if err != nil {
 		klog.Error(err)
 		return
 	}
 
-	for category, task := range tasks {
-		fmt.Println("Category:", category)
-		for _, item := range task {
-			fmt.Printf("  Detection: %s, Script: %s, Args: %s\n",
-				item.Detection, item.Script, item.Args)
+	varEnv := map[string]string{}
+	if metrics.Timestamp != "" {
+		varEnv["timestamp"] = metrics.Timestamp
+	}
+
+	for category, taskNames := range metrics.Tasks {
+		for _, taskName := range taskNames {
+			task, ok := TaskMap[taskName]
+			if !ok {
+				klog.Warningf("[%s: %s] Task mapping not found\n", category, taskName)
+				continue
+			}
+
+			klog.Infof("Running [%s: %s] %s %s\n", category, taskName, task.Script, task.Args)
+			if err := runTask(task, varEnv); err != nil {
+				klog.Error("Error:", err)
+				// TODO: post error info when detection failed
+			}
 		}
 	}
 }
