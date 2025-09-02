@@ -20,26 +20,26 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	}
 	klog.Info("TaskFile exists:", taskFilePath)
 
-	metrics, err := loadMetrics(taskFilePath)
+	detection, err := loadDetection(taskFilePath)
 	if err != nil {
 		klog.Error(err)
 		return
 	}
 
 	varEnv := map[string]string{}
-	if metrics.Timestamp != "" {
-		varEnv["timestamp"] = metrics.Timestamp
+	if detection.Timestamp != "" {
+		varEnv["timestamp"] = detection.Timestamp
 	}
 
-	for category, taskNames := range metrics.Tasks {
+	for category, taskNames := range detection.Tasks {
 		for _, taskName := range taskNames {
 			task, ok := TaskMap[taskName]
 			if !ok {
-				klog.Warningf("[%s: %s] Task mapping not found\n", category, taskName)
+				klog.Warningf("[%s: %s] Task mapping not found", category, taskName)
 				continue
 			}
 
-			klog.Infof("Running [%s: %s] %s %s\n", category, taskName, task.Script, task.Args)
+			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
 			if err := runTask(task, varEnv); err != nil {
 				klog.Error("Error:", err)
 				// TODO: post error info when detection failed
