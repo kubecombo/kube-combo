@@ -1,11 +1,13 @@
 package debugger
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type Detection struct {
@@ -87,22 +89,35 @@ func loadDetection(filePath string) (*Detection, error) {
 	return &d, nil
 }
 
-func runTask(task Task, envVars map[string]string) error {
+func runTask(task Task, envVars map[string]string, timeout time.Duration) error {
 	args := []string{}
 	if task.Args != "" {
 		args = strings.Fields(task.Args)
 	}
 
-	cmd := exec.Command(task.Script, args...)
-	cmd.Env = os.Environ()
-	for k, v := range envVars {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, task.Script, args...)
+
+	cmd.Env = append(os.Environ(), formatEnv(envVars)...)
+
 	output, err := cmd.CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		return fmt.Errorf("task %s timed out after %s", task.Script, timeout)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to run %s: %v, output: %s", task.Script, err, string(output))
 	}
 
 	fmt.Printf("Output of %s:\n%s\n", task.Script, string(output))
 	return nil
+}
+
+func formatEnv(env map[string]string) []string {
+	result := make([]string, 0, len(env))
+	for k, v := range env {
+		result = append(result, fmt.Sprintf("%s=%s", k, v))
+	}
+	return result
 }
