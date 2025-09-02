@@ -13,7 +13,7 @@
         "Network_Card": [
             "NETWORK_PORT_PACKET_LOSS",
             "NETWORK_PORT_CONNECTION_MODE",
-            "FULL-DUPLEX_MODE",
+            "FULL_DUPLEX_MODE",
             "NETWORK_PORT_SPEED",
             "NETWORK_CARD_CONFLICT",
             "UNPLUGGED_AND_DISCONNECTION"
@@ -21,7 +21,7 @@
         "Memory": [
             "MEMORY_FREQUENCY",
             "MEMORY_MANUFACTURER",
-            "MEMORY_READ-WRITE_PERFORMANCE",
+            "MEMORY_READ_WRITE_PERFORMANCE",
             "MEMORY_LOOSENING_ANOMALY",
             "MEMORY_SIZE_ANOMALY",
             "MEMORY_USAGE_RATE"
