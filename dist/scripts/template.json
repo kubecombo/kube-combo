@@ -5,43 +5,51 @@
     {
       "detection": "CPU MODEL",
       "description": "A type of CPU model used in the system.",
+      "status": "",
       "results": [
         {
           "key": "Hygon",
           "value": "x86_64",
-          "err": ""
+          "err": "",
+          "level": ""
         }
       ]
     },
     {
       "detection": "CPU USAGE",
       "description": "The current CPU usage percentage.",
+      "status": "",
       "results": [
         {
           "key": "CPU0",
           "value": "90",
-          "err": "CPU使用率较高"
+          "err": "CPU使用率较高",
+          "level": ""
         },
         {
           "key": "CPU1",
           "value": "50",
-          "err": ""
+          "err": "",
+          "level": ""
         }
       ]
     },
     {
       "detection": "CPU TEMPERATURE",
       "description": "The current temperature of the CPU in degrees Celsius.",
+      "status": "",
       "results": [
         {
           "key": "CPU0",
           "value": "90",
-          "err": "CPU温度较高"
+          "err": "CPU温度较高",
+          "level": ""
         },
         {
           "key": "CPU1",
           "value": "50",
-          "err": ""
+          "err": "",
+          "level": ""
         }
       ]
     }
@@ -50,16 +58,19 @@
     {
       "detection": "MEMORY USAGE",
       "description": "The current memory usage percentage.",
+      "status": "",
       "results": [
         {
           "key": "Total",
           "value": "16GB",
-          "err": ""
+          "err": "",
+          "level": ""
         },
         {
           "key": "Used",
           "value": "8GB",
-          "err": ""
+          "err": "",
+          "level": ""
         }
       ]
     }
