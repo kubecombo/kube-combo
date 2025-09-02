@@ -15,7 +15,24 @@ EOF
 echo "###### show env ######"
 env
 
-# 1. run script
+# 1. run inspection
+echo "###### run inspection ######"
+INSPECTION_DIR="/jobs"
+if [ -d "$INSPECTION_DIR" ]; then
+  files=()
+  while IFS= read -r f; do
+    files+=("$(basename "$f")")
+  done < <(find "$INSPECTION_DIR" -type f)
+
+  for file in "${files[@]}"; do
+    # TODO: 执行巡检命令
+    echo "文件名：$file"
+  done
+else
+  echo "Directory $INSPECTION_DIR does not exist."
+fi
+
+# 2. run script
 echo "###### run check list ######"
 if [ "$HOST_CHECK_LIST" = "true" ]; then
   echo "Running host check list..."
@@ -43,6 +60,6 @@ else
   echo "Directory $SCRIPTS_DIR does not exist."
 fi
 
-# 2. hold the container
+# 3. hold the container
 echo "###### sleep infinity ######"
 sleep infinity

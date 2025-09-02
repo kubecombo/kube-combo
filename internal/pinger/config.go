@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -67,7 +68,7 @@ func ParseFlags() (*Configuration, error) {
 		if f2 != nil {
 			value := f1.Value.String()
 			if err := f2.Value.Set(value); err != nil {
-				LogFatalAndExit(err, "failed to set flag")
+				util.LogFatalAndExit(err, "failed to set flag")
 			}
 		}
 	})
@@ -116,19 +117,19 @@ func ParseFlags() (*Configuration, error) {
 		if len(pod.Status.PodIPs) != 0 {
 			config.PodProtocols = make([]string, len(pod.Status.PodIPs))
 			for i, podIP := range pod.Status.PodIPs {
-				config.PodProtocols[i] = CheckProtocol(podIP.IP)
+				config.PodProtocols[i] = util.CheckProtocol(podIP.IP)
 			}
 			break
 		}
 
 		if len(pod.Status.ContainerStatuses) != 0 && pod.Status.ContainerStatuses[0].Ready {
-			LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s: podIPs is empty while the container is ready", config.DaemonSetNamespace, podName)
+			util.LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s: podIPs is empty while the container is ready", config.DaemonSetNamespace, podName)
 		}
 		klog.Warningf("try %d, cannot get Pod IPs now, waiting Pod to be ready", i)
 	}
 
 	if len(config.PodProtocols) == 0 {
-		LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s after 3 attempts", config.DaemonSetNamespace, podName)
+		util.LogFatalAndExit(nil, "failed to get IPs of Pod %s/%s after 3 attempts", config.DaemonSetNamespace, podName)
 	}
 
 	klog.Infof("pinger config is %+v", config)
