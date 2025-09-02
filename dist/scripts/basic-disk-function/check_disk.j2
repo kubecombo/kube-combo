@@ -1,0 +1,71 @@
+{
+  "nodename": "{{ nodename }}",
+  "timestamp": "{{ timestamp }}",
+  "Disk": [
+    {%- set disk_sections = [] %}
+
+    {%- if disk_status_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "DISK STATUS",
+        "description": "Physical disk online status check.",
+        "results": disk_status_results
+      }) %}
+    {%- endif %}
+
+    {%- if disk_busy_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "DISK IO UTILIZATION",
+        "description": "Disk I/O utilization check.",
+        "results": disk_busy_results
+      }) %}
+    {%- endif %}
+
+    {%- if ssd_lifetime_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "SSD LIFETIME",
+        "description": "Remaining lifetime percentage of SSDs.",
+        "results": ssd_lifetime_results
+      }) %}
+    {%- endif %}
+
+    {%- if ssd_interface_mode_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "SSD INTERFACE MODE",
+        "description": "Interface mode of SSDs (e.g., SATA, NVMe).",
+        "results": ssd_interface_mode_results
+      }) %}
+    {%- endif %}
+
+    {%- if disk_performance_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "DISK PERFORMANCE",
+        "description": "Read/write performance test using fio.",
+        "results": disk_performance_results
+      }) %}
+    {%- endif %}
+
+    {%- if io_errors_results %}
+      {%- set _ = disk_sections.append({
+        "detection": "DISK IO ERRORS",
+        "description": "I/O error detection from diskstats and dmesg logs.",
+        "results": io_errors_results
+      }) %}
+    {%- endif %}
+
+    {%- for section in disk_sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}

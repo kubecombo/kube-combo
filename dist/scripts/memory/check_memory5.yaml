@@ -1,0 +1,411 @@
+nodename: vincent
+timestamp: "2025:08:20 16:02:54"
+
+memory_usage_results:
+  - key: Usage
+    value: "18%"
+    err: ""
+
+memory_vendor_results:
+  - key: RAM slot #0
+    value: Not Specified
+    err: ""
+  - key: RAM slot #1
+    value: Not Specified
+    err: ""
+  - key: RAM slot #2
+    value: Not Specified
+    err: ""
+  - key: RAM slot #3
+    value: Not Specified
+    err: ""
+  - key: RAM slot #4
+    value: Not Specified
+    err: ""
+  - key: RAM slot #5
+    value: Not Specified
+    err: ""
+  - key: RAM slot #6
+    value: Not Specified
+    err: ""
+  - key: RAM slot #7
+    value: Not Specified
+    err: ""
+  - key: RAM slot #8
+    value: Not Specified
+    err: ""
+  - key: RAM slot #9
+    value: Not Specified
+    err: ""
+  - key: RAM slot #10
+    value: Not Specified
+    err: ""
+  - key: RAM slot #11
+    value: Not Specified
+    err: ""
+  - key: RAM slot #12
+    value: Not Specified
+    err: ""
+  - key: RAM slot #13
+    value: Not Specified
+    err: ""
+  - key: RAM slot #14
+    value: Not Specified
+    err: ""
+  - key: RAM slot #15
+    value: Not Specified
+    err: ""
+  - key: RAM slot #16
+    value: Not Specified
+    err: ""
+  - key: RAM slot #17
+    value: Not Specified
+    err: ""
+  - key: RAM slot #18
+    value: Not Specified
+    err: ""
+  - key: RAM slot #19
+    value: Not Specified
+    err: ""
+  - key: RAM slot #20
+    value: Not Specified
+    err: ""
+  - key: RAM slot #21
+    value: Not Specified
+    err: ""
+  - key: RAM slot #22
+    value: Not Specified
+    err: ""
+  - key: RAM slot #23
+    value: Not Specified
+    err: ""
+  - key: RAM slot #24
+    value: Not Specified
+    err: ""
+  - key: RAM slot #25
+    value: Not Specified
+    err: ""
+  - key: RAM slot #26
+    value: Not Specified
+    err: ""
+  - key: RAM slot #27
+    value: Not Specified
+    err: ""
+  - key: RAM slot #28
+    value: Not Specified
+    err: ""
+  - key: RAM slot #29
+    value: Not Specified
+    err: ""
+  - key: RAM slot #30
+    value: Not Specified
+    err: ""
+  - key: RAM slot #31
+    value: Not Specified
+    err: ""
+  - key: RAM slot #32
+    value: Not Specified
+    err: ""
+  - key: RAM slot #33
+    value: Not Specified
+    err: ""
+  - key: RAM slot #34
+    value: Not Specified
+    err: ""
+  - key: RAM slot #35
+    value: Not Specified
+    err: ""
+  - key: RAM slot #36
+    value: Not Specified
+    err: ""
+  - key: RAM slot #37
+    value: Not Specified
+    err: ""
+  - key: RAM slot #38
+    value: Not Specified
+    err: ""
+  - key: RAM slot #39
+    value: Not Specified
+    err: ""
+  - key: RAM slot #40
+    value: Not Specified
+    err: ""
+  - key: RAM slot #41
+    value: Not Specified
+    err: ""
+  - key: RAM slot #42
+    value: Not Specified
+    err: ""
+  - key: RAM slot #43
+    value: Not Specified
+    err: ""
+  - key: RAM slot #44
+    value: Not Specified
+    err: ""
+  - key: RAM slot #45
+    value: Not Specified
+    err: ""
+  - key: RAM slot #46
+    value: Not Specified
+    err: ""
+  - key: RAM slot #47
+    value: Not Specified
+    err: ""
+  - key: RAM slot #48
+    value: Not Specified
+    err: ""
+  - key: RAM slot #49
+    value: Not Specified
+    err: ""
+  - key: RAM slot #50
+    value: Not Specified
+    err: ""
+  - key: RAM slot #51
+    value: Not Specified
+    err: ""
+  - key: RAM slot #52
+    value: Not Specified
+    err: ""
+  - key: RAM slot #53
+    value: Not Specified
+    err: ""
+  - key: RAM slot #54
+    value: Not Specified
+    err: ""
+  - key: RAM slot #55
+    value: Not Specified
+    err: ""
+  - key: RAM slot #56
+    value: Not Specified
+    err: ""
+  - key: RAM slot #57
+    value: Not Specified
+    err: ""
+  - key: RAM slot #58
+    value: Not Specified
+    err: ""
+  - key: RAM slot #59
+    value: Not Specified
+    err: ""
+  - key: RAM slot #60
+    value: Not Specified
+    err: ""
+  - key: RAM slot #61
+    value: Not Specified
+    err: ""
+  - key: RAM slot #62
+    value: Not Specified
+    err: ""
+  - key: RAM slot #63
+    value: Not Specified
+    err: ""
+  - key: NVD #0
+    value: Not Specified
+    err: ""
+  - key: NVD #1
+    value: Not Specified
+    err: ""
+  - key: NVD #2
+    value: Not Specified
+    err: ""
+  - key: NVD #3
+    value: Not Specified
+    err: ""
+  - key: NVD #4
+    value: Not Specified
+    err: ""
+  - key: NVD #5
+    value: Not Specified
+    err: ""
+  - key: NVD #6
+    value: Not Specified
+    err: ""
+  - key: NVD #7
+    value: Not Specified
+    err: ""
+  - key: NVD #8
+    value: Not Specified
+    err: ""
+  - key: NVD #9
+    value: Not Specified
+    err: ""
+  - key: NVD #10
+    value: Not Specified
+    err: ""
+  - key: NVD #11
+    value: Not Specified
+    err: ""
+  - key: NVD #12
+    value: Not Specified
+    err: ""
+  - key: NVD #13
+    value: Not Specified
+    err: ""
+  - key: NVD #14
+    value: Not Specified
+    err: ""
+  - key: NVD #15
+    value: Not Specified
+    err: ""
+  - key: NVD #16
+    value: Not Specified
+    err: ""
+  - key: NVD #17
+    value: Not Specified
+    err: ""
+  - key: NVD #18
+    value: Not Specified
+    err: ""
+  - key: NVD #19
+    value: Not Specified
+    err: ""
+  - key: NVD #20
+    value: Not Specified
+    err: ""
+  - key: NVD #21
+    value: Not Specified
+    err: ""
+  - key: NVD #22
+    value: Not Specified
+    err: ""
+  - key: NVD #23
+    value: Not Specified
+    err: ""
+  - key: NVD #24
+    value: Not Specified
+    err: ""
+  - key: NVD #25
+    value: Not Specified
+    err: ""
+  - key: NVD #26
+    value: Not Specified
+    err: ""
+  - key: NVD #27
+    value: Not Specified
+    err: ""
+  - key: NVD #28
+    value: Not Specified
+    err: ""
+  - key: NVD #29
+    value: Not Specified
+    err: ""
+  - key: NVD #30
+    value: Not Specified
+    err: ""
+  - key: NVD #31
+    value: Not Specified
+    err: ""
+  - key: NVD #32
+    value: Not Specified
+    err: ""
+  - key: NVD #33
+    value: Not Specified
+    err: ""
+  - key: NVD #34
+    value: Not Specified
+    err: ""
+  - key: NVD #35
+    value: Not Specified
+    err: ""
+  - key: NVD #36
+    value: Not Specified
+    err: ""
+  - key: NVD #37
+    value: Not Specified
+    err: ""
+  - key: NVD #38
+    value: Not Specified
+    err: ""
+  - key: NVD #39
+    value: Not Specified
+    err: ""
+  - key: NVD #40
+    value: Not Specified
+    err: ""
+  - key: NVD #41
+    value: Not Specified
+    err: ""
+  - key: NVD #42
+    value: Not Specified
+    err: ""
+  - key: NVD #43
+    value: Not Specified
+    err: ""
+  - key: NVD #44
+    value: Not Specified
+    err: ""
+  - key: NVD #45
+    value: Not Specified
+    err: ""
+  - key: NVD #46
+    value: Not Specified
+    err: ""
+  - key: NVD #47
+    value: Not Specified
+    err: ""
+  - key: NVD #48
+    value: Not Specified
+    err: ""
+  - key: NVD #49
+    value: Not Specified
+    err: ""
+  - key: NVD #50
+    value: Not Specified
+    err: ""
+  - key: NVD #51
+    value: Not Specified
+    err: ""
+  - key: NVD #52
+    value: Not Specified
+    err: ""
+  - key: NVD #53
+    value: Not Specified
+    err: ""
+  - key: NVD #54
+    value: Not Specified
+    err: ""
+  - key: NVD #55
+    value: Not Specified
+    err: ""
+  - key: NVD #56
+    value: Not Specified
+    err: ""
+  - key: NVD #57
+    value: Not Specified
+    err: ""
+  - key: NVD #58
+    value: Not Specified
+    err: ""
+  - key: NVD #59
+    value: Not Specified
+    err: ""
+  - key: NVD #60
+    value: Not Specified
+    err: ""
+  - key: NVD #61
+    value: Not Specified
+    err: ""
+  - key: NVD #62
+    value: Not Specified
+    err: ""
+  - key: NVD #63
+    value: Not Specified
+    err: ""
+
+memory_frequency_results:
+
+memory_size_check_results:
+  - key: Consistency
+    value: "一致（7G）"
+    err: ""
+
+memory_loose_results:
+  - key: Status
+    value: 正常
+    err: ""
+
+memory_rw_perf_results:
+  - key: Performance
+    value: "629 MB/s"
+    err: ""
+

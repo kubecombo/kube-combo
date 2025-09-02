@@ -1,0 +1,696 @@
+{
+  "nodename": "vincent",
+  "timestamp": "2025:08:20 16:02:54",
+  "Memory": [
+    {
+      "detection": "MEMORY VENDOR",
+      "description": "The manufacturer information of each memory module.",
+      "results": [
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "RAM slot",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        },
+        {
+          "key": "NVD",
+          "value": "Not Specified",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "MEMORY READ/WRITE PERFORMANCE",
+      "description": "The read/write speed of the memory (e.g., MB/s).",
+      "results": [
+        {
+          "key": "Performance",
+          "value": "629 MB/s",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "MEMORY LOOSE STATUS",
+      "description": "Check if there is any loose memory module.",
+      "results": [
+        {
+          "key": "Status",
+          "value": "正常",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "MEMORY SIZE CONSISTENCY",
+      "description": "Consistency check of total memory size compared to last boot.",
+      "results": [
+        {
+          "key": "Consistency",
+          "value": "一致（7G）",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "MEMORY USAGE",
+      "description": "The current memory usage percentage of the system.",
+      "results": [
+        {
+          "key": "Usage",
+          "value": "18%",
+          "err": ""
+        }
+      ]
+    }
+  ]
+}
