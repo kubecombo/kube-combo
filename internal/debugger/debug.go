@@ -2,6 +2,7 @@ package debugger
 
 import (
 	"path/filepath"
+	"time"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"k8s.io/klog/v2"
@@ -40,7 +41,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 			}
 
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
-			if err := runTask(task, varEnv); err != nil {
+			if err := runTask(task, varEnv, 10*time.Second); err != nil {
 				klog.Error("Error:", err)
 				// TODO: post error info when detection failed
 			}
