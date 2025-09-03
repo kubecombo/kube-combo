@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 type Detection struct {
@@ -79,14 +81,16 @@ var TaskMap = map[string]Task{
 func loadDetection(filePath string) (*Detection, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %v", err)
+		klog.Errorf("Failed to open file %s: %v", filePath, err)
+		return nil, err
 	}
 	defer f.Close()
 
 	var d Detection
 	decoder := json.NewDecoder(f)
 	if err := decoder.Decode(&d); err != nil {
-		return nil, fmt.Errorf("failed to decode json: %v", err)
+		klog.Errorf("Failed to decode JSON: %v", err)
+		return nil, err
 	}
 
 	return &d, nil
@@ -107,13 +111,15 @@ func runTask(task Task, envVars map[string]string, timeout time.Duration) error 
 
 	output, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
-		return fmt.Errorf("task %s timed out after %s", task.Script, timeout)
+		klog.Errorf("Task %s timed out after %s", task.Script, timeout)
+		return err
 	}
 	if err != nil {
-		return fmt.Errorf("failed to run %s: %v, output: %s", task.Script, err, string(output))
+		klog.Errorf("Failed to run %s: %v, output: %s", task.Script, err, string(output))
+		return err
 	}
 
-	fmt.Printf("Output of %s:\n%s\n", task.Script, string(output))
+	klog.Infof("Output of %s:\n%s", task.Script, string(output))
 	return nil
 }
 
@@ -123,4 +129,22 @@ func formatEnv(env map[string]string) []string {
 		result = append(result, fmt.Sprintf("%s=%s", k, v))
 	}
 	return result
+}
+
+// CountValidTasks
+func CountValidTasks(tasks map[string][]string) int {
+	validCount := 0
+
+	for category, taskNames := range tasks {
+		for _, taskName := range taskNames {
+			if _, ok := TaskMap[taskName]; ok {
+				validCount++
+			} else {
+				klog.Warningf("[%s: %s] Task mapping not found", category, taskName)
+			}
+		}
+	}
+
+	klog.Infof("Total valid tasks: %d", validCount)
+	return validCount
 }
