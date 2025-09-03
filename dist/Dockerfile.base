@@ -28,6 +28,7 @@ RUN apt-get update && \
     snmp \
     speedtest-cli \
     strace \
+    sysstat \
     tree \
     tcptraceroute && \
     apt remove -y --allow-remove-essential --auto-remove login && \

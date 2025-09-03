@@ -32,6 +32,13 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		varEnv["timestamp"] = detection.Timestamp
 	}
 
+	validCount := CountValidTasks(detection.Tasks)
+	klog.Infof("Post valid tasks: %d", validCount)
+	// TODO: post valid task numbers and begin time
+
+	successCount := 0
+	failCount := 0
+
 	for category, taskNames := range detection.Tasks {
 		for _, taskName := range taskNames {
 			task, ok := TaskMap[taskName]
@@ -43,8 +50,12 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
 			if err := runTask(task, varEnv, 10*time.Second); err != nil {
 				klog.Error("Error:", err)
+				failCount++
 				// TODO: post error info when detection failed
+			} else {
+				successCount++
 			}
 		}
 	}
+	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
