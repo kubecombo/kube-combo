@@ -56,12 +56,14 @@
     {
       "detection": "{{ section.detection }}",
       "description": "{{ section.description }}",
+      "status": "true",
       "results": [
         {%- for result in section.results %}
         {
           "key": "{{ result.key }}",
           "value": "{{ result.value }}",
           "err": "{{ result.err }}"
+          "level": "{{ result.level }}"
         }{% if not loop.last %},{% endif %}
         {%- endfor %}
       ]

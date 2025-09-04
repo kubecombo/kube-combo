@@ -32,34 +32,18 @@
     {
       "detection": "{{ section.detection }}",
       "description": "{{ section.description }}",
+      "status": "true",
       "results": [
         {%- for result in section.results %}
         {
           "key": "{{ result.key }}",
           "value": "{{ result.value }}",
           "err": "{{ result.err }}"
+          "level": "{{ result.level }}"
         }{% if not loop.last %},{% endif %}
         {%- endfor %}
       ]
     }{% if not loop.last %},{% endif %}
     {%- endfor %}
-  ],
-
-  "Memory": [
-    {%- if memory_usage_results %}
-    {
-      "detection": "MEMORY USAGE",
-      "description": "The current memory usage percentage.",
-      "results": [
-        {% for result in memory_usage_results -%}
-        {
-          "key": "{{ result.key }}",
-          "value": "{{ result.value }}",
-          "err": "{{ result.err }}"
-        }{% if not loop.last %},{% endif %}
-        {%- endfor %}
-      ]
-    }
-    {%- endif %}
   ]
 }
