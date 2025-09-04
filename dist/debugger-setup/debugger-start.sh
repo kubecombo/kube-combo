@@ -17,7 +17,7 @@ env
 
 # 1. run inspection
 echo "###### run inspection ######"
-INSPECTION_DIR="/jobs"
+INSPECTION_DIR="/tasks"
 if [ -d "$INSPECTION_DIR" ]; then
   files=()
   while IFS= read -r f; do
@@ -25,8 +25,7 @@ if [ -d "$INSPECTION_DIR" ]; then
   done < <(find "$INSPECTION_DIR" -type f)
 
   for file in "${files[@]}"; do
-    # TODO: 执行巡检命令
-    echo "文件名：$file"
+    /debugger --task="$file"
   done
 else
   echo "Directory $INSPECTION_DIR does not exist."
