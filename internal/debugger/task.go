@@ -35,12 +35,12 @@ var TaskMap = map[string]Task{
 	"CPU_LOAD":        {Script: "/runAt/cpu/CPU_Detection.sh", Args: ""},
 
 	// network card
-	"NETWORK_PORT_PACKET_LOSS":     {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
-	"NETWORK_PORT_CONNECTION_MODE": {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
-	"FULL_DUPLEX_MODE":             {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
-	"NETWORK_PORT_SPEED":           {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
-	"NETWORK_CARD_CONFLICT":        {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
-	"UNPLUGGED_AND_DISCONNECTION":  {Script: "/runAt/network-card/network-card-detection.sh", Args: ""},
+	"NETWORK_PORT_PACKET_LOSS":     {Script: "/runAt/network-card/network-port-packet-loss-detection.sh", Args: ""},
+	"NETWORK_PORT_CONNECTION_MODE": {Script: "/runAt/network-card/network-port-connection-mode-detection.sh", Args: ""},
+	"FULL_DUPLEX_MODE":             {Script: "/runAt/network-card/full-duplex-mode-detection.sh", Args: ""},
+	"NETWORK_PORT_SPEED":           {Script: "/runAt/network-card/network-port-speed-detection.sh", Args: ""},
+	"NETWORK_CARD_CONFLICT":        {Script: "/runAt/network-card/network-card-conflict-detection.sh", Args: ""},
+	"UNPLUGGED_AND_DISCONNECTION":  {Script: "/runAt/network-card/unplugged-and-disconnection-detection.sh", Args: ""},
 
 	// memory
 	"MEMORY_FREQUENCY":              {Script: "/runAt/memory/check_memory5.sh", Args: ""},
@@ -69,13 +69,13 @@ var TaskMap = map[string]Task{
 	"CONTROL_NODE_MANAGEMENT_SERVICE":      {Script: "", Args: ""},
 
 	// network configuration
-	"STORAGE_COMMUNICATION_NETWORK_PORT_CONNECTIVITY": {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"LINK_AGGREGATION_CONNECTIVITY":                   {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"LATENCY":                                         {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"IP_CONFLICT":                                     {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"NEGOTIATED_RATE":                                 {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"MTU_CONSISTENCY":                                 {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
-	"NETWORK_PORT_AGGREGATION_MODE_CONSISTENCY":       {Script: "/runAt/network-configuration/network-configuration-detection.sh", Args: ""},
+	"STORAGE_COMMUNICATION_NETWORK_PORT_CONNECTIVITY": {Script: "/runAt/network-configuration/storage-communication-network-port-connectivity.sh", Args: ""},
+	"LINK_AGGREGATION_CONNECTIVITY":                   {Script: "/runAt/network-configuration/link-aggregation-connectivity.sh", Args: ""},
+	"LATENCY":                                         {Script: "/runAt/network-configuration/latency-detection.sh", Args: ""},
+	"IP_CONFLICT":                                     {Script: "/runAt/network-configuration/ip-conflict-detection.sh", Args: ""},
+	"NEGOTIATED_RATE":                                 {Script: "/runAt/network-configuration/negotiated-rate.sh", Args: ""},
+	"MTU_CONSISTENCY":                                 {Script: "/runAt/network-configuration/mtu-consistency.sh", Args: ""},
+	"NETWORK_PORT_AGGREGATION_MODE_CONSISTENCY":       {Script: "/runAt/network-configuration/network-port-aggregation-mode-consistency-detection.sh", Args: ""},
 }
 
 func loadDetection(filePath string) (*Detection, error) {
