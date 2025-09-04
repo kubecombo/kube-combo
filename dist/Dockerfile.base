@@ -9,9 +9,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends --auto-remove \
     apache2-utils \
     bash \
+    bc \
     busybox \
     dhcping \
     file \
+    fio \
     fping \
     httpie \
     iftop \
@@ -25,6 +27,7 @@ RUN apt-get update && \
     mtr \
     nmap \
     oping \
+    smartmontools \
     snmp \
     speedtest-cli \
     strace \
