@@ -1,12 +1,5 @@
 #!/bin/bash
 
-generate_yaml_header() {
-	cat << EOF
-nodename: "$(hostname)"
-timestamp: "$(date +%Y-%m-%dT%H:%M:%SZ)"
-EOF
-}
-
 generate_yaml_detection() {
 	if [ "$#" -ne 1 ]; then
 		echo "用法: generate_yaml_detection <section_name>" >&2

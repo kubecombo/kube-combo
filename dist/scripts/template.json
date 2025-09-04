@@ -53,26 +53,5 @@
         }
       ]
     }
-  ],
-  "Memory": [
-    {
-      "detection": "MEMORY USAGE",
-      "description": "The current memory usage percentage.",
-      "status": "",
-      "results": [
-        {
-          "key": "Total",
-          "value": "16GB",
-          "err": "",
-          "level": ""
-        },
-        {
-          "key": "Used",
-          "value": "8GB",
-          "err": "",
-          "level": ""
-        }
-      ]
-    }
   ]
 }
