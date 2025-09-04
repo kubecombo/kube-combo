@@ -1024,6 +1024,9 @@ spec:
               qosBandwidth:
                 description: 1Mbps bandwidth at least
                 type: string
+              runAt:
+                description: specified detection task
+                type: string
               selector:
                 description: pod node selector
                 items:
@@ -2072,6 +2075,8 @@ spec:
               pinger:
                 type: string
               qosBandwidth:
+                type: string
+              runAt:
                 type: string
               selector:
                 items:
