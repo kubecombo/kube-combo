@@ -1,6 +1,6 @@
 {
-  "nodename": "NODE1",
-  "timestamp": "2023-10-01T12:00:00Z",
+  "NodeName": "NODE1",
+  "Timestamp": "2023-10-01T12:00:00Z",
   "CPU": [
     {
       "detection": "CPU MODEL",

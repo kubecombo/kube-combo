@@ -1,5 +1,5 @@
-nodename: NODE1
-timestamp: "2023-10-01T12:00:00Z"
+nodename: "NODE1"
+timestamp: "1756969773"
 
 cpu_model_results:
   - key: Hygon
