@@ -156,8 +156,22 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 		return SyncStateErrorNoRetry, err
 	}
 
-	if debugger.Spec.ConfigMap != "" {
+	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
 		cmName := debugger.Spec.ConfigMap
+		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
+		if err != nil {
+			r.Log.Error(err, "failed to get config map", "configMap", cmName)
+			return SyncStateError, err
+		}
+		if cm.Data == nil {
+			err := fmt.Errorf("config map %s is empty", cmName)
+			r.Log.Error(err, "should not set empty config map")
+			return SyncStateErrorNoRetry, err
+		}
+	}
+
+	if debugger.Spec.RunAt != "" {
+		cmName := debugger.Spec.RunAt
 		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
 		if err != nil {
 			r.Log.Error(err, "failed to get config map", "configMap", cmName)
