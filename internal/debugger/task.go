@@ -57,10 +57,9 @@ var TaskMap = map[string]Task{
 	"SSD_INTERFACE_MODE": {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 	"DISK_PERFORMANCE":   {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 	"IO_ERROR":           {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"DISK_USAGE":         {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 
 	// system partition
-	"SYSTEM_PARTITION": {Script: "/runAt/system-partition/system-partition.sh", Args: ""},
+	"DISK_USAGE": {Script: "/runAt/system-partition/system-partition.sh", Args: ""},
 
 	// control node status
 	"OFFLINE_CONTROL_NODE":                 {Script: "", Args: ""},
