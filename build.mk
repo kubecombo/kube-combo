@@ -176,13 +176,11 @@ run-pinger: manifests generate fmt vet ## Run kube-combo pinger from your host.
 	go run ./run/pinger/main.go
 
 .PHONY: run-debugger
-run-debugger: manifests generate fmt vet ## Run kube-combo pinger from your host.
+run-debugger: ## Run kube-combo pinger from your host.
 	@echo "Detected architecture: $(ARCH)"
 ifeq ($(ARCH),x86_64)
-	@$(MAKE) go-build-amd
 	@$(MAKE) docker-build-debugger-amd64
 else ifeq ($(ARCH),aarch64)
-	@$(MAKE) go-build-arm
 	@$(MAKE) docker-build-debugger-arm64
 else
 	$(error Unsupported architecture: $(ARCH))
