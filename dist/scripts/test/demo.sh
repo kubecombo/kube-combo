@@ -2,7 +2,7 @@
 
 # 引入日志函数（假设你把日志函数放在 log.sh 中）
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 
 # shellcheck disable=SC2034
 # 设置日志级别为 debug
