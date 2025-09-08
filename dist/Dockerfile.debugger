@@ -5,6 +5,6 @@ FROM icoy/kube-combo-base:$BASE_TAG
 ARG DEBIAN_FRONTEND=noninteractive
 COPY ./dist/scripts/ /runAt
 COPY ./dist/systemctl/* /
-COPY ./dist/debugger-setup/*.sh /
+COPY ./dist/debugger-setup/ /
 COPY ./dist/kubectl-ko /usr/bin/kubectl-ko
 COPY ./bin/kube-combo-cmd /debugger

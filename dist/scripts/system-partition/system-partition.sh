@@ -22,6 +22,9 @@ set -e
 
 #####################函数定义#########################
 
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
+
 # 获取分区总大小和使用率
 get_partition_usage() {
 	local path=$1
