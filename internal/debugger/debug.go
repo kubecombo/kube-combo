@@ -1,6 +1,7 @@
 package debugger
 
 import (
+	"os"
 	"path/filepath"
 	"time"
 
@@ -34,6 +35,20 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 
 	validCount := CountValidTasks(detection.Tasks)
 	klog.Infof("Post valid tasks: %d", validCount)
+
+	nodeName := os.Getenv("NODE_NAME")
+	if nodeName == "" {
+		klog.Error("NODE_NAME not set")
+	} else {
+		klog.Infof("NODE_NAME=%s\n", nodeName)
+	}
+
+	klog.Infof("At timestamp=%s, node=%s starts %d tasks", detection.Timestamp, nodeName, validCount)
+	jsonStr, err := BuildStartFlag(nodeName, validCount, varEnv["timestamp"])
+	if err != nil {
+		klog.Error(err)
+	}
+	klog.Info(jsonStr)
 	// TODO: post valid task numbers and begin time
 
 	successCount := 0
@@ -51,11 +66,30 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 			if err := runTask(task, varEnv, 10*time.Second); err != nil {
 				klog.Error("Error:", err)
 				failCount++
+				checks := map[string][]map[string]string{
+					category: {
+						{
+							"detection": taskName,
+							"status":    "false",
+						},
+					},
+				}
+				jsonStr, err := BuildNodeReport(nodeName, varEnv["timestamp"], checks)
+				if err != nil {
+					klog.Error(err)
+				}
+				klog.Info(jsonStr)
 				// TODO: post error info when detection failed
 			} else {
 				successCount++
 			}
 		}
 	}
+
+	jsonStr, err = BuildFinishFlag(nodeName)
+	if err != nil {
+		klog.Error(err)
+	}
+	klog.Info(jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
