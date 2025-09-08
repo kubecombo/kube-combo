@@ -6,6 +6,8 @@
 # -------------------------- 全局核心配置 --------------------------
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 OUTPUT_YAML="comprehensive_cpu_monitor.yaml"  # 统一输出YAML文件名
 SAMPLE_INTERVAL=0.1                             # CPU使用率采样间隔（秒）
 PROM_NAMESPACE="monitoring"                    # Prometheus命名空间
@@ -81,7 +83,7 @@ collect_local_cpu_metrics() {
 
 		# 第一次采样
 		for core in $cores; do
-			read  -r u n s i <<< $(grep "cpu$core" /proc/stat | awk '{print $2, $3, $4, $5}')
+			read -r u n s i <<< $(grep "cpu$core" /proc/stat | awk '{print $2, $3, $4, $5}')
 			user1=$((user1 + u))
 			nice1=$((nice1 + n))
 			system1=$((system1 + s))
@@ -92,7 +94,7 @@ collect_local_cpu_metrics() {
 
 		# 第二次采样
 		for core in $cores; do
-			read  -r u n s i <<< $(grep "cpu$core" /proc/stat | awk '{print $2, $3, $4, $5}')
+			read -r u n s i <<< $(grep "cpu$core" /proc/stat | awk '{print $2, $3, $4, $5}')
 			user2=$((user2 + u))
 			nice2=$((nice2 + n))
 			system2=$((system2 + s))
@@ -213,12 +215,12 @@ collect_prometheus_metrics() {
 	local QUERY_RESP=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=$TEMP_QUERY")
 	if [ -n "$(echo "$QUERY_RESP" | jq -r '.data.result[]')" ]; then
 		echo "$QUERY_RESP" | jq -r '.data.result[] | @base64' | while read -r ITEM; do
-			local  SENSOR=$(echo "$ITEM" | base64 -d | jq -r '.metric.SensorName')
-			local  VAL=$(echo "$ITEM" | base64 -d | jq -r '.value[1]')
-			local  ERR=$(echo "$ALERT_INFO" | grep "^$SENSOR|" | cut -d'|' -f2- || echo "")
-			echo  "  - key: $SENSOR" >> "$OUTPUT_YAML"
-			echo  "    value: \"$VAL\"" >> "$OUTPUT_YAML"
-			echo  "    err: \"$ERR\"" >> "$OUTPUT_YAML"
+			local SENSOR=$(echo "$ITEM" | base64 -d | jq -r '.metric.SensorName')
+			local VAL=$(echo "$ITEM" | base64 -d | jq -r '.value[1]')
+			local ERR=$(echo "$ALERT_INFO" | grep "^$SENSOR|" | cut -d'|' -f2- || echo "")
+			echo "  - key: $SENSOR" >> "$OUTPUT_YAML"
+			echo "    value: \"$VAL\"" >> "$OUTPUT_YAML"
+			echo "    err: \"$ERR\"" >> "$OUTPUT_YAML"
 		done
 	else
 		echo "  - key: NoData" >> "$OUTPUT_YAML"
@@ -245,13 +247,13 @@ collect_prometheus_metrics() {
 	QUERY_RESP=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=$FREQ_QUERY")
 	if [ -n "$(echo "$QUERY_RESP" | jq -r '.data.result[]')" ]; then
 		echo "$QUERY_RESP" | jq -r '.data.result[] | @base64' | while read -r ITEM; do
-			local  RAW_CPU=$(echo "$ITEM" | base64 -d | jq -r '.metric.cpu')
-			local  CPU_KEY="cpu$RAW_CPU"
-			local  FREQ_RATIO=$(echo "$ITEM" | base64 -d | jq -r '.value[1]')
-			local  ERR=$(echo "$ALERT_INFO" | grep "^$CPU_KEY|" | cut -d'|' -f2- || echo "")
-			echo  "  - key: $CPU_KEY" >> "$OUTPUT_YAML"
-			echo  "    value: \"$FREQ_RATIO\"" >> "$OUTPUT_YAML"
-			echo  "    err: \"$ERR\"" >> "$OUTPUT_YAML"
+			local RAW_CPU=$(echo "$ITEM" | base64 -d | jq -r '.metric.cpu')
+			local CPU_KEY="cpu$RAW_CPU"
+			local FREQ_RATIO=$(echo "$ITEM" | base64 -d | jq -r '.value[1]')
+			local ERR=$(echo "$ALERT_INFO" | grep "^$CPU_KEY|" | cut -d'|' -f2- || echo "")
+			echo "  - key: $CPU_KEY" >> "$OUTPUT_YAML"
+			echo "    value: \"$FREQ_RATIO\"" >> "$OUTPUT_YAML"
+			echo "    err: \"$ERR\"" >> "$OUTPUT_YAML"
 		done
 	else
 		echo "  - key: NoData" >> "$OUTPUT_YAML"
@@ -289,13 +291,13 @@ collect_prometheus_metrics() {
 
 		if [ "$FIRING_COUNT" -gt 0 ]; then
 			# 有告警时获取描述和指标值
-			local  ALERT_DESC=$(echo "$ALERT_RESP" | jq -r --arg a "$ALERT" --arg i "$INSTANCE" '.data.alerts[] | select(.labels.alertname==$a and .labels.instance==$i and .state=="firing") | .annotations.description' | head -n 1 | sed -E 's/\([^)]*\)//g; s/  +/ /g; s/ $//')
-			local  METRIC_VAL=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=${METRIC}{instance=\"$INSTANCE\"}" | jq -r '.data.result[0].value[1] // "获取失败"')
+			local ALERT_DESC=$(echo "$ALERT_RESP" | jq -r --arg a "$ALERT" --arg i "$INSTANCE" '.data.alerts[] | select(.labels.alertname==$a and .labels.instance==$i and .state=="firing") | .annotations.description' | head -n 1 | sed -E 's/\([^)]*\)//g; s/  +/ /g; s/ $//')
+			local METRIC_VAL=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=${METRIC}{instance=\"$INSTANCE\"}" | jq -r '.data.result[0].value[1] // "获取失败"')
 			ALERT_DESCS[$i]="$ALERT_DESC"
 			METRIC_VALS[$i]="$METRIC_VAL"
 		else
 			# 无告警时直接获取指标值
-			local  METRIC_VAL=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=${METRIC}{instance=\"$INSTANCE\"}" | jq -r '.data.result[0].value[1] // "获取失败"')
+			local METRIC_VAL=$(curl -s "$PROM_METRIC_URL" --data-urlencode "query=${METRIC}{instance=\"$INSTANCE\"}" | jq -r '.data.result[0].value[1] // "获取失败"')
 			ALERT_DESCS[$i]=""
 			METRIC_VALS[$i]="$METRIC_VAL"
 		fi
