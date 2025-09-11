@@ -57,10 +57,9 @@ var TaskMap = map[string]Task{
 	"SSD_INTERFACE_MODE": {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 	"DISK_PERFORMANCE":   {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 	"IO_ERROR":           {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"DISK_USAGE":         {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
 
 	// system partition
-	"SYSTEM_PARTITION": {Script: "/runAt/system-partition/system-partition.sh", Args: ""},
+	"DISK_USAGE": {Script: "/runAt/system-partition/system-partition.sh", Args: ""},
 
 	// control node status
 	"OFFLINE_CONTROL_NODE":                 {Script: "", Args: ""},
@@ -147,4 +146,68 @@ func CountValidTasks(tasks map[string][]string) int {
 
 	klog.Infof("Total valid tasks: %d", validCount)
 	return validCount
+}
+
+type StartFlag struct {
+	NodeName  string `json:"nodename"`
+	JobCount  string `json:"jobcount"`
+	Timestamp string `json:"timestamp"`
+}
+
+func BuildStartFlag(nodeName string, jobCount int, timestamp string) (string, error) {
+	data := StartFlag{
+		NodeName:  nodeName,
+		JobCount:  fmt.Sprintf("%d", jobCount), // 转为字符串
+		Timestamp: timestamp,                   // 时间戳（秒）
+	}
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+type FinishFlag struct {
+	NodeName  string `json:"nodename"`
+	Terminate string `json:"terminate"`
+	Timestamp string `json:"timestamp"`
+}
+
+func BuildFinishFlag(nodeName string) (string, error) {
+	data := FinishFlag{
+		NodeName:  nodeName,
+		Terminate: "true",
+		Timestamp: fmt.Sprintf("%d", time.Now().Unix()), // 秒级时间戳
+	}
+
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+// NodeReport
+type NodeReport struct {
+	NodeName  string                       `json:"NodeName"`
+	Timestamp string                       `json:"Timestamp"`
+	Checks    map[string]map[string]string `json:"Checks"` // 每个检测项只有一条 status
+}
+
+// BuildNodeReport
+func BuildNodeReport(nodeName string, timestamp string, checks map[string][]map[string]string) (string, error) {
+	report := make(map[string]interface{})
+	report["NodeName"] = nodeName
+
+	for k, v := range checks {
+		report[k] = v
+	}
+
+	report["Timestamp"] = timestamp
+
+	data, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }

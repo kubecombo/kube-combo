@@ -1,0 +1,9 @@
+{%- set last_key = interfaces.keys() | list | last -%}
+{
+{%- for iface, cfg in interfaces.items() %}
+  "{{ iface }}": {
+    "address": "{{ cfg.address }}",
+    "mtu": "{{ cfg.mtu }}"
+  }{%- if iface != last_key %},{% endif %}
+{%- endfor %}
+}

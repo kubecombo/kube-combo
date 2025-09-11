@@ -2,7 +2,7 @@
 
 # 引入日志函数
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 
 # 获取当前时间戳（用于日志文件名，格式：202508041413）
 log_timestamp=$(date +%Y%m%d%H%M)
