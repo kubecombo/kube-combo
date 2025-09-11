@@ -108,6 +108,9 @@ type DebuggerSpec struct {
 	// specified detection task
 	// +kubebuilder:validation:Optional
 	RunAt string `json:"runAt,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	DebuggerConfig string `json:"debuggerConfig,omitempty"`
 }
 
 // DebuggerStatus defines the observed state of Debugger
@@ -134,7 +137,8 @@ type DebuggerStatus struct {
 
 	EnableSys bool `json:"enableSys,omitempty" patchStrategy:"merge"`
 
-	RunAt string `json:"runAt,omitempty" patchStrategy:"merge"`
+	RunAt          string `json:"runAt,omitempty" patchStrategy:"merge"`
+	DebuggerConfig string `json:"debuggerConfig,omitempty" patchStrategy:"merge"`
 
 	// Conditions store the status conditions of the vpn gw instances
 	// +operator-sdk:csv:customresourcedefinitions:type=status

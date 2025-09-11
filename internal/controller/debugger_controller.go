@@ -157,30 +157,20 @@ func (r *DebuggerReconciler) handleAddOrUpdateDebugger(ctx context.Context, req 
 	}
 
 	if debugger.Spec.EnableConfigMap && debugger.Spec.ConfigMap != "" {
-		cmName := debugger.Spec.ConfigMap
-		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
-		if err != nil {
-			r.Log.Error(err, "failed to get config map", "configMap", cmName)
-			return SyncStateError, err
-		}
-		if cm.Data == nil {
-			err := fmt.Errorf("config map %s is empty", cmName)
-			r.Log.Error(err, "should not set empty config map")
-			return SyncStateErrorNoRetry, err
+		if state, err := r.checkConfigMapWithState(debugger.Namespace, debugger.Spec.ConfigMap); err != nil {
+			return state, err
 		}
 	}
 
 	if debugger.Spec.RunAt != "" {
-		cmName := debugger.Spec.RunAt
-		cm, err := r.KubeClient.CoreV1().ConfigMaps(debugger.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
-		if err != nil {
-			r.Log.Error(err, "failed to get config map", "configMap", cmName)
-			return SyncStateError, err
+		if state, err := r.checkConfigMapWithState(debugger.Namespace, debugger.Spec.RunAt); err != nil {
+			return state, err
 		}
-		if cm.Data == nil {
-			err := fmt.Errorf("config map %s is empty", cmName)
-			r.Log.Error(err, "should not set empty config map")
-			return SyncStateErrorNoRetry, err
+	}
+
+	if debugger.Spec.DebuggerConfig != "" {
+		if state, err := r.checkConfigMapWithState(debugger.Namespace, debugger.Spec.DebuggerConfig); err != nil {
+			return state, err
 		}
 	}
 
@@ -302,6 +292,10 @@ func (r *DebuggerReconciler) UpdateDebugger(ctx context.Context, req ctrl.Reques
 	}
 	if debugger.Spec.RunAt != debugger.Status.RunAt {
 		newDebugger.Status.RunAt = debugger.Spec.RunAt
+		changed = true
+	}
+	if debugger.Spec.DebuggerConfig != debugger.Status.DebuggerConfig {
+		newDebugger.Status.DebuggerConfig = debugger.Spec.DebuggerConfig
 		changed = true
 	}
 	if !changed {
@@ -624,6 +618,67 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 			},
 		}
 		envs = append(envs, pingerEnvs...)
+	}
+	// debuggerconfig envs
+	if debugger.Spec.DebuggerConfig != "" {
+		debuggerEnvs := []corev1.EnvVar{
+			{
+				Name: "LOG_LEVEL",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key: "LOG_LEVEL",
+					},
+				},
+			},
+			{
+				Name: "LOG_FILE",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key: "LOG_FILE",
+					},
+				},
+			},
+			{
+				Name: "LOG_FLAG",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key: "LOG_FLAG",
+					},
+				},
+			},
+			{
+				Name: "EIS_API_PORT",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key: "EIS_API_PORT",
+					},
+				},
+			},
+			{
+				Name: "EIS_API_SVC",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key: "EIS_API_SVC",
+					},
+				},
+			},
+		}
+		envs = append(envs, debuggerEnvs...)
 	}
 	return envs
 }
@@ -1190,7 +1245,8 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		debugger.Spec.Pinger != debugger.Status.Pinger ||
 		debugger.Spec.NodeName != debugger.Status.NodeName ||
 		debugger.Spec.HostNetwork != debugger.Status.HostNetwork ||
-		debugger.Spec.RunAt != debugger.Status.RunAt {
+		debugger.Spec.RunAt != debugger.Status.RunAt ||
+		debugger.Spec.DebuggerConfig != debugger.Status.DebuggerConfig {
 		return true
 	}
 	if !reflect.DeepEqual(debugger.Spec.Tolerations, debugger.Status.Tolerations) {
@@ -1200,4 +1256,18 @@ func (r *DebuggerReconciler) isChanged(debugger *myv1.Debugger) bool {
 		return true
 	}
 	return false
+}
+
+func (r *DebuggerReconciler) checkConfigMapWithState(namespace, name string) (SyncState, error) {
+	cm, err := r.KubeClient.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		r.Log.Error(err, "failed to get config map", "configMap", name)
+		return SyncStateError, err
+	}
+	if cm.Data == nil {
+		err := fmt.Errorf("config map %s is empty", name)
+		r.Log.Error(err, "should not set empty config map")
+		return SyncStateErrorNoRetry, err
+	}
+	return SyncStateSuccess, nil
 }

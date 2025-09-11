@@ -1,7 +1,6 @@
 package debugger
 
 import (
-	"os"
 	"path/filepath"
 	"time"
 
@@ -12,6 +11,11 @@ import (
 func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	if config.TaskFile == "" {
 		klog.Error("TaskFile is not specified")
+		return
+	}
+
+	if config.NodeName == "" {
+		klog.Error("NODE_NAME not set")
 		return
 	}
 
@@ -27,24 +31,20 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 		return
 	}
+	validCount := CountValidTasks(detection.Tasks)
+	if validCount == 0 {
+		klog.Warning("No valid tasks found")
+		return
+	}
 
+	// TODO: function to get all scripts env
 	varEnv := map[string]string{}
 	if detection.Timestamp != "" {
 		varEnv["timestamp"] = detection.Timestamp
 	}
 
-	validCount := CountValidTasks(detection.Tasks)
-	klog.Infof("Post valid tasks: %d", validCount)
-
-	nodeName := os.Getenv("NODE_NAME")
-	if nodeName == "" {
-		klog.Error("NODE_NAME not set")
-	} else {
-		klog.Infof("NODE_NAME=%s\n", nodeName)
-	}
-
-	klog.Infof("At timestamp=%s, node=%s starts %d tasks", detection.Timestamp, nodeName, validCount)
-	jsonStr, err := BuildStartFlag(nodeName, validCount, varEnv["timestamp"])
+	klog.Infof("At timestamp=%s, node=%s starts %d tasks", detection.Timestamp, config.NodeName, validCount)
+	jsonStr, err := BuildStartFlag(config.NodeName, validCount, varEnv["timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
@@ -74,7 +74,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 						},
 					},
 				}
-				jsonStr, err := BuildNodeReport(nodeName, varEnv["timestamp"], checks)
+				jsonStr, err := BuildNodeReport(config.NodeName, varEnv["timestamp"], checks)
 				if err != nil {
 					klog.Error(err)
 				}
@@ -86,10 +86,12 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		}
 	}
 
-	jsonStr, err = BuildFinishFlag(nodeName)
+	jsonStr, err = BuildFinishFlag(config.NodeName)
 	if err != nil {
 		klog.Error(err)
 	}
+
+	// TODO post finish flag at finish time
 	klog.Info(jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }

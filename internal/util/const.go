@@ -181,4 +181,6 @@ const (
 // const for debugger
 const (
 	DetectionScriptsPath = "/runAt"
+	EIS_API_SVC          = "eis.eis.svc.cluster.local"
+	EIS_API_PORT         = 8361
 )
