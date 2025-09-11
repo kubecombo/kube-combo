@@ -14,14 +14,6 @@ alias klogovn='kubectl -n kube-system logs \$(kubectl -n kube-system get lease k
 source <(kubectl completion bash)
 EOF
 
-EIS_SVC=$(kubectl get svc eis -n eis -o jsonpath='{.spec.clusterIP}')
-if [ -z "$EIS_SVC" ]; then
-	log_warn "Warning: Service 'eis' 不存在或没有 ClusterIP"
-else
-	log_err "EIS_SVC=$EIS_SVC"
-fi
-export EIS_SVC
-
 # show env
 log_info "###### show env ######"
 env
