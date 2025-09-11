@@ -9,6 +9,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends --auto-remove \
     apache2-utils \
     bash \
+    bash-completion \
     bc \
     busybox \
     dhcping \
