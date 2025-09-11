@@ -1,6 +1,6 @@
 {
-  "NodeName": "{{ NodeName }}",
-  "Timestamp": "{{ Time }}",
+  "nodename": "{{ NodeName }}",
+  "timestamp": "{{ Time }}",
   "CPU": [{%- set sections = [] %}{# 1. CPU型号检测 #}{% if cpu_model_results %}{% set _ = sections.append({
     "detection": "CPU MODEL",
     "description": "显示 CPU 的具体型号，反映其基本性能参数（如核心数、线程数、基础频率），是评估主机处理能力的核心基础信息。",
