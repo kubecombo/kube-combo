@@ -16,8 +16,8 @@ type Configuration struct {
 	ScriptFilePath    string
 	LogPerm           string
 	NodeName          string
-	LogLevel          string
-	LogFlog           string
+	LogLevel          int
+	LogFlag           string
 	LogFile           string
 	EisServiceAddress string
 	EisServicePort    int
@@ -55,9 +55,29 @@ func ParseFlags() (*Configuration, error) {
 		ScriptFilePath: *argScriptFilePath,
 		LogPerm:        *argLogPerm,
 		NodeName:       os.Getenv("NODE_NAME"),
-		LogLevel:       os.Getenv("LOG_LEVEL"),
-		LogFlog:        os.Getenv("LOG_FLAG"),
-		LogFile:        os.Getenv("LOG_FILE"),
+		LogLevel: func() int {
+			logLevel := os.Getenv("LOG_LEVEL")
+			if logLevel == "" {
+				return util.LOG_LEVEL
+			}
+			level, err := strconv.Atoi(logLevel)
+			if err != nil {
+				return util.LOG_LEVEL
+			}
+			return level
+		}(),
+		LogFlag: func() string {
+			if os.Getenv("LOG_FLAG") == "true" {
+				return "true"
+			}
+			return util.LOG_FLAG
+		}(),
+		LogFile: func() string {
+			if os.Getenv("LOG_FILE") == "" {
+				return util.LOG_FILE
+			}
+			return os.Getenv("LOG_FILE")
+		}(),
 		EisServiceAddress: func() string {
 			if os.Getenv("EIS_API_SVC") == "" {
 				return util.EIS_API_SVC

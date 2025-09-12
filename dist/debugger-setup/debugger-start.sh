@@ -31,7 +31,7 @@ if [ -d "$INSPECTION_DIR" ]; then
 		/debugger --task="$file"
 	done
 else
-	log_err "Directory $INSPECTION_DIR does not exist."
+	log_warn "Directory $INSPECTION_DIR does not exist."
 fi
 
 # 2. run script

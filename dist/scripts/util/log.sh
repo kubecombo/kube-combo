@@ -2,9 +2,9 @@
 
 # 日志级别 debug-1, info-2, warn-3, error-4, result-5
 # 默认配置
-: "${LOG_LEVEL:=2}"    # 默认 info
-: "${LOG_FLAG:=false}" # 默认关闭文件日志
-: "${LOG_FILE:=./log}" # 默认日志文件位置
+# : "${LOG_LEVEL:=2}"    # 默认 info
+# : "${LOG_FLAG:=false}" # 默认关闭文件日志
+# : "${LOG_FILE:=./log}" # 默认日志文件位置
 
 # 调试日志
 function log_debug() {
