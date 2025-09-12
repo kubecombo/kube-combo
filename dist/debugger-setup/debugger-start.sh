@@ -2,9 +2,12 @@
 set -e
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/runAt/util/log.sh"
+: "${LOG_LEVEL:=2}"                      # 默认 info
+: "${LOG_FLAG:=false}"                   # 默认关闭文件日志
+: "${LOG_FILE:="/var/log/debugger.log"}" # 默认日志文件位置
 
 # set up complete for bash
-cat << EOF >> ~/.bashrc
+cat <<EOF >>~/.bashrc
 # kubectl aliases and completion
 alias k=kubectl
 alias ka="kubectl apply -f "
@@ -16,7 +19,13 @@ EOF
 
 # show env
 log_info "###### show env ######"
-env
+if [ "$LOG_LEVEL" -eq 1 ]; then
+	env | while IFS= read -r line; do
+		log_debug "$line"
+	done
+else
+	log_info "Current log level is not debug, skipping environment variable output."
+fi
 
 # 1. run inspection
 log_info "###### run inspection ######"
