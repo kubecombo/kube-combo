@@ -2,7 +2,7 @@
 set -e
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/runAt/util/log.sh"
-: "${LOG_LEVEL:=2}"                      # 默认 info
+: "${LOG_LEVEL:="info"}"                      # 默认 info
 : "${LOG_FLAG:=false}"                   # 默认关闭文件日志
 : "${LOG_FILE:="/var/log/debugger.log"}" # 默认日志文件位置
 
