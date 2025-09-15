@@ -7,7 +7,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/runAt/util/log.sh"
 : "${LOG_FILE:="/var/log/debugger.log"}" # 默认日志文件位置
 
 # set up complete for bash
-cat <<EOF >>~/.bashrc
+cat << EOF >> ~/.bashrc
 # kubectl aliases and completion
 alias k=kubectl
 alias ka="kubectl apply -f "
@@ -19,7 +19,7 @@ EOF
 
 # show env
 log_info "###### show env ######"
-if [ "$LOG_LEVEL" -eq 1 ]; then
+if [ "$LOG_LEVEL" = "debug" ] || [ "$LOG_LEVEL" = "DEBUG" ]; then
 	env | while IFS= read -r line; do
 		log_debug "$line"
 	done
