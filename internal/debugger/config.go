@@ -3,7 +3,6 @@ package debugger
 import (
 	"flag"
 	"os"
-	"strconv"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
@@ -16,11 +15,11 @@ type Configuration struct {
 	ScriptFilePath    string
 	LogPerm           string
 	NodeName          string
-	LogLevel          int
+	LogLevel          string
 	LogFlag           string
 	LogFile           string
 	EisServiceAddress string
-	EisServicePort    int
+	EisServicePort    string
 }
 
 func ParseFlags() (*Configuration, error) {
@@ -55,16 +54,11 @@ func ParseFlags() (*Configuration, error) {
 		ScriptFilePath: *argScriptFilePath,
 		LogPerm:        *argLogPerm,
 		NodeName:       os.Getenv("NODE_NAME"),
-		LogLevel: func() int {
-			logLevel := os.Getenv("LOG_LEVEL")
-			if logLevel == "" {
+		LogLevel: func() string {
+			if os.Getenv("LOG_LEVEL") == "" {
 				return util.LOG_LEVEL
 			}
-			level, err := strconv.Atoi(logLevel)
-			if err != nil {
-				return util.LOG_LEVEL
-			}
-			return level
+			return os.Getenv("LOG_LEVEL")
 		}(),
 		LogFlag: func() string {
 			if os.Getenv("LOG_FLAG") == "true" {
@@ -84,16 +78,11 @@ func ParseFlags() (*Configuration, error) {
 			}
 			return os.Getenv("EIS_API_SVC")
 		}(),
-		EisServicePort: func() int {
-			portStr := os.Getenv("EIS_API_PORT")
-			if portStr == "" {
+		EisServicePort: func() string {
+			if os.Getenv("EIS_API_PORT") == "" {
 				return util.EIS_API_PORT
 			}
-			port, err := strconv.Atoi(portStr)
-			if err != nil {
-				return util.EIS_API_PORT
-			}
-			return port
+			return os.Getenv("EIS_API_PORT")
 		}(),
 	}
 

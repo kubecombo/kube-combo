@@ -37,14 +37,10 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		return
 	}
 
-	// TODO: function to get all scripts env
-	varEnv := map[string]string{}
-	if detection.Timestamp != "" {
-		varEnv["timestamp"] = detection.Timestamp
-	}
+	varEnv := getScriptEnv(config, detection)
 
-	klog.Infof("At timestamp=%s, node=%s starts %d tasks", detection.Timestamp, config.NodeName, validCount)
-	jsonStr, err := BuildStartFlag(config.NodeName, validCount, varEnv["timestamp"])
+	klog.Infof("At timestamp=%s, node=%s starts %d tasks", varEnv["Timestamp"], varEnv["NodeName"], validCount)
+	jsonStr, err := BuildStartFlag(varEnv["NodeName"], validCount, varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
@@ -74,7 +70,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 						},
 					},
 				}
-				jsonStr, err := BuildNodeReport(config.NodeName, varEnv["timestamp"], checks)
+				jsonStr, err := BuildNodeReport(varEnv["NodeName"], varEnv["Timestamp"], checks)
 				if err != nil {
 					klog.Error(err)
 				}
@@ -86,7 +82,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		}
 	}
 
-	jsonStr, err = BuildFinishFlag(config.NodeName)
+	jsonStr, err = BuildFinishFlag(varEnv["NodeName"])
 	if err != nil {
 		klog.Error(err)
 	}
@@ -94,4 +90,31 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	// TODO post finish flag at finish time
 	klog.Info(jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
+}
+
+// getScriptEnv returns a map containing all environment variables needed by scripts.
+func getScriptEnv(config *Configuration, detection *Detection) map[string]string {
+	env := make(map[string]string)
+
+	if detection.Timestamp != "" {
+		env["Timestamp"] = detection.Timestamp
+	}
+
+	if config.NodeName != "" {
+		env["NodeName"] = config.NodeName
+	}
+
+	if config.LogLevel != "" {
+		env["LOG_LEVEL"] = config.LogLevel
+	}
+
+	if config.LogFlag != "" {
+		env["LOG_FLAG"] = config.LogFlag
+	}
+
+	if config.LogFile != "" {
+		env["LOG_FILE"] = config.LogFile
+	}
+
+	return env
 }

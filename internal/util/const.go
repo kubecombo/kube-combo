@@ -182,8 +182,8 @@ const (
 const (
 	DetectionScriptsPath = "/runAt"
 	EIS_API_SVC          = "eis.eis.svc.cluster.local"
-	EIS_API_PORT         = 8361
-	LOG_LEVEL            = 2
+	EIS_API_PORT         = "8361"
+	LOG_LEVEL            = "info"
 	LOG_FLAG             = "false"
 	LOG_FILE             = "/var/log/debugger.log"
 )

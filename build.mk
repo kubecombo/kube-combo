@@ -185,4 +185,4 @@ else ifeq ($(ARCH),aarch64)
 else
 	$(error Unsupported architecture: $(ARCH))
 endif
-	docker run -it --rm -e NODE_NAME=test-node ${DEBUGGER_IMG} bash -c "mkdir -p /var/log/kube-combo && /debugger --task-dir=/ --task=task.json"
+	docker run -it --rm -e NODE_NAME=test-node -e LOG_LEVEL=debug ${DEBUGGER_IMG} bash -c "mkdir -p /var/log/kube-combo && /debugger --task-dir=/ --task=task.json"
