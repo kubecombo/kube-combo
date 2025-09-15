@@ -2,6 +2,7 @@ package debugger
 
 import (
 	"flag"
+	"os"
 
 	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/spf13/pflag"
@@ -9,10 +10,16 @@ import (
 )
 
 type Configuration struct {
-	TaskFile       string
-	TaskFilePath   string
-	ScriptFilePath string
-	LogPerm        string
+	TaskFile          string
+	TaskFilePath      string
+	ScriptFilePath    string
+	LogPerm           string
+	NodeName          string
+	LogLevel          string
+	LogFlag           string
+	LogFile           string
+	EisServiceAddress string
+	EisServicePort    string
 }
 
 func ParseFlags() (*Configuration, error) {
@@ -46,6 +53,37 @@ func ParseFlags() (*Configuration, error) {
 		TaskFilePath:   *argTaskFilePath,
 		ScriptFilePath: *argScriptFilePath,
 		LogPerm:        *argLogPerm,
+		NodeName:       os.Getenv("NODE_NAME"),
+		LogLevel: func() string {
+			if os.Getenv("LOG_LEVEL") == "" {
+				return util.LOG_LEVEL
+			}
+			return os.Getenv("LOG_LEVEL")
+		}(),
+		LogFlag: func() string {
+			if os.Getenv("LOG_FLAG") == "true" {
+				return "true"
+			}
+			return util.LOG_FLAG
+		}(),
+		LogFile: func() string {
+			if os.Getenv("LOG_FILE") == "" {
+				return util.LOG_FILE
+			}
+			return os.Getenv("LOG_FILE")
+		}(),
+		EisServiceAddress: func() string {
+			if os.Getenv("EIS_API_SVC") == "" {
+				return util.EIS_API_SVC
+			}
+			return os.Getenv("EIS_API_SVC")
+		}(),
+		EisServicePort: func() string {
+			if os.Getenv("EIS_API_PORT") == "" {
+				return util.EIS_API_PORT
+			}
+			return os.Getenv("EIS_API_PORT")
+		}(),
 	}
 
 	klog.Infof("debugger config is %+v", config)
