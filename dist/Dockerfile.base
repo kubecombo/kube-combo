@@ -28,6 +28,7 @@ RUN apt-get update && \
     mtr \
     nmap \
     oping \
+    python3-pip \
     smartmontools \
     snmp \
     speedtest-cli \
@@ -44,5 +45,7 @@ RUN apt-get update && \
     rm -f /usr/lib/apt/methods/mirror && \
     rm -rf /var/tmp/* && \
     rm -rf /var/tmp/*
+
+RUN pip install --no-cache-dir --break-system-packages jinja2-cli pyyaml
 
 RUN curl -LO https://github.com/OpenCloudOS/nettrace/releases/download/v1.2.11/nettrace-1.2.11-2.$ARCH.deb && dpkg -i nettrace-1.2.11-2.$ARCH.deb && rm nettrace-1.2.11-2.$ARCH.deb
