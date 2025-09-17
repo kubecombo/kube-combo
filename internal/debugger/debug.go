@@ -59,6 +59,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 			}
 
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
+			// TODO: timeout should set by config
 			if err := runTask(task, varEnv, 10*time.Second); err != nil {
 				klog.Error("Error:", err)
 				failCount++
