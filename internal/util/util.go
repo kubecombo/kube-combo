@@ -1,4 +1,4 @@
-package pinger
+package util
 
 import (
 	"fmt"
@@ -10,16 +10,6 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-)
-
-const (
-	ProtocolTCP  = "tcp"
-	ProtocolUDP  = "udp"
-	ProtocolSCTP = "sctp"
-
-	ProtocolIPv4 = "IPv4"
-	ProtocolIPv6 = "IPv6"
-	ProtocolDual = "Dual"
 )
 
 func LogFatalAndExit(err error, format string, a ...any) {
@@ -129,4 +119,15 @@ func InitLogFilePerm(moduleName string, perm os.FileMode) {
 			log.Fatalf("failed to chmod log file: %v", err)
 		}
 	}
+}
+
+func CheckFileExistence(path string) error {
+	_, err := os.Stat(path)
+	if err == nil {
+		return nil
+	}
+	if os.IsNotExist(err) {
+		return fmt.Errorf("TaskFile %s does not exist", path)
+	}
+	return fmt.Errorf("failed to access TaskFile %s: %v", path, err)
 }

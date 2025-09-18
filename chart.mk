@@ -12,6 +12,10 @@ HELM_MASTER_NODES_LABEL=""
 HELM_SSLVPN_NODES_LABEL=""
 HELM_IPSECVPN_NODES_LABEL=""
 
+## Tool Binaries
+JINJA2 ?= $(LOCALBIN)/jinja2/bin/jinja2
+JINJA2_YAML ?= ./yamls/values.yaml
+
 .PHONY: helm-vars
 helm-vars:
 	@$(foreach V,$(.VARIABLES), \
@@ -26,14 +30,10 @@ print-helm-vars:
 	@$(MAKE) -s helm-vars > $(JINJA2_YAML)
 	@true
 
-## Tool Binaries
-JINJA2 ?= $(LOCALBIN)/jinja2/bin/jinja2
-JINJA2_YAML ?= ./yamls/values.yaml
-
 .PHONY: jinja2
 jinja2: 
 	test -s $(LOCALBIN)/jinja2 || \
-	pip install --target $(LOCALBIN)/jinja2 jinja2-cli
+	pip install --target $(LOCALBIN)/jinja2 jinja2-cli pyyaml
 
 .PHONY: rsync
 rsync: manifests

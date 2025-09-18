@@ -1,0 +1,95 @@
+{
+  "nodename": "vincent",
+  "timestamp": "2025:08:20 16:29:53",
+  "Disk": [
+    {
+      "detection": "DISK STATUS",
+      "description": "Physical disk online status check.",
+      "results": [
+        {
+          "key": "sda",
+          "value": "VMware Virtual S",
+          "err": "online"
+        },
+        {
+          "key": "sdb",
+          "value": "VMware Virtual S",
+          "err": "online"
+        },
+        {
+          "key": "sr0",
+          "value": "VMware Virtual SATA CDRW Drive",
+          "err": "online"
+        }
+      ]
+    },
+    {
+      "detection": "DISK IO UTILIZATION",
+      "description": "Disk I/O utilization check.",
+      "results": [
+        {
+          "key": "sda (%)",
+          "value": "0.00",
+          "err": "正常"
+        },
+        {
+          "key": "sdb (%)",
+          "value": "0.00",
+          "err": "正常"
+        },
+        {
+          "key": "sr0 (%)",
+          "value": "0.00",
+          "err": "正常"
+        }
+      ]
+    },
+    {
+      "detection": "DISK PERFORMANCE",
+      "description": "Read/write performance test using fio.",
+      "results": [
+        {
+          "key": "读IOPS",
+          "value": "5052",
+          "err": ""
+        },
+        {
+          "key": "写IOPS",
+          "value": "5096",
+          "err": ""
+        },
+        {
+          "key": "读带宽",
+          "value": "19.7MiB/s",
+          "err": ""
+        },
+        {
+          "key": "写带宽",
+          "value": "19.9MiB/s",
+          "err": ""
+        }
+      ]
+    },
+    {
+      "detection": "DISK IO ERRORS",
+      "description": "I/O error detection from diskstats and dmesg logs.",
+      "results": [
+        {
+          "key": "sr0",
+          "value": "异常",
+          "err": "读: 10, 写: 0, 日志: 0"
+        },
+        {
+          "key": "sda",
+          "value": "异常",
+          "err": "读: 100312, 写: 625390, 日志: 0"
+        },
+        {
+          "key": "sdb",
+          "value": "异常",
+          "err": "读: 103961, 写: 139619, 日志: 0"
+        }
+      ]
+    }
+  ]
+}

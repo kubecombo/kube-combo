@@ -985,6 +985,8 @@ spec:
                 type: string
               cpu:
                 type: string
+              debuggerConfig:
+                type: string
               enableConfigMap:
                 description: |-
                   enable configMap
@@ -1023,6 +1025,9 @@ spec:
                 type: string
               qosBandwidth:
                 description: 1Mbps bandwidth at least
+                type: string
+              runAt:
+                description: specified detection task
                 type: string
               selector:
                 description: pod node selector
@@ -2055,6 +2060,8 @@ spec:
                 type: string
               cpu:
                 type: string
+              debuggerConfig:
+                type: string
               enableConfigMap:
                 type: boolean
               enablePinger:
@@ -2072,6 +2079,8 @@ spec:
               pinger:
                 type: string
               qosBandwidth:
+                type: string
+              runAt:
                 type: string
               selector:
                 items:

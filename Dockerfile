@@ -1,10 +1,7 @@
 # syntax = docker/dockerfile:experimental
 FROM ubuntu:24.04
 WORKDIR /
-COPY ./bin/kube-combo-cmd .
-RUN ln -s /kube-combo-cmd /controller && \
-    ln -s /kube-combo-cmd /pinger
+COPY ./bin/kube-combo-cmd /controller
 
 USER 9443:9443
-COPY ./dist/pinger-setup/pinger-start.sh /pinger-start.sh
 ENTRYPOINT ["/controller"]

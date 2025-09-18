@@ -23,13 +23,16 @@ set -e
 #####################函数定义#########################
 
 
+
+source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
+
 # 获取分区总大小和使用率
-get_partition_usage(){
-    local path=$1
-    local info=$(df -Ph "$path" | awk 'END {gsub("%","",$5); print $2,$5}')
-    local total_size=$(echo $info | awk '{print $1}')
-    local usage=$(echo $info | awk '{print $2}')
-    echo "$total_size $usage"
+get_partition_usage() {
+	local path=$1
+	local info=$(df -Ph "$path" | awk 'END {gsub("%","",$5); print $2,$5}')
+	local total_size=$(echo $info | awk '{print $1}')
+	local usage=$(echo $info | awk '{print $2}')
+	echo "$total_size $usage"
 }
 
 # 判断是否挂载
@@ -39,22 +42,22 @@ check_is_mountpoint() {
 
 # 通用检测函数
 detect_partition_usage() {
-    local name="$1"       # 输出名字，如 root_usage_results
-    local path="$2"       # 挂载点路径
-    local warn="$3"       # 警告阈值
-    local critical="$4"   # 严重阈值
+	local name="$1" # 输出名字，如 root_usage_results
+	local path="$2" # 挂载点路径
+	local warn="$3" # 警告阈值
+	local critical="$4" # 严重阈值
 
-    local total_size="none" usage="none" err=""
+	local total_size="none" usage="none" err=""
 
-    if check_is_mountpoint "$path"; then
-        read total_size usage < <(get_partition_usage "$path")
-        if [ "$usage" -ge "$critical" ]; then
-            err="CRITICAL: partition ${path} usage is ${usage}%."
-        elif [ "$usage" -ge "$warn" ]; then
-            err="WARNING: partition ${path} usage is ${usage}%."
-        fi
+	if check_is_mountpoint "$path"; then
+		read total_size usage < <(get_partition_usage "$path")
+		if [ "$usage" -ge "$critical" ]; then
+			err="CRITICAL: partition ${path} usage is ${usage}%."
+		elif [ "$usage" -ge "$warn" ]; then
+			err="WARNING: partition ${path} usage is ${usage}%."
+		fi
 
-        cat <<EOF
+		cat << EOF
 ${name}:
   - key: "Total"
     value: "${total_size}"
@@ -63,37 +66,37 @@ ${name}:
     value: "${usage}%"
     err: "${err}"
 EOF
-    else
-        cat <<-EOF
-${name}:
-  - key: "Total"
-    value: "${total_size}"
-    err: "UNKNOWN: ${path} is not a mount point"
-  - key: "Used"
-    value: "${usage}"
-    err: "UNKNOWN: ${path} is not a mount point"
-EOF
-    fi
+	else
+		cat <<- EOF
+			${name}:
+			  - key: "Total"
+			    value: "${total_size}"
+			    err: "UNKNOWN: ${path} is not a mount point"
+			  - key: "Used"
+			    value: "${usage}"
+			    err: "UNKNOWN: ${path} is not a mount point"
+		EOF
+	fi
 }
 
 ## ===================开始检测=================
 
 # 定义：<待检测路径> <警告阈值><严重阈值>
 declare -A PARTITIONS=(
-    ["root"]="/ 80 90"
-    ["boot"]="/boot 80 90"
-    ["boot_efi"]="/boot/efi 80 90"
-    ["apps_data_etcd"]="/apps/data/etcd 80 90"
-    ["var"]="/var 80 90"
-    ["apps"]="/apps 80 90"
-    ["k8s_temp"]="/k8s_temp 80 90"
+	["root"]="/ 80 90"
+	["boot"]="/boot 80 90"
+	["boot_efi"]="/boot/efi 80 90"
+	["apps_data_etcd"]="/apps/data/etcd 80 90"
+	["var"]="/var 80 90"
+	["apps"]="/apps 80 90"
+	["k8s_temp"]="/k8s_temp 80 90"
 )
 
 # 如果没有参数，默认检测 全部 分区
 if [ $# -eq 0 ]; then
-    TARGETS=("${!PARTITIONS[@]}")
+	TARGETS=("${!PARTITIONS[@]}")
 else
-    TARGETS=("$@")
+	TARGETS=("$@")
 fi
 
 # 生成yaml
@@ -118,4 +121,3 @@ EOF
 echo "$yaml_data" >&2
 # 生成json
 echo "$yaml_data" | jinja2 system-partition.j2 -o partition_usage.json --format=yaml
-

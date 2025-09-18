@@ -35,11 +35,6 @@ import (
 	myv1 "github.com/kubecombo/kube-combo/api/v1"
 )
 
-const (
-	RouterIDLabel = "router-id"
-	SubnetLabel   = "subnet"
-)
-
 // KeepAlivedReconciler reconciles a KeepAlived object
 type KeepAlivedReconciler struct {
 	client.Client

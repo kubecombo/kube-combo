@@ -141,6 +141,7 @@ func CmdMain() {
 		setupLog.Error(err, "unable to create controller", "controller", "VpnGw")
 		os.Exit(1)
 	}
+
 	if err = (&controller.IpsecConnReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -149,6 +150,7 @@ func CmdMain() {
 		setupLog.Error(err, "unable to create controller", "controller", "IpsecConn")
 		os.Exit(1)
 	}
+
 	if err = (&controller.KeepAlivedReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -169,6 +171,7 @@ func CmdMain() {
 		setupLog.Error(err, "unable to create controller", "controller", "Debugger")
 		os.Exit(1)
 	}
+
 	if err = (&controller.PingerReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),

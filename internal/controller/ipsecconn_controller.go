@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	myv1 "github.com/kubecombo/kube-combo/api/v1"
+	"github.com/kubecombo/kube-combo/internal/util"
 )
 
 // IpsecConnReconciler reconciles a IpsecConn object
@@ -105,7 +106,7 @@ func (r *IpsecConnReconciler) validateIpsecConnection(ipsecConn *myv1.IpsecConn)
 
 func labelsForIpsecConnection(conn *myv1.IpsecConn) map[string]string {
 	return map[string]string{
-		VpnGwLabel: conn.Spec.VpnGw,
+		util.VpnGwLabel: conn.Spec.VpnGw,
 	}
 }
 

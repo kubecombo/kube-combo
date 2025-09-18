@@ -1,5 +1,5 @@
 SHELL = /bin/bash
-VERSION ?= 1.3.0
+VERSION ?= 1.4.0
 
 -include build.mk
 -include kind.mk

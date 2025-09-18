@@ -11,6 +11,7 @@ import (
 
 	"github.com/kubecombo/kube-combo/internal/metrics"
 	"github.com/kubecombo/kube-combo/internal/pinger"
+	"github.com/kubecombo/kube-combo/internal/util"
 	"github.com/kubecombo/kube-combo/versions"
 )
 
@@ -21,14 +22,14 @@ func CmdMain() {
 
 	config, err := pinger.ParseFlags()
 	if err != nil {
-		pinger.LogFatalAndExit(err, "failed to parse config")
+		util.LogFatalAndExit(err, "failed to parse config")
 	}
 
 	perm, err := strconv.ParseUint(config.LogPerm, 8, 32)
 	if err != nil {
-		pinger.LogFatalAndExit(err, "failed to parse log-perm")
+		util.LogFatalAndExit(err, "failed to parse log-perm")
 	}
-	pinger.InitLogFilePerm("pinger", os.FileMode(perm))
+	util.InitLogFilePerm("pinger", os.FileMode(perm))
 
 	ctrl.SetLogger(klog.NewKlogr())
 	ctx := signals.SetupSignalHandler()
@@ -37,9 +38,9 @@ func CmdMain() {
 			pinger.InitPingerMetrics()
 			metrics.InitKlogMetrics()
 			klog.V(3).Info("start metrics server")
-			if err := metrics.Run(ctx, nil, pinger.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
+			if err := metrics.Run(ctx, nil, util.JoinHostPort("0.0.0.0", config.Port), false, false); err != nil {
 				klog.Error(err, "failed to run metrics server")
-				pinger.LogFatalAndExit(err, "failed to run metrics server")
+				util.LogFatalAndExit(err, "failed to run metrics server")
 			}
 			<-ctx.Done()
 			klog.V(3).Info("stop metrics server")
