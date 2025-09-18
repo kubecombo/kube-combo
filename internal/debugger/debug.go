@@ -1,7 +1,6 @@
 package debugger
 
 import (
-	"os"
 	"path/filepath"
 	"time"
 
@@ -12,6 +11,11 @@ import (
 func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	if config.TaskFile == "" {
 		klog.Error("TaskFile is not specified")
+		return
+	}
+
+	if config.NodeName == "" {
+		klog.Error("NODE_NAME not set")
 		return
 	}
 
@@ -27,24 +31,16 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 		return
 	}
-
-	varEnv := map[string]string{}
-	if detection.Timestamp != "" {
-		varEnv["timestamp"] = detection.Timestamp
-	}
-
 	validCount := CountValidTasks(detection.Tasks)
-	klog.Infof("Post valid tasks: %d", validCount)
-
-	nodeName := os.Getenv("NODE_NAME")
-	if nodeName == "" {
-		klog.Error("NODE_NAME not set")
-	} else {
-		klog.Infof("NODE_NAME=%s\n", nodeName)
+	if validCount == 0 {
+		klog.Warning("No valid tasks found")
+		return
 	}
 
-	klog.Infof("At timestamp=%s, node=%s starts %d tasks", detection.Timestamp, nodeName, validCount)
-	jsonStr, err := BuildStartFlag(nodeName, validCount, varEnv["timestamp"])
+	varEnv := getScriptEnv(config, detection)
+
+	klog.Infof("At timestamp=%s, node=%s starts %d tasks", varEnv["Timestamp"], varEnv["NodeName"], validCount)
+	jsonStr, err := BuildStartFlag(varEnv["NodeName"], validCount, varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
@@ -63,6 +59,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 			}
 
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
+			// TODO: timeout should set by config
 			if err := runTask(task, varEnv, 10*time.Second); err != nil {
 				klog.Error("Error:", err)
 				failCount++
@@ -74,7 +71,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 						},
 					},
 				}
-				jsonStr, err := BuildNodeReport(nodeName, varEnv["timestamp"], checks)
+				jsonStr, err := BuildNodeReport(varEnv["NodeName"], varEnv["Timestamp"], checks)
 				if err != nil {
 					klog.Error(err)
 				}
@@ -86,10 +83,39 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		}
 	}
 
-	jsonStr, err = BuildFinishFlag(nodeName)
+	jsonStr, err = BuildFinishFlag(varEnv["NodeName"])
 	if err != nil {
 		klog.Error(err)
 	}
+
+	// TODO post finish flag at finish time
 	klog.Info(jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
+}
+
+// getScriptEnv returns a map containing all environment variables needed by scripts.
+func getScriptEnv(config *Configuration, detection *Detection) map[string]string {
+	env := make(map[string]string)
+
+	if detection.Timestamp != "" {
+		env["Timestamp"] = detection.Timestamp
+	}
+
+	if config.NodeName != "" {
+		env["NodeName"] = config.NodeName
+	}
+
+	if config.LogLevel != "" {
+		env["LOG_LEVEL"] = config.LogLevel
+	}
+
+	if config.LogFlag != "" {
+		env["LOG_FLAG"] = config.LogFlag
+	}
+
+	if config.LogFile != "" {
+		env["LOG_FILE"] = config.LogFile
+	}
+
+	return env
 }

@@ -985,6 +985,8 @@ spec:
                 type: string
               cpu:
                 type: string
+              debuggerConfig:
+                type: string
               enableConfigMap:
                 description: |-
                   enable configMap
@@ -2057,6 +2059,8 @@ spec:
               configMap:
                 type: string
               cpu:
+                type: string
+              debuggerConfig:
                 type: string
               enableConfigMap:
                 type: boolean
