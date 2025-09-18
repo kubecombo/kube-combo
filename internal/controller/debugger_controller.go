@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -629,7 +630,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_LEVEL",
+						Key:      "LOG_LEVEL",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -640,7 +642,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_FILE",
+						Key:      "LOG_FILE",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -651,7 +654,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_FLAG",
+						Key:      "LOG_FLAG",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -662,7 +666,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "EIS_API_PORT",
+						Key:      "EIS_API_PORT",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -673,7 +678,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "EIS_API_SVC",
+						Key:      "EIS_API_SVC",
+						Optional: ptr.To(true),
 					},
 				},
 			},
