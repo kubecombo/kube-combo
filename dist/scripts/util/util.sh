@@ -62,7 +62,7 @@ get_bond_subinterfaces() {
         return 1
     fi
 
-    result=$(ip -o link show 2>/dev/null | awk -F': ' '{print $2}' | grep -E "^${bond}\." | sort -u)
+    result=$(ip -o link show 2>/dev/null | awk -F': ' '{print $2}' | grep -E "^${bond}\." | sort -u | cut -d'@' -f1)
     local ret=$?
 
     if [ $ret -ne 0 ]; then
