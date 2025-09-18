@@ -13,6 +13,7 @@ RUN apt-get update && \
     bc \
     busybox \
     dhcping \
+    dmidecode \
     file \
     fio \
     fping \
