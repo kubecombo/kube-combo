@@ -18,7 +18,7 @@ set +e
 log_debug "Start getting all bond interfaces"
 bonds=$(get_bond_interfaces)
 ret=$?
-log_debug "$bonds"
+log_debug "$(echo "$bonds" | tr '\n' ' ')"
 set -e
 
 if [ $ret -ne 0 ] || [ -z "$bonds" ]; then
@@ -39,7 +39,7 @@ for bond in $bonds; do
     log_debug "Start getting all slave interfaces for $bond"
     slaves=$(get_bond_slaves "$bond")
     ret=$?
-    log_debug "$slaves"
+    log_debug "$(echo "$slaves" | tr '\n' ' ')"
     set -e
 
     if [ $ret -ne 0 ] || [ -z "$slaves" ]; then
@@ -98,7 +98,7 @@ for bond in $bonds; do
     log_debug "Start getting all subinterfaces for $bond"
     subinterfaces=$(get_bond_subinterfaces "$bond")
     ret=$?
-    log_debug "$subinterfaces"
+    log_debug "$(echo "$subinterfaces" | tr '\n' ' ')"
     set -e
 
     if [ $ret -ne 0 ] || [ -z "$subinterfaces" ]; then
