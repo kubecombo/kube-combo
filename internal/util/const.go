@@ -181,8 +181,11 @@ const (
 // const for debugger
 const (
 	DetectionScriptsPath = "/runAt"
-	EIS_API_SVC          = "eis.eis.svc.cluster.local"
+	EIS_API_SVC          = "http://eis.eis.svc.cluster.local"
 	EIS_API_PORT         = "8361"
+	REGISTER             = "/v1/clusters/detection/register"
+	REPORT               = "/v1/clusters/detection/report"
+	TERMINATE            = "/v1/clusters/detection/terminate"
 	LOG_LEVEL            = "info"
 	LOG_FLAG             = "false"
 	LOG_FILE             = "/var/log/debugger.log"

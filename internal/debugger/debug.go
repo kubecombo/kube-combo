@@ -45,7 +45,14 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 	}
 	klog.Info(jsonStr)
-	// TODO: post valid task numbers and begin time
+
+	url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Register)
+	resp, err := util.PostJSONString(url, jsonStr, "admin")
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	klog.V(3).Info(resp)
 
 	successCount := 0
 	failCount := 0
@@ -88,8 +95,14 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 	}
 
-	// TODO post finish flag at finish time
 	klog.Info(jsonStr)
+	url = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Terminate)
+	resp, err = util.PostJSONString(url, jsonStr, "admin")
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	klog.V(3).Info(resp)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
 
@@ -115,6 +128,10 @@ func getScriptEnv(config *Configuration, detection *Detection) map[string]string
 
 	if config.LogFile != "" {
 		env["LOG_FILE"] = config.LogFile
+	}
+
+	if config.EisServiceAddress != "" {
+		env["EIS_POST_URL"] = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Report)
 	}
 
 	return env

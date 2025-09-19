@@ -683,6 +683,42 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 					},
 				},
 			},
+			{
+				Name: "REGISTER",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "REGISTER",
+						Optional: ptr.To(true),
+					},
+				},
+			},
+			{
+				Name: "REPORT",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "REPORT",
+						Optional: ptr.To(true),
+					},
+				},
+			},
+			{
+				Name: "TERMINATE",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "TERMINATE",
+						Optional: ptr.To(true),
+					},
+				},
+			},
 		}
 		envs = append(envs, debuggerEnvs...)
 	}

@@ -20,6 +20,9 @@ type Configuration struct {
 	LogFile           string
 	EisServiceAddress string
 	EisServicePort    string
+	Register          string
+	Report            string
+	Terminate         string
 }
 
 func ParseFlags() (*Configuration, error) {
@@ -83,6 +86,24 @@ func ParseFlags() (*Configuration, error) {
 				return util.EIS_API_PORT
 			}
 			return os.Getenv("EIS_API_PORT")
+		}(),
+		Register: func() string {
+			if os.Getenv("REGISTER") == "" {
+				return util.REGISTER
+			}
+			return os.Getenv("REGISTER")
+		}(),
+		Report: func() string {
+			if os.Getenv("REPORT") == "" {
+				return util.REPORT
+			}
+			return os.Getenv("REPORT")
+		}(),
+		Terminate: func() string {
+			if os.Getenv("TERMINATE") == "" {
+				return util.TERMINATE
+			}
+			return os.Getenv("TERMINATE")
 		}(),
 	}
 
