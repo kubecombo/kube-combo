@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 获取所有的bond网卡
-# 使用方法：get_bond_interfaces()
+# 使用方法：get_bond_interfaces
 get_bond_interfaces() {
 	local result
 
@@ -23,7 +23,7 @@ get_bond_interfaces() {
 }
 
 # 获取bond网卡所有的子接口
-# 使用方法：get_bond_subinterfaces() <bond网卡名>
+# 使用方法：get_bond_subinterfaces <bond网卡名>
 get_bond_subinterfaces() {
 	local bond="$1"
 	local result
@@ -46,7 +46,7 @@ get_bond_subinterfaces() {
 }
 
 # 获取bond网卡绑定的物理网卡
-# 使用方法：get_bond_slaves() <bond网卡名>
+# 使用方法：get_bond_slaves <bond网卡名>
 get_bond_slaves() {
 	local bond="$1"
 	local result
@@ -74,7 +74,7 @@ get_bond_slaves() {
 }
 
 # 获取指定物理网卡的最大支持速率
-# 使用方法：get_max_supported_speed() <物理网卡名>
+# 使用方法：get_max_supported_speed <物理网卡名>
 get_max_supported_speed() {
 	local nic=$1
 	if [ -z "$nic" ]; then
@@ -85,16 +85,24 @@ get_max_supported_speed() {
 	# 提取 Supported link modes 中的数值并取最大
 	local max_speed
 	max_speed=$(ethtool "$nic" 2>/dev/null | awk '
-        /Supported link modes:/ {flag=1; next}      # 找到 Supported link modes
-        /^[^[:space:]]/ {flag=0}                    # 遇到新段落停止
+        /Supported link modes:/ {flag=1; next}
+        /^[^[:space:]]/ {flag=0}    
         flag {
-            if (match($0, /[0-9]+/, a)) print a[0]  # 提取数值
+            if (match($0, /[0-9]+/, a)) print a[0]
         }
     ' | sort -nr | head -1)
 
+	local ret=$?
+	if [ $ret -ne 0 ]; then
+		echo "Failed to list slave interfaces for bond $bond"
+		return $ret
+	fi
+
 	if [ -z "$max_speed" ]; then
-		echo "Unknown"
+		echo "NIC $nic Supported link MaxSpeed Unknown"
+		return 1
 	else
 		echo "$max_speed"
+		return 0
 	fi
 }
