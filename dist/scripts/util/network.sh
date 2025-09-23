@@ -82,7 +82,6 @@ get_max_supported_speed() {
 		return 1
 	fi
 
-	# 提取 Supported link modes 中的数值并取最大
 	local max_speed
 	max_speed=$(ethtool "$nic" 2>/dev/null | awk '
         /Supported link modes:/ {flag=1; next}
