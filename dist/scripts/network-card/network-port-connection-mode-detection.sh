@@ -58,4 +58,54 @@ for bond in $bonds; do
 		continue
 	fi
 
+	slave_speeds=()
+	total_speed=0
+	has_empty_speed=false
+	for slave in $slaves; do
+		slave_speed=$(ethtool "$slave" | grep -Po '(?<=Speed: )\d+')
+		if [[ -z "$slave_speed" ]]; then
+			log_warn "bond slave $slave speed is unknown"
+			YAML+=$(generate_yaml_entry "$bond" "Unknown" "$bond slave interface $slave speed is unknown" "warn")$'\n'
+			has_empty_speed=true
+			break
+		fi
+		slave_speeds+=("$slave_speed")
+		((total_speed += slave_speed))
+	done
+
+	if $has_empty_speed; then
+		continue
+	fi
+
+	set +e
+	if [[ "$bond" == "bond0" ]]; then
+		mismatch=false
+		for s in "${slave_speeds[@]}"; do
+			if [[ "$speed" -ne "$s" ]]; then
+				mismatch=true
+				break
+			fi
+		done
+		if $mismatch; then
+			log_warn "bond0 speed $speed does not match all slave speeds: ${slave_speeds[*]}"
+			YAML+=$(generate_yaml_entry "$bond" "$speed" "$bond speed mismatch with slaves" "warn")$'\n'
+		else
+			log_info "bond0 speed $speed matches all slave speeds"
+			YAML+=$(generate_yaml_entry "$bond" "$speed" "" "")$'\n'
+		fi
+	else
+		if [[ "$speed" -ne "$total_speed" ]]; then
+			log_warn "$bond speed $speed does not equal sum of slave speeds $total_speed"
+			YAML+=$(generate_yaml_entry "$bond" "$speed" "$bond speed mismatch with sum of slaves" "warn")$'\n'
+		else
+			log_info "$bond speed $speed equals sum of slave speeds $total_speed"
+			YAML+=$(generate_yaml_entry "$bond" "$speed" "" "")$'\n'
+		fi
+	fi
+	set -e
 done
+
+log_debug "$YAML"
+# shellcheck disable=SC2154
+RESULT=$(echo "$YAML" | jinja2 network-card.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
+log_result "$RESULT"
