@@ -66,43 +66,43 @@ for bond in $bonds; do
     duplex=${duplex:-Unknown}
 
     case "$duplex" in
-        Full)
-            all_full=true
-            for slave in $slaves; do
-                log_debug "Get Duplex status for $slave"
-                slave_duplex=$(ethtool "$slave" 2>/dev/null | grep "Duplex:" | awk '{print $2}')
-                slave_duplex=${slave_duplex:-Unknown}
-                case "$slave_duplex" in
-                    Full)
-                        # continue to next slave
-                        ;;
-                    Half)
-                        log_warn "$slave is running on Half Duplex"
-                        YAML+=$(generate_yaml_entry "$bond" "Half" "Slave interface $slave is running on Half Duplex" "warn")$'\n'
-                        all_full=false
-                        break
-                        ;;
-                    Unknown | *)
-                        log_err "$slave is running on Unknown Duplex"
-                        YAML+=$(generate_yaml_entry "$bond" "Unknown" "Slave interface $slave is running on Unknown Duplex" "error")$'\n'
-                        all_full=false
-                        break
-                        ;;
-                esac
-            done
-            if [ "$all_full" = true ]; then
-                log_info "$bond and all its slaves are running on Full Duplex"
-                YAML+=$(generate_yaml_entry "$bond" "Full" "" "")$'\n'
-            fi
-            ;;
-        Half)
-            log_warn "$bond is running on Half Duplex"
-            YAML+=$(generate_yaml_entry "$bond" "Half" "$bond is running on Half Duplex" "warn")$'\n'
-            ;;
-        Unknown | *)
-            log_err "$bond is running on Unknown Duplex"
-            YAML+=$(generate_yaml_entry "$bond" "Unknown" "$bond is running on Unknown Duplex" "error")$'\n'
-            ;;
+    Full)
+        all_full=true
+        for slave in $slaves; do
+            log_debug "Get Duplex status for $slave"
+            slave_duplex=$(ethtool "$slave" 2>/dev/null | grep "Duplex:" | awk '{print $2}')
+            slave_duplex=${slave_duplex:-Unknown}
+            case "$slave_duplex" in
+            Full)
+                # continue to next slave
+                ;;
+            Half)
+                log_warn "$slave is running on Half Duplex"
+                YAML+=$(generate_yaml_entry "$bond" "Half" "Slave interface $slave is running on Half Duplex" "warn")$'\n'
+                all_full=false
+                break
+                ;;
+            Unknown | *)
+                log_err "$slave is running on Unknown Duplex"
+                YAML+=$(generate_yaml_entry "$bond" "Unknown" "Slave interface $slave is running on Unknown Duplex" "error")$'\n'
+                all_full=false
+                break
+                ;;
+            esac
+        done
+        if [ "$all_full" = true ]; then
+            log_info "$bond and all its slaves are running on Full Duplex"
+            YAML+=$(generate_yaml_entry "$bond" "Full" "" "")$'\n'
+        fi
+        ;;
+    Half)
+        log_warn "$bond is running on Half Duplex"
+        YAML+=$(generate_yaml_entry "$bond" "Half" "$bond is running on Half Duplex" "warn")$'\n'
+        ;;
+    Unknown | *)
+        log_err "$bond is running on Unknown Duplex"
+        YAML+=$(generate_yaml_entry "$bond" "Unknown" "$bond is running on Unknown Duplex" "error")$'\n'
+        ;;
     esac
 
     log_info "Start checking bond subinterfaces for network card $bond"
@@ -124,19 +124,19 @@ for bond in $bonds; do
         subinterface_duplex=${subinterface_duplex:-Unknown}
 
         case "$subinterface_duplex" in
-            Full)
-                YAML+=$(generate_yaml_entry "$subinterface_duplex" "Full" "" "")$'\n'
-                ;;
-            Half)
-                log_warn "$subinterface_duplex is running on Half Duplex"
-                YAML+=$(generate_yaml_entry "$subinterface_duplex" "Half" "Subinterface $subinterface_duplex is running on Half Duplex" "warn")$'\n'
-                break
-                ;;
-            Unknown | *)
-                log_err "$subinterface_duplex is running on Unknown Duplex"
-                YAML+=$(generate_yaml_entry "$subinterface_duplex" "Unknown" "Subinterface $subinterface_duplex is running on Unknown Duplex" "error")$'\n'
-                break
-                ;;
+        Full)
+            YAML+=$(generate_yaml_entry "$subinterface" "Full" "" "")$'\n'
+            ;;
+        Half)
+            log_warn "$subinterface is running on Half Duplex"
+            YAML+=$(generate_yaml_entry "$subinterface" "Half" "Subinterface $subinterface is running on Half Duplex" "warn")$'\n'
+            break
+            ;;
+        Unknown | *)
+            log_err "$subinterface is running on Unknown Duplex"
+            YAML+=$(generate_yaml_entry "$subinterface" "Unknown" "Subinterface $subinterface is running on Unknown Duplex" "error")$'\n'
+            break
+            ;;
         esac
     done
 done
