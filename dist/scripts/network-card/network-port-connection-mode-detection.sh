@@ -62,8 +62,15 @@ for bond in $bonds; do
 	total_speed=0
 	has_empty_speed=false
 	for slave in $slaves; do
-		slave_speed=$(ethtool "$slave" | grep -Po '(?<=Speed: )\d+')
-		if [[ -z "$slave_speed" ]]; then
+
+		set +e
+		log_debug "Start getting slave interface $slave max speed"
+		slave_speed=$(get_max_supported_speed "$slave")
+		ret=$?
+		log_debug "$(echo "$slave_speed" | tr '\n' ' ')"
+		set -e
+
+		if [ $ret -ne 0 ] || [[ -z "$slave_speed" ]]; then
 			log_warn "bond slave $slave speed is unknown"
 			YAML+=$(generate_yaml_entry "$bond" "Unknown" "$bond slave interface $slave speed is unknown" "warn")$'\n'
 			has_empty_speed=true
@@ -88,18 +95,18 @@ for bond in $bonds; do
 		done
 		if $mismatch; then
 			log_warn "bond0 speed $speed does not match all slave speeds: ${slave_speeds[*]}"
-			YAML+=$(generate_yaml_entry "$bond" "$speed" "$bond speed mismatch with slaves" "warn")$'\n'
+			YAML+=$(generate_yaml_entry "$bond" "${speed}Mbps" "$bond speed mismatch with slaves" "warn")$'\n'
 		else
 			log_info "bond0 speed $speed matches all slave speeds"
-			YAML+=$(generate_yaml_entry "$bond" "$speed" "" "")$'\n'
+			YAML+=$(generate_yaml_entry "$bond" "The bond0 network card speed matches the slave's maximum speed" "" "")$'\n'
 		fi
 	else
 		if [[ "$speed" -ne "$total_speed" ]]; then
 			log_warn "$bond speed $speed does not equal sum of slave speeds $total_speed"
-			YAML+=$(generate_yaml_entry "$bond" "$speed" "$bond speed mismatch with sum of slaves" "warn")$'\n'
+			YAML+=$(generate_yaml_entry "$bond" "${speed}Mbps" "$bond speed mismatch with sum of slaves" "warn")$'\n'
 		else
 			log_info "$bond speed $speed equals sum of slave speeds $total_speed"
-			YAML+=$(generate_yaml_entry "$bond" "$speed" "" "")$'\n'
+			YAML+=$(generate_yaml_entry "$bond" "The $bond network card speed matches the slave's maximum speed" "" "")$'\n'
 		fi
 	fi
 	set -e
