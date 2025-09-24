@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# 通过Post将结果返回只后端
+# 使用方法：send_post() $EIS_POST_URL $RESULT admin
 send_post() {
 	local url="$1"
 	local json_str="$2"
@@ -15,9 +17,9 @@ send_post() {
 	status="${response: -3}"
 	response="${response:0:-3}"
 
-	if [[ "$status" != 2* ]]; then
-		echo "POST request failed with status $status"
-		return 1
+	if ! [[ "$status" =~ ^2 ]]; then
+		echo "POST request failed with status $status, response: $response"
+		return 100
 	fi
 
 	echo "$response"
