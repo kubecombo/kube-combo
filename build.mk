@@ -192,6 +192,6 @@ endif
 		-e REPORT="/post" \
 		-e TERMINATE="/post" \
 		-e NODE_NAME=test-node \
-		-e LOG_LEVEL=result \
+		-e LOG_LEVEL=debug \
 		${DEBUGGER_IMG} \
 		bash -c "mkdir -p /var/log/kube-combo && /debugger --v=3 --task-dir=/ --task=task.json"

@@ -48,11 +48,11 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 
 	url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Register)
 	resp, err := util.PostJSONString(url, jsonStr, "admin")
+	klog.V(3).Info(resp)
 	if err != nil {
 		klog.Error(err)
 		return
 	}
-	klog.V(3).Info(resp)
 
 	successCount := 0
 	failCount := 0
@@ -67,7 +67,10 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
 			// TODO: timeout should set by config
-			if err := runTask(task, varEnv, 10*time.Second); err != nil {
+			if exitCode, err := runTask(task, varEnv, 10*time.Second); err != nil {
+				if exitCode == 100 {
+					klog.Errorf("[%s: %s] post detection result failed", category, taskName)
+				}
 				klog.Error("Error:", err)
 				failCount++
 				checks := map[string][]map[string]string{
@@ -83,7 +86,13 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 					klog.Error(err)
 				}
 				klog.Info(jsonStr)
-				// TODO: post error info when detection failed
+
+				url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Report)
+				resp, err := util.PostJSONString(url, jsonStr, "admin")
+				klog.V(3).Info(resp)
+				if err != nil {
+					klog.Error(err)
+				}
 			} else {
 				successCount++
 			}
@@ -98,11 +107,11 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	klog.Info(jsonStr)
 	url = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Terminate)
 	resp, err = util.PostJSONString(url, jsonStr, "admin")
+	klog.V(3).Info(resp)
 	if err != nil {
 		klog.Error(err)
 		return
 	}
-	klog.V(3).Info(resp)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
 
