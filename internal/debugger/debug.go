@@ -40,11 +40,12 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	varEnv := getScriptEnv(config, detection)
 
 	klog.Infof("At timestamp=%s, node=%s starts %d tasks", varEnv["Timestamp"], varEnv["NodeName"], validCount)
+	klog.Info("Start registering detection tasks")
 	jsonStr, err := BuildStartFlag(varEnv["NodeName"], validCount, varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
-	klog.Info(jsonStr)
+	klog.Infof("Register detection success, Register Info: [ %s ]", jsonStr)
 
 	url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Register)
 	resp, err := util.PostJSONString(url, jsonStr, "admin")
@@ -104,7 +105,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 	}
 
-	klog.Info(jsonStr)
+	klog.Info("Start registering terminate info")
 	url = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Terminate)
 	resp, err = util.PostJSONString(url, jsonStr, "admin")
 	klog.V(3).Info(resp)
@@ -112,6 +113,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 		return
 	}
+	klog.Infof("Register terminate success, Register Info: [ %s ]", jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
 
