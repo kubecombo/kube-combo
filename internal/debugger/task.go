@@ -161,7 +161,7 @@ func CountValidTasks(tasks map[string][]string) int {
 }
 
 type StartFlag struct {
-	NodeName  string `json:"nodename"`
+	NodeName  string `json:"nodeName"`
 	JobCount  string `json:"jobcount"`
 	Timestamp string `json:"timestamp"`
 }
@@ -180,7 +180,7 @@ func BuildStartFlag(nodeName string, jobCount int, timestamp string) (string, er
 }
 
 type FinishFlag struct {
-	NodeName  string `json:"nodename"`
+	NodeName  string `json:"nodeName"`
 	Terminate string `json:"terminate"`
 	Timestamp string `json:"timestamp"`
 }
