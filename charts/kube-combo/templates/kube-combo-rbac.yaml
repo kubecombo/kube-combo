@@ -4,6 +4,12 @@ metadata:
   name: kube-combo-controller-manager
   namespace: {{.Values.namespace}}
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-combo-debugger
+  namespace: {{.Values.namespace}}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -65,6 +71,41 @@ rules:
   - debuggers/status
   verbs:
   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+  name: kube-combo-debugger-kubeovn-view
+rules:
+- apiGroups:
+  - kubeovn.io
+  resources:
+  - ippools
+  - ips
+  - iptables-dnat-rules
+  - iptables-eips
+  - iptables-fip-rules
+  - iptables-snat-rules
+  - ovn-dnat-rules
+  - ovn-eips
+  - ovn-fips
+  - ovn-snat-rules
+  - provider-networks
+  - qos-policies
+  - security-groups
+  - subnets
+  - switch-lb-rules
+  - vips
+  - vlans
+  - vpc-dnses
+  - vpc-nat-gateways
+  - vpcs
+  verbs:
+  - get
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -300,6 +341,19 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kube-combo-controller-manager
+  namespace: {{.Values.namespace}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-combo-debugger
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: kube-combo-debugger
   namespace: {{.Values.namespace}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1

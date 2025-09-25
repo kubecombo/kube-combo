@@ -1079,8 +1079,8 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 			HostNetwork:   debugger.Spec.HostNetwork, // host network pod
 			HostPID:       debugger.Spec.HostNetwork, // host network pod see host pid
 			// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-			ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
-			DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
+			ServiceAccountName:       util.ServiceAccountName, // use kube-combo-debugger service account
+			DeprecatedServiceAccount: util.ServiceAccountName, // use kube-combo-debugger service account
 		},
 	}
 
@@ -1219,8 +1219,8 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 					HostNetwork: debugger.Spec.HostNetwork, // host network pod
 					HostPID:     debugger.Spec.HostNetwork, // host network pod see host pid
 					// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-					ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
-					DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
+					ServiceAccountName:       util.ServiceAccountName, // use kube-combo-debugger service account
+					DeprecatedServiceAccount: util.ServiceAccountName, // use kube-combo-debugger service account
 					SecurityContext: &corev1.PodSecurityContext{
 						// run as root user
 						RunAsUser: &[]int64{0}[0],
