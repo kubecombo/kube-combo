@@ -36,7 +36,8 @@ RUN apt-get update && \
     strace \
     sysstat \
     tree \
-    tcptraceroute && \
+    tcptraceroute \
+    telnet && \
     apt remove -y --allow-remove-essential --auto-remove login && \
     apt-get clean && \
     rm -f /usr/bin/nc && \
