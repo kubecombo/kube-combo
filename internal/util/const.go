@@ -39,7 +39,7 @@ const (
 	EnableMetrics = "ENABLE_METRICS"
 
 	// service account
-	ServiceAccountName = "kube-ovn-app"
+	ServiceAccountName = "kube-combo-debugger"
 )
 
 // volume mounts
