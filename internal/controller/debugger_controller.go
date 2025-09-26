@@ -1231,8 +1231,8 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 				Type: appsv1.RollingUpdateDaemonSetStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateDaemonSet{
 					MaxUnavailable: &intstr.IntOrString{
-						IntVal: 1, // allow one pod unavailable during update
-						StrVal: "1",
+						Type:   intstr.String,
+						StrVal: "100%",
 					},
 				},
 			},
