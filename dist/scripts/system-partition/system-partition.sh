@@ -18,11 +18,12 @@ set -e
 #   k8s_temp       -> /k8s_temp
 #
 # 使用示例:
+#   -> 检测所有支持的分区
 #   bash systemPartitionDetection.sh
-#       -> 检测所有支持的分区
+#      
 #
+#   -> 只检测 root 和 boot 分区
 #   bash systemPartitionDetection.sh root boot
-#       -> 只检测 root 和 boot 分区
 ## #####################################################################
 
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
