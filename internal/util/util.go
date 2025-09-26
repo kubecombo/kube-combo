@@ -1,9 +1,12 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -130,4 +133,59 @@ func CheckFileExistence(path string) error {
 		return fmt.Errorf("TaskFile %s does not exist", path)
 	}
 	return fmt.Errorf("failed to access TaskFile %s: %v", path, err)
+}
+
+func PostJSONString(url string, jsonStr string, userID string) (string, error) {
+	klog.V(3).Infof("POST url: %s", url)
+	klog.V(3).Infof("POST body: %s", jsonStr)
+	klog.V(3).Infof("POST user_id: %s", userID)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
+	if err != nil {
+		return "", fmt.Errorf("create request failed: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if userID != "" {
+		req.Header.Set("user_id", userID)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("send request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	klog.V(3).Infof("HTTP status: %s", resp.Status)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("read response body failed: %v", err)
+	}
+
+	klog.V(3).Infof("Response body: %s", string(body))
+	return string(body), nil
+}
+
+func BuildURL(address, port, path string) string {
+	var sb strings.Builder
+
+	sb.WriteString(address)
+
+	if port != "" {
+		sb.WriteString(":")
+		sb.WriteString(port)
+	}
+
+	if path == "" {
+		sb.WriteString("/")
+	} else {
+		if !strings.HasPrefix(path, "/") {
+			sb.WriteString("/")
+		}
+		sb.WriteString(path)
+	}
+
+	return sb.String()
 }
