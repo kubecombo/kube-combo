@@ -45,7 +45,6 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	if err != nil {
 		klog.Error(err)
 	}
-	klog.Infof("Register detection success, Register Info: [ %s ]", jsonStr)
 
 	url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Register)
 	resp, err := util.PostJSONString(url, jsonStr, "admin")
@@ -54,6 +53,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		klog.Error(err)
 		return
 	}
+	klog.Infof("Register detection success, Register Info: [ %s ]", jsonStr)
 
 	successCount := 0
 	failCount := 0
@@ -100,12 +100,12 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 		}
 	}
 
+	klog.Info("Start registering terminate info")
 	jsonStr, err = BuildFinishFlag(varEnv["NodeName"])
 	if err != nil {
 		klog.Error(err)
 	}
 
-	klog.Info("Start registering terminate info")
 	url = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Terminate)
 	resp, err = util.PostJSONString(url, jsonStr, "admin")
 	klog.V(3).Info(resp)
