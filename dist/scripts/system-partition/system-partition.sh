@@ -18,17 +18,18 @@ set -e
 #   k8s_temp       -> /k8s_temp
 #
 # 使用示例:
+#   -> 检测所有支持的分区
 #   bash systemPartitionDetection.sh
-#       -> 检测所有支持的分区
+#      
 #
+#   -> 只检测 root 和 boot 分区
 #   bash systemPartitionDetection.sh root boot
-#       -> 只检测 root 和 boot 分区
 ## #####################################################################
 
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 cd $(dirname "${BASH_SOURCE[0]}")
-log_info "=================== System partition usage detection is runninge =========================="
+log_info "=================== system partition usage detection is running =========================="
 
 # 获取分区总大小和使用率
 get_partition_usage() {
@@ -58,8 +59,8 @@ detect_partition_usage() {
 	if check_is_mountpoint "$path"; then
 		read total_size usage < <(get_partition_usage "$path")
 		if [ "$usage" -ge "$critical" ]; then
-			err="ERROR: Partition '${path}' is nearly full! Usage is ${usage}% of ${total_size}."
-            level="error"
+			err="CRITICAL: Partition '${path}' is nearly full! Usage is ${usage}% of ${total_size}."
+            level="warn"
 		elif [ "$usage" -ge "$warn" ]; then
 			err="WARNING: Partition '${path}' usage is high. Current usage: ${usage}% of ${total_size}."
             level="warn"
@@ -115,4 +116,4 @@ log_info "\n\n$YAML"
 # 生成json
 echo "$YAML" | jinja2 system-partition.j2 -o partition_usage.json --format=yaml
 
-log_info "=================== System partition usage detection is completed =========================="
+log_info "=================== system partition usage detection is completed =========================="
