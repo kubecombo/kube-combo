@@ -35,12 +35,11 @@ if [ $ret -ne 0 ] || [ -z "$bonds" ]; then
 
 	set +e
 	log_debug "Start posting detection result"
-	response=$(send_post "asdas" "$RESULT" admin)
+	response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
 	# response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
 	ret=$?
 	log_debug "$(echo "$response" | tr '\n' ' ')"
 	set -e
-
 	exit $ret
 fi
 
@@ -134,3 +133,4 @@ response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
 ret=$?
 log_debug "$(echo "$response" | tr '\n' ' ')"
 set -e
+exit $ret

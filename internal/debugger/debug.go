@@ -101,7 +101,7 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	}
 
 	klog.Info("Start registering terminate info")
-	jsonStr, err = BuildFinishFlag(varEnv["NodeName"])
+	jsonStr, err = BuildFinishFlag(varEnv["NodeName"], varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
