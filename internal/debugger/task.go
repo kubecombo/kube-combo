@@ -185,11 +185,11 @@ type FinishFlag struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func BuildFinishFlag(nodeName string) (string, error) {
+func BuildFinishFlag(nodeName string, timestamp string) (string, error) {
 	data := FinishFlag{
 		NodeName:  nodeName,
 		Terminate: "true",
-		Timestamp: fmt.Sprintf("%d", time.Now().Unix()), // 秒级时间戳
+		Timestamp: timestamp,
 	}
 
 	bytes, err := json.Marshal(data)
