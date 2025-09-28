@@ -44,15 +44,15 @@ go-build-arm: manifests generate fmt vet ## Build the kube-combo binary for arm6
 
 ##@ docker build
 .PHONY: docker-build-amd64
-docker-build-amd64: go-build-amd ## Build docker kube-combo image for amd64.
+docker-build-amd64: go-build-amd ## Build docker kube-combo-controller image for amd64.
 	docker buildx build --network host --load --platform linux/amd64 -t ${IMG} .
 
 .PHONY: docker-build-arm64
-docker-build-arm64: go-build-arm ## Build docker kube-combo image for arm64.
+docker-build-arm64: go-build-arm ## Build docker kube-combo-controller image for arm64.
 	docker buildx build --network host --load --platform linux/arm64 -t ${IMG} .
 
 .PHONY: docker-push
-docker-push: ## Push docker kube-combo image.
+docker-push: ## Push docker kube-combo-controller image.
 	docker push ${IMG}
 
 .PHONY: docker-build-base-amd64
@@ -167,6 +167,7 @@ docker-pull-base-arm64:
 
 .PHONY: run-controller
 run-controller: manifests generate fmt vet install ## Run kube-combo controller from your host.
+	$(KUSTOMIZE) build config/rbac | kubectl apply -f -
 	go mod tidy
 	go run ./run/controller/main.go
 
@@ -185,4 +186,13 @@ else ifeq ($(ARCH),aarch64)
 else
 	$(error Unsupported architecture: $(ARCH))
 endif
-	docker run -it --rm -e NODE_NAME=test-node -e LOG_LEVEL=debug ${DEBUGGER_IMG} bash -c "mkdir -p /var/log/kube-combo && /debugger --task-dir=/ --task=task.json"
+	docker run -it --rm \
+		-e EIS_API_SVC="https://httpbin.org" \
+		-e EIS_API_PORT="443" \
+		-e REGISTER="/post" \
+		-e REPORT="/post" \
+		-e TERMINATE="/post" \
+		-e NODE_NAME=test-node \
+		-e LOG_LEVEL=debug \
+		${DEBUGGER_IMG} \
+		bash -c "mkdir -p /var/log/kube-combo && /debugger --v=3 --task-dir=/ --task=task.json"

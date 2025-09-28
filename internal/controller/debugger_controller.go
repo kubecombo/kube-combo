@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -629,7 +630,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_LEVEL",
+						Key:      "LOG_LEVEL",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -640,7 +642,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_FILE",
+						Key:      "LOG_FILE",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -651,7 +654,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "LOG_FLAG",
+						Key:      "LOG_FLAG",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -662,7 +666,8 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "EIS_API_PORT",
+						Key:      "EIS_API_PORT",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -673,7 +678,44 @@ func (r *DebuggerReconciler) getEnvs(debugger *myv1.Debugger, pinger *myv1.Pinge
 						LocalObjectReference: corev1.LocalObjectReference{
 							Name: debugger.Spec.DebuggerConfig,
 						},
-						Key: "EIS_API_SVC",
+						Key:      "EIS_API_SVC",
+						Optional: ptr.To(true),
+					},
+				},
+			},
+			{
+				Name: "REGISTER",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "REGISTER",
+						Optional: ptr.To(true),
+					},
+				},
+			},
+			{
+				Name: "REPORT",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "REPORT",
+						Optional: ptr.To(true),
+					},
+				},
+			},
+			{
+				Name: "TERMINATE",
+				ValueFrom: &corev1.EnvVarSource{
+					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: debugger.Spec.DebuggerConfig,
+						},
+						Key:      "TERMINATE",
+						Optional: ptr.To(true),
 					},
 				},
 			},
@@ -1037,8 +1079,8 @@ func (r *DebuggerReconciler) getDebuggerPod(debugger *myv1.Debugger, pinger *myv
 			HostNetwork:   debugger.Spec.HostNetwork, // host network pod
 			HostPID:       debugger.Spec.HostNetwork, // host network pod see host pid
 			// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-			ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
-			DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
+			ServiceAccountName:       util.ServiceAccountName, // use kube-combo-debugger service account
+			DeprecatedServiceAccount: util.ServiceAccountName, // use kube-combo-debugger service account
 		},
 	}
 
@@ -1177,8 +1219,8 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 					HostNetwork: debugger.Spec.HostNetwork, // host network pod
 					HostPID:     debugger.Spec.HostNetwork, // host network pod see host pid
 					// HostIPC:       debugger.Spec.HostNetwork, // host network pod see host ipc
-					ServiceAccountName:       util.ServiceAccountName, // use kube-ovn service account
-					DeprecatedServiceAccount: util.ServiceAccountName, // use kube-ovn service account
+					ServiceAccountName:       util.ServiceAccountName, // use kube-combo-debugger service account
+					DeprecatedServiceAccount: util.ServiceAccountName, // use kube-combo-debugger service account
 					SecurityContext: &corev1.PodSecurityContext{
 						// run as root user
 						RunAsUser: &[]int64{0}[0],
@@ -1189,8 +1231,8 @@ func (r *DebuggerReconciler) getDebuggerDaemonset(debugger *myv1.Debugger, pinge
 				Type: appsv1.RollingUpdateDaemonSetStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateDaemonSet{
 					MaxUnavailable: &intstr.IntOrString{
-						IntVal: 1, // allow one pod unavailable during update
-						StrVal: "1",
+						Type:   intstr.String,
+						StrVal: "100%",
 					},
 				},
 			},

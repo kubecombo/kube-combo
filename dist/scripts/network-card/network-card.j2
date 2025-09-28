@@ -1,12 +1,12 @@
 {
-  "NodeName": "{{ NodeName }}",
-  "Timestamp": "{{ Timestamp }}",
+  "nodeName": "{{ NodeName }}",
+  "timestamp": "{{ Timestamp }}",
   "network-card": [
     {%- set sections = [] %}
 
     {%- if network_port_packet_loss_results %}
       {%- set _ = sections.append({
-        "detection": "NETWORK PORT PACKET LOSS",
+        "detection": "Network Port Packet Loss",
         "description": "The packet loss results for network ports.",
         "results": network_port_packet_loss_results
       }) %} 
@@ -14,7 +14,7 @@
 
     {%- if network_port_connection_mode_results %}
       {%- set _ = sections.append({
-        "detection": "NETWORK PORT CONNECTION MODE",
+        "detection": "Network Port Connection Mode",
         "description": "The current network port connection mode.",
         "results": network_port_connection_mode_results
       }) %} 
@@ -22,7 +22,7 @@
 
     {%- if full_duplex_mode_results %}
       {%- set _ = sections.append({
-        "detection": "FULL DUPLEX MODE",
+        "detection": "Full Duplex Mode",
         "description": "The results related to full-duplex network communication.",
         "results": full_duplex_mode_results
       }) %} 
@@ -30,7 +30,7 @@
 
     {%- if network_port_speed_results %}
       {%- set _ = sections.append({
-        "detection": "NETWORK PORT SPEED",
+        "detection": "Network Port Speed",
         "description": "The speed of the network port.",
         "results": network_port_speed_results
       }) %} 
@@ -38,7 +38,7 @@
 
     {%- if network_card_conflict_results %}
       {%- set _ = sections.append({
-        "detection": "NETWORK CARD CONFLICT",
+        "detection": "Network Card Conflict",
         "description": "The results related to conflicts with the network card.",
         "results": network_card_conflict_results
       }) %} 
@@ -46,7 +46,7 @@
 
     {%- if unplugged_and_disconnection_results %}
       {%- set _ = sections.append({
-        "detection": "NETWORK CARD DISCONNECTION",
+        "detection": "Network Card Disconnection",
         "description": "The results of the network card unplugging or disconnection.",
         "results": unplugged_and_disconnection_results
       }) %} 
@@ -62,7 +62,7 @@
         {
           "key": "{{ result.key }}",
           "value": "{{ result.value }}",
-          "err": "{{ result.err }}"
+          "err": "{{ result.err }}",
           "level": "{{ result.level }}"
         }{% if not loop.last %},{% endif %}
         {%- endfor %}
