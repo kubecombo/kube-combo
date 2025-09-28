@@ -18,30 +18,17 @@ set -e
 #   k8s_temp       -> /k8s_temp
 #
 # 使用示例:
-<<<<<<< HEAD
-#   -> 检测所有支持的分区
-#   bash systemPartitionDetection.sh
-#      
-#
-#   -> 只检测 root 和 boot 分区
-#   bash systemPartitionDetection.sh root boot
-=======
 #   bash systemPartitionDetection.sh
 #       -> 检测所有支持的分区
 #
 #   bash systemPartitionDetection.sh root boot
 #       -> 只检测 root 和 boot 分区
->>>>>>> 66d4488... 修改日志输出，增加level和status字段
 ## #####################################################################
 
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 cd $(dirname "${BASH_SOURCE[0]}")
-<<<<<<< HEAD
 log_info "=================== system partition usage detection is running =========================="
-=======
-log_info "=================== System partition usage detection is runninge =========================="
->>>>>>> 66d4488... 修改日志输出，增加level和status字段
 
 # 获取分区总大小和使用率
 get_partition_usage() {
@@ -128,8 +115,4 @@ log_info "\n\n$YAML"
 # 生成json
 echo "$YAML" | jinja2 system-partition.j2 -o partition_usage.json --format=yaml
 
-<<<<<<< HEAD
 log_info "=================== system partition usage detection is completed =========================="
-=======
-log_info "=================== System partition usage detection is completed =========================="
->>>>>>> 66d4488... 修改日志输出，增加level和status字段
