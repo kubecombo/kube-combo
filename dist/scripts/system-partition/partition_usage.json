@@ -1,0 +1,140 @@
+{
+    "NodeName": "",
+    "Timestamp": "",
+
+    "System Partition": [
+        {
+          "detection": "_root",
+          "description": "The current usage rate of the / partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "50G",
+              "err": "",
+              "level": ""
+              },
+            {
+              "key": "Used",
+              "value": "23%",
+              "err": "",
+              "level": ""
+              }
+        ]
+        },
+        {
+          "detection": "_boot",
+          "description": "The current usage rate of the /boot partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "976M",
+              "err": "",
+              "level": ""
+              },
+            {
+              "key": "Used",
+              "value": "14%",
+              "err": "",
+              "level": ""
+              }
+        ]
+        },
+        {
+          "detection": "_boot_efi",
+          "description": "The current usage rate of the /boot/efi partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "none",
+              "err": "UNKNOWN: /boot/efi is not a mount point",
+              "level": "error"
+              },
+            {
+              "key": "Used",
+              "value": "none",
+              "err": "UNKNOWN: /boot/efi is not a mount point",
+              "level": "error"
+              }
+        ]
+        },
+        {
+          "detection": "_apps_data_etcd",
+          "description": "The current usage rate of the /apps/data/etcd partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "none",
+              "err": "UNKNOWN: /apps/data/etcd is not a mount point",
+              "level": "error"
+              },
+            {
+              "key": "Used",
+              "value": "none",
+              "err": "UNKNOWN: /apps/data/etcd is not a mount point",
+              "level": "error"
+              }
+        ]
+        },
+        {
+          "detection": "_var",
+          "description": "The current usage rate of the /var partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "none",
+              "err": "UNKNOWN: /var is not a mount point",
+              "level": "error"
+              },
+            {
+              "key": "Used",
+              "value": "none",
+              "err": "UNKNOWN: /var is not a mount point",
+              "level": "error"
+              }
+        ]
+        },
+        {
+          "detection": "_apps",
+          "description": "The current usage rate of the /apps partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "none",
+              "err": "UNKNOWN: /apps is not a mount point",
+              "level": "error"
+              },
+            {
+              "key": "Used",
+              "value": "none",
+              "err": "UNKNOWN: /apps is not a mount point",
+              "level": "error"
+              }
+        ]
+        },
+        {
+          "detection": "_k8s_temp",
+          "description": "The current usage rate of the /k8s_temp partition in the system",
+          "status": "true",
+          "results": [
+            {
+              "key": "Total",
+              "value": "none",
+              "err": "UNKNOWN: /k8s_temp is not a mount point",
+              "level": "error"
+              },
+            {
+              "key": "Used",
+              "value": "none",
+              "err": "UNKNOWN: /k8s_temp is not a mount point",
+              "level": "error"
+              }
+        ]
+        }
+    ]
+}
