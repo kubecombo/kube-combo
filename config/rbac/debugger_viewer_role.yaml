@@ -4,17 +4,48 @@ kind: ClusterRole
 metadata:
   name: debugger-viewer-role
 rules:
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - debuggers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - vpn-gw.kubecombo.com
-  resources:
-  - debuggers/status
-  verbs:
-  - get
+  - apiGroups:
+      - vpn-gw.kubecombo.com
+    resources:
+      - debuggers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - vpn-gw.kubecombo.com
+    resources:
+      - debuggers/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: debugger-kubeovn-view
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+  - apiGroups: ["kubeovn.io"]
+    resources:
+      - ippools
+      - ips
+      - iptables-dnat-rules
+      - iptables-eips
+      - iptables-fip-rules
+      - iptables-snat-rules
+      - ovn-dnat-rules
+      - ovn-eips
+      - ovn-fips
+      - ovn-snat-rules
+      - provider-networks
+      - qos-policies
+      - security-groups
+      - subnets
+      - switch-lb-rules
+      - vips
+      - vlans
+      - vpc-dnses
+      - vpc-nat-gateways
+      - vpcs
+    verbs: ["get", "list", "watch"]

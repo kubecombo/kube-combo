@@ -96,7 +96,7 @@ func loadDetection(filePath string) (*Detection, error) {
 	return &d, nil
 }
 
-func runTask(task Task, envVars map[string]string, timeout time.Duration) error {
+func runTask(task Task, envVars map[string]string, timeout time.Duration) (int, error) {
 	args := []string{}
 	if task.Args != "" {
 		args = strings.Fields(task.Args)
@@ -106,21 +106,33 @@ func runTask(task Task, envVars map[string]string, timeout time.Duration) error 
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, task.Script, args...)
-
 	cmd.Env = append(os.Environ(), formatEnv(envVars)...)
 
 	output, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
 		klog.Errorf("Task %s timed out after %s", task.Script, timeout)
-		return err
+		return 1, fmt.Errorf("task timed out after %s", timeout)
 	}
 	if err != nil {
-		klog.Errorf("Failed to run %s: %v, output: %s", task.Script, err, string(output))
-		return err
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			code := exitErr.ExitCode()
+			// post failed
+			if code == 100 {
+				klog.Warningf("Task %s exited with code 100, post result failed. Output:\n%s", task.Script, string(output))
+				return 100, fmt.Errorf("task exited with code %d, output:\n%s", code, string(output))
+			} else {
+				klog.Errorf("Task %s exited with code %d, output:\n%s", task.Script, code, string(output))
+				return 1, fmt.Errorf("task exited with code %d, output:\n%s", code, string(output))
+			}
+		}
+
+		// other fails
+		klog.Errorf("Failed to run %s: %v, output:\n%s", task.Script, err, string(output))
+		return 1, fmt.Errorf("failed to run %s: %w, output:\n%s", task.Script, err, string(output))
 	}
 
 	klog.Infof("Output of %s:\n%s", task.Script, string(output))
-	return nil
+	return 0, nil
 }
 
 func formatEnv(env map[string]string) []string {
@@ -150,7 +162,7 @@ func CountValidTasks(tasks map[string][]string) int {
 }
 
 type StartFlag struct {
-	NodeName  string `json:"nodename"`
+	NodeName  string `json:"nodeName"`
 	JobCount  string `json:"jobcount"`
 	Timestamp string `json:"timestamp"`
 }
@@ -169,16 +181,16 @@ func BuildStartFlag(nodeName string, jobCount int, timestamp string) (string, er
 }
 
 type FinishFlag struct {
-	NodeName  string `json:"nodename"`
+	NodeName  string `json:"nodeName"`
 	Terminate string `json:"terminate"`
 	Timestamp string `json:"timestamp"`
 }
 
-func BuildFinishFlag(nodeName string) (string, error) {
+func BuildFinishFlag(nodeName string, timestamp string) (string, error) {
 	data := FinishFlag{
 		NodeName:  nodeName,
 		Terminate: "true",
-		Timestamp: fmt.Sprintf("%d", time.Now().Unix()), // 秒级时间戳
+		Timestamp: timestamp,
 	}
 
 	bytes, err := json.Marshal(data)

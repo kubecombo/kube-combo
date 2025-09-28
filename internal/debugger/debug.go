@@ -40,12 +40,20 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 	varEnv := getScriptEnv(config, detection)
 
 	klog.Infof("At timestamp=%s, node=%s starts %d tasks", varEnv["Timestamp"], varEnv["NodeName"], validCount)
+	klog.Info("Start registering detection tasks")
 	jsonStr, err := BuildStartFlag(varEnv["NodeName"], validCount, varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
-	klog.Info(jsonStr)
-	// TODO: post valid task numbers and begin time
+
+	url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Register)
+	resp, err := util.PostJSONString(url, jsonStr, "admin")
+	klog.V(3).Info(resp)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	klog.Infof("Register detection success, Register Info: [ %s ]", jsonStr)
 
 	successCount := 0
 	failCount := 0
@@ -60,7 +68,10 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 
 			klog.Infof("Running [%s: %s] %s %s", category, taskName, task.Script, task.Args)
 			// TODO: timeout should set by config
-			if err := runTask(task, varEnv, 10*time.Second); err != nil {
+			if exitCode, err := runTask(task, varEnv, 10*time.Second); err != nil {
+				if exitCode == 100 {
+					klog.Errorf("[%s: %s] post detection result failed", category, taskName)
+				}
 				klog.Error("Error:", err)
 				failCount++
 				checks := map[string][]map[string]string{
@@ -76,20 +87,33 @@ func StartDebugger(config *Configuration, stopCh <-chan struct{}) {
 					klog.Error(err)
 				}
 				klog.Info(jsonStr)
-				// TODO: post error info when detection failed
+
+				url := util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Report)
+				resp, err := util.PostJSONString(url, jsonStr, "admin")
+				klog.V(3).Info(resp)
+				if err != nil {
+					klog.Error(err)
+				}
 			} else {
 				successCount++
 			}
 		}
 	}
 
-	jsonStr, err = BuildFinishFlag(varEnv["NodeName"])
+	klog.Info("Start registering terminate info")
+	jsonStr, err = BuildFinishFlag(varEnv["NodeName"], varEnv["Timestamp"])
 	if err != nil {
 		klog.Error(err)
 	}
 
-	// TODO post finish flag at finish time
-	klog.Info(jsonStr)
+	url = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Terminate)
+	resp, err = util.PostJSONString(url, jsonStr, "admin")
+	klog.V(3).Info(resp)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	klog.Infof("Register terminate success, Register Info: [ %s ]", jsonStr)
 	klog.Infof("Task execution summary: total valid: %d, success: %d, failed: %d", validCount, successCount, failCount)
 }
 
@@ -115,6 +139,10 @@ func getScriptEnv(config *Configuration, detection *Detection) map[string]string
 
 	if config.LogFile != "" {
 		env["LOG_FILE"] = config.LogFile
+	}
+
+	if config.EisServiceAddress != "" {
+		env["EIS_POST_URL"] = util.BuildURL(config.EisServiceAddress, config.EisServicePort, config.Report)
 	}
 
 	return env

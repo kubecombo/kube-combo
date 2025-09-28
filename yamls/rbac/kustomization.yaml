@@ -40,6 +40,11 @@ patchesJson6902:
     path: helm_chart_patch.yaml
   - target:
       version: v1
+      kind: ServiceAccount
+      name: kube-combo-debugger
+    path: helm_chart_patch.yaml
+  - target:
+      version: v1
       kind: Service
       name: kube-combo-controller-manager-metrics-service
     path: helm_chart_patch.yaml
@@ -52,4 +57,9 @@ patchesJson6902:
       version: v1
       kind: RoleBinding
       name: kube-combo-leader-election-rolebinding
+    path: helm_chart_patch.yaml
+  - target:
+      version: v1
+      kind: RoleBinding
+      name: kube-combo-debugger
     path: helm_chart_patch.yaml
