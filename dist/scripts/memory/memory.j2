@@ -1,0 +1,73 @@
+{
+  "NodeName": "{{ NodeName }}",
+  "Timestamp": "{{ Timestamp }}",
+  "Memory": [
+    {%- set sections = [] %}
+
+    {%- if memory_frequency_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY FREQUENCY",
+        "description": "The results related to memory frequency.",
+        "results": memory_frequency_results
+      }) %} 
+    {%- endif %}
+
+    {%- if memory_loose_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY LOOSE",
+        "description": "The results related to memory loose.",
+        "results": memory_loose_results
+      }) %} 
+    {%- endif %}
+
+    {%- if memory_rw_perf_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY READ/WRITE PERFORMANCE",
+        "description": "The results related to memory read/write performance.",
+        "results": memory_rw_perf_results
+      }) %} 
+    {%- endif %}
+
+    {%- if memory_size_check_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY SIZE",
+        "description": "The size of the memory.",
+        "results": memory_size_check_results
+      }) %} 
+    {%- endif %}
+
+    {%- if memory_usage_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY USAGE",
+        "description": "The results related to memory usage.",
+        "results": memory_usage_results
+      }) %} 
+    {%- endif %}
+
+    {%- if memory_vendor_results %}
+      {%- set _ = sections.append({
+        "detection": "MEMORY VENDOR",
+        "description": "The results related to memory vendor.",
+        "results": memory_vendor_results
+      }) %} 
+    {%- endif %}
+
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "status": "true",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}",
+          "level": "{{ result.level }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}
