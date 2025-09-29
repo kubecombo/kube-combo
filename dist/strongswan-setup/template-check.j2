@@ -4,17 +4,8 @@ set -eux
 
 # ipsec remote eip use linux default route
 # 1. make sure ipsec remote eip is accessable
-## use arping to check if the remoteEIP is reachable
-#set +e
-#arping -C 1 {{ conn.remoteEIP }}
-#if [[ $? -ne 0 ]]; then
-#    echo "arping {{ conn.remoteEIP }} failed, add ip route {{ conn.remoteEIP }}"
-#    ip route replace {{ conn.remoteEIP }} via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
-#fi
-#set -e
-
-# ---loop check connection {{ conn.name }} remote eip ---
-while ! ping -n -c 1 {{ conn.remoteEIP }}; do
+# ---loop check connection {{ conn.name }} remote eip using local vip ---
+while ! ping -I {{ conn.localVIP }} -n -c 1 {{ conn.remoteEIP }}; do
     echo "Waiting for remote eip {{ conn.remoteEIP }} to respond..."
     sleep 5
 done
@@ -35,37 +26,6 @@ localGatewayNic={{ conn.localGatewayNic }}
 sysctlNic="${localGatewayNic/.//}"
 echo "sysctl set nic: ${sysctlNic}"
 sysctl -w "net.ipv4.conf.${sysctlNic}.rp_filter=0"
-
-
-# # 3. make sure ipsec remote cidr route is exist
-# remoteTs={{ conn.remotePrivateCidrs }}
-# remotes=($(echo "${remoteTs}" | tr ',' ' '))
-# for remoteCidr in "${remotes[@]}"; do
-#     set +e
-#     alreadyExist=$(ip route show | grep "$remoteCidr")
-#     set -e
-#     if [[ -n "$alreadyExist" ]]; then
-#         echo "ip route $remoteCidr already exist, skip"
-#     else
-#         echo "ip route $remoteCidr not exist, add it"
-#         ip route replace "$remoteCidr" via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
-#     fi
-# done
-
-# 4. make sure ipsec local cidr route is exist
-localTs={{ conn.localPrivateCidrs }}
-locals=($(echo "${localTs}" | tr ',' ' '))
-for localCidr in "${locals[@]}"; do
-    set +e
-    alreadyExist=$(ip route show | grep "$localCidr")
-    set -e
-    if [[ -n "$alreadyExist" ]]; then
-        echo "ip route $localCidr already exist, skip"
-    else
-        echo "ip route $localCidr not exist, add it"
-        ip route replace "$localCidr" via {{ conn.localVipGateway }} dev {{ conn.localGatewayNic }}
-    fi
-done
 
 {% endif %}
 
