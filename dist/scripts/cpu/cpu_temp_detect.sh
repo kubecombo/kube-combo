@@ -2,7 +2,6 @@
 set -e
 set -o pipefail
 # set -x  # 开启执行追踪
-export LOG_LEVEL=debug
 
 # 引入工具脚本
 # shellcheck disable=SC1091
@@ -10,6 +9,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/cpu.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
+
+
 
 ##############################################################################
 # 1. 环境变量初始化（统一缩进+变量用途注释）
@@ -21,8 +23,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || { log_err "[Env Init] Failed to switch working directory: ${dir}"; exit 1; }
 
 # 核心变量定义（默认值兜底，确保环境兼容性）
-: "${NodeName:=$(hostname)}"                  # 节点名称（默认取主机名）
-: "${Timestamp:=$(date '+%Y-%m-%d %H:%M:%S')}"  # 检测时间戳
 PROM_NAMESPACE="monitoring"                  # Prometheus所在K8s命名空间
 PROM_SERVICE="cmss-ekiplus-prometheus-system"  # Prometheus的K8s Service名称
 PROM_PORT="9090"                             # Prometheus默认端口
@@ -230,3 +230,12 @@ RESULT=$( echo "$YAML" | jinja2 cpu_detect.j2 --format=yaml -D NodeName="$NodeNa
 log_result "$RESULT"
 
 log_info "[Main Process] CPU temperature detection completed (Node: ${NodeName})"
+
+#向eis的后端服务发送post请求，上报检测结果
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

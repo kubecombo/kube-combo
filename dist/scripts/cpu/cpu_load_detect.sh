@@ -1,8 +1,6 @@
-
 #!/bin/bash
 set -e
 set -o pipefail
-export LOG_LEVEL=debug
 
 # 引入工具脚本
 # shellcheck disable=SC1091
@@ -10,6 +8,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/cpu.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
+
+
 
 
 # ==============================================
@@ -22,8 +23,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || { log_err "Failed to enter working directory: ${DIR}"; exit 1; }
 
 # 核心变量定义
-: "${NodeName:=$(hostname)}"                  # 节点名称（默认取主机名）
-: "${Timestamp:=$(date '+%Y-%m-%d %H:%M:%S')}"  # 检测时间戳
 PROM_NAMESPACE="monitoring"                  # Prometheus所在命名空间
 PROM_SERVICE="cmss-ekiplus-prometheus-system"  # Prometheus的Service名称
 PROM_PORT="9090"                             # Prometheus默认端口
@@ -235,3 +234,12 @@ log_debug "=== Generated YAML Content End ==="
 RESULT=$( echo "$YAML" | jinja2 cpu_detect.j2 --format=yaml -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result "$RESULT"
 log_info "CPU load detection process finished successfully"
+
+#向eis的后端服务发送post请求，上报检测结果
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

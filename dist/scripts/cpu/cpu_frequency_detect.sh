@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 set -o pipefail
-export LOG_LEVEL=debug
 
 # 引入工具脚本
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/cpu.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 
 
 # ==============================================
@@ -16,8 +16,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
 # 核心变量定义
-: "${NodeName:=$(hostname)}"                  # 节点名称（默认取主机名）
-: "${Timestamp:=$(date '+%Y-%m-%d %H:%M:%S')}"  # 检测时间戳（用于结果标识）
 PROM_NAMESPACE="monitoring"                  # Prometheus所在K8s命名空间
 PROM_SERVICE="cmss-ekiplus-prometheus-system"  # Prometheus的K8s Service名称
 PROM_PORT="9090"                             # Prometheus默认端口（固定值）
@@ -26,24 +24,10 @@ declare -A ALERT_INFO_MAP                    # 存储「cpuXX→告警描述」�
 
 
 # ==============================================
-# 工具函数：生成标准YAML结果条目
-# ==============================================
-generate_yaml_entry() {
-    local key="$1"
-    local value="$2"
-    local err="$3"
-    local level="$4"
-    # 格式化YAML条目，确保格式统一
-    printf "  - key: \"%s\"\n    value: \"%s\"\n    err: \"%s\"\n    level: \"%s\"\n" \
-        "$key" "$value" "$err" "$level"
-}
-
-
-# ==============================================
 # 启动日志与YAML结果集初始化
 # ==============================================
 log_info "Start CPU frequency detection process"
-# 初始化YAML根节点（复用工具函数）
+# 初始化YAML根节点
 YAML=$(generate_yaml_detection "cpu_frequency_results")$'\n'
 # 截断长内容预览，避免日志冗余
 log_debug "Initialized YAML result set (preview): ${YAML:0:50}..."
@@ -66,7 +50,7 @@ set -e
 # 校验Instance有效性
 if [ $ret -ne 0 ] || [ -z "$INSTANCE" ]; then
     log_err "Failed to get K8s Instance (return code: ${ret}, result: '$INSTANCE')"
-    # 生成错误YAML条目
+    # 调用util中定义的generate_yaml_entry生成错误条目
     YAML+=$(generate_yaml_entry "CPU_Freq_Instance" "Unknown" "Instance get failed" "error")$'\n'
     exit 0
 fi
@@ -92,6 +76,7 @@ set -e
 # 处理服务不可达场景
 if [ $ret -ne 0 ]; then
     log_err "Prometheus Service unreachable (URL: ${PROM_URL}, return code: ${ret})"
+    # 调用util中定义的generate_yaml_entry生成错误条目
     YAML+=$(generate_yaml_entry "CPU_Freq_Prometheus" "Unknown" "Prometheus Service unreachable" "error")$'\n'
     exit 0
 fi
@@ -204,11 +189,13 @@ set -e
 # 处理查询结果
 if [ $ret -ne 0 ] || [ -z "$PROM_RESP" ]; then
     log_err "Prometheus query failed (empty response or request error)"
+    # 调用util中定义的generate_yaml_entry生成错误条目
     YAML+=$(generate_yaml_entry "CPU_Freq_Query" "Unknown" "Empty response or query failed" "error")$'\n'
 else
     # 检查jq工具（JSON解析必需）
     if ! command -v jq &>/dev/null; then
         log_err "jq tool not found (required for Prometheus JSON response parsing)"
+        # 调用util中定义的generate_yaml_entry生成错误条目
         YAML+=$(generate_yaml_entry "CPU_Freq_Parsing" "Failed" "jq tool missing" "error")$'\n'
     else
         # 统计频率记录数量
@@ -218,6 +205,7 @@ else
         # 处理无数据场景
         if [ "$RESULT_COUNT" -eq 0 ]; then
             log_warn "No CPU frequency data available in Prometheus (last query window)"
+            # 调用util中定义的generate_yaml_entry生成警告条目
             YAML+=$(generate_yaml_entry "CPU_Freq_Overall" "NoData" "No metrics in Prometheus" "warn")$'\n'
         else
             log_debug "Start parsing ${RESULT_COUNT} frequency records"
@@ -242,7 +230,7 @@ else
                     err="${ALERT_INFO_MAP[$CPU_KEY]}"
                 fi
 
-                # 生成当前CPU的YAML条目
+                # 调用util中定义的generate_yaml_entry生成当前CPU的YAML条目
                 PARSED_YAML+=$(generate_yaml_entry "$CPU_KEY" "${FREQ_RATIO}%" "$err" "$level")$'\n'
                 parsed_count=$((parsed_count + 1))
             done < <(echo "$PROM_RESP" | jq -r '.data.result[] | @base64')
@@ -253,6 +241,7 @@ else
                 log_debug "Successfully parsed ${parsed_count} CPU frequency records"
             else
                 log_warn "No valid CPU frequency data parsed from Prometheus response"
+                # 调用util中定义的generate_yaml_entry生成警告条目
                 YAML+=$(generate_yaml_entry "CPU_Freq_Parsing" "Failed" "No valid data" "warn")$'\n'
             fi
         fi
@@ -274,3 +263,12 @@ log_debug "=== Generated YAML Content End ==="
 RESULT=$(echo "$YAML" | jinja2 cpu_detect.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result "$RESULT"
 log_info "CPU frequency detection finished successfully (Node: ${NodeName})"
+
+#向eis的后端服务发送post请求，上报检测结果
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

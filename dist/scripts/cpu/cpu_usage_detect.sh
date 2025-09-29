@@ -2,19 +2,20 @@
 set -e
 set -o pipefail
 #set -x  # 开启执行追踪
-export LOG_LEVEL=debug
+
 # 引入工具脚本
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/cpu.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
+
+
 
 # 初始化目录与环境变量
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
-: "${NodeName:=$(hostname)}"
-: "${Timestamp:=$(date '+%Y-%m-%d %H:%M:%S')}"
 SAMPLE_INTERVAL=0.1  # 采样间隔（秒）
 
 # 启动日志
@@ -150,3 +151,12 @@ log_info "=== YAML Content End ==="
 log_info "CPU usage detection completed"
 RESULT=$( echo "$YAML" | jinja2 cpu_detect.j2 --format=yaml -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result  "$RESULT"
+
+#向eis的后端服务发送post请求，上报检测结果
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret
