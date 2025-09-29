@@ -27,8 +27,10 @@ set -e
 
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 cd $(dirname "${BASH_SOURCE[0]}")
 log_info "=================== system partition usage detection is running =========================="
+log_debug "\n\n$(nsenter -t 1 -m -u -i -n df -h | grep -v shm | grep -v containerd | grep -v kubelet)\n\n"
 
 # 获取分区总大小和使用率
 get_partition_usage() {
@@ -41,6 +43,7 @@ get_partition_usage() {
 
 # 判断是否挂载
 check_is_mountpoint() {
+	# 将错误输出重定向到 stdout（方便后续捕获）
     nsenter -t 1 -m -u -i -n mountpoint -q "$1"
 }
 
@@ -48,40 +51,42 @@ check_is_mountpoint() {
 detect_partition_usage() {
 	local name="$1" # 输出名字，如 root_usage_results
 	local path="$2" # 挂载点路径
-	local warn="$3" # 警告阈值
-	local critical="$4" # 严重阈值
+	local high_pressure="$3" # 警告阈值
+	local extreme_pressure="$4" # 严重阈值
 
     YAML+=$(generate_yaml_detection "$name")$'\n'
 	
     local total_size="none" usage="none" err="" level=""
 
-	if check_is_mountpoint "$path"; then
+	if ! nsenter -t 1 -m -u -i -n test -d "$path" 2>/dev/null; then
+		level="error"
+        YAML+=$(generate_yaml_entry "Total" "none" "ERROR: '${path}' is not a directory." "$level")$'\n'
+        YAML+=$(generate_yaml_entry "Used" "none" "ERROR: '${path}' is not a directory." "$level")$'\n'
+	elif check_is_mountpoint "$path"; then
 		read total_size usage < <(get_partition_usage "$path")
-		if [ "$usage" -ge "$critical" ]; then
-			err="CRITICAL: Partition '${path}' is nearly full! Usage is ${usage}% of ${total_size}."
-            level="warn"
-		elif [ "$usage" -ge "$warn" ]; then
-			err="WARNING: Partition '${path}' usage is high. Current usage: ${usage}% of ${total_size}."
-            level="warn"
+		if [ "$usage" -ge "$extreme_pressure" ]; then
+			err="EXTREME PRESSURE: Partition '${path}' is nearly full! Usage is ${usage}% of ${total_size}."
+			level="warn"
+		elif [ "$usage" -ge "$high_pressure" ]; then
+			err="HIGH PRESSURE: Partition '${path}' usage is high. Current usage: ${usage}% of ${total_size}."
+			level="warn"
+		else
+			err=""
+			level=""
 		fi
-
-
         YAML+=$(generate_yaml_entry "Total" "${total_size}" "$err" "$level")$'\n'
         YAML+=$(generate_yaml_entry "Used" "${usage}%" "$err" "$level")$'\n'
         
 	else
         level="error"
-        YAML+=$(generate_yaml_entry "Total" "none" "UNKNOWN: ${path} is not a mount point" "$level")$'\n'
-        YAML+=$(generate_yaml_entry "Used" "none" "UNKNOWN: ${path} is not a mount point" "$level")$'\n'
+        YAML+=$(generate_yaml_entry "Total" "none" "ERROR: Partition '${path}' is not mounted." "$level")$'\n'
+        YAML+=$(generate_yaml_entry "Used" "none" "ERROR: Partition '${path}' is not mounted." "$level")$'\n'
 	fi
 }
 
 ## ===================开始检测=================
-YAML=$(cat <<EOF
-nodename: "$NodeName"
-timestamp: "$Timestamp"
-EOF
-)$'\n'
+
+YAML=""
 # 定义：<待检测路径> <警告阈值> <严重阈值>
 declare -A PARTITIONS=(
 	["root"]="/ 80 90"
@@ -100,20 +105,28 @@ else
 	TARGETS=("$@")
 fi
 
-# 生成yaml
+# 生成yaml, 不在列表中的，不会检测
 for t in "${TARGETS[@]}"; do
     if [ -n "${PARTITIONS[$t]}" ]; then
-        read path warn critical <<<"${PARTITIONS[$t]}"
-        detect_partition_usage "_${t}_usage" $path $warn $critical
+        read path high_pressure extreme_pressure <<<"${PARTITIONS[$t]}"
+        detect_partition_usage "_${t}_usage" $path $high_pressure $extreme_pressure
     else
-        log_warn "WARN: Partition key '$t' not defined."
+        log_warn "WARN: Partition key 'data' is not defined, skip detection."
     fi
 done
 
 
-log_info "\n\n$YAML"
-# 生成json
-echo "$YAML" | jinja2 system-partition.j2 -o partition_usage.json --format=yaml
+log_debug "\n\n$YAML"
+# # 生成json
+RESULT=$( echo "$YAML" | jinja2 system-partition.j2 -D nodeName="$NodeName" -D timestamp="$Timestamp")
 
-log_info "=================== system partition usage detection is completed =========================="
+log_result "$RESULT"
 
+
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret
