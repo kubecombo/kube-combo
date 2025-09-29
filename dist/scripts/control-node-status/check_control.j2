@@ -1,0 +1,57 @@
+{
+  "nodename": "{{ Nodename }}",
+  "timestamp": "{{ Timestamp }}",
+  "ControlPlaneStatus": [
+    {%- set sections = [] %}
+
+    {%- if node_status_results %}
+      {%- set _ = sections.append({
+        "detection": "NODE STATUS",
+        "description": "Checks the status of all control plane nodes in the cluster.",
+        "results": node_status_results
+      }) %}
+    {%- endif %}
+
+    {%- if management_services_results %}
+      {%- set _ = sections.append({
+        "detection": "MANAGEMENT SERVICES",
+        "description": "Checks the status of core services like kubelet, containerd, and pods in the kube-system namespace.",
+        "results": management_services_results
+      }) %}
+    {%- endif %}
+
+    {%- if base_components_results %}
+      {%- set _ = sections.append({
+        "detection": "BASE COMPONENTS",
+        "description": "Checks the health of pods in key namespaces such as monitoring, kubevirt, and others.",
+        "results": base_components_results
+      }) %}
+    {%- endif %}
+
+    {%- if time_synchronization_results %}
+      {%- set _ = sections.append({
+        "detection": "TIME SYNCHRONIZATION",
+        "description": "Checks the health and time offset of the chronyd service.",
+        "results": time_synchronization_results
+      }) %}
+    {%- endif %}
+
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "status": "true",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}",
+          "level": "{{ result.level }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}

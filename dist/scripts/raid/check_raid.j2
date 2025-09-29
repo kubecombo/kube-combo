@@ -1,0 +1,35 @@
+{
+  "nodeName": "{{ NodeName }}",
+  "timestamp": "{{ Timestamp }}",
+  "RAID": [
+    {%- set sections = [] %}
+
+    {%- if raid_health_results %}
+      {%- set _ = sections.append({
+        "detection": "RAID HEALTH",
+        "description": "The results related to RAID health.",
+        "results": raid_health_results
+      }) %} 
+    {%- endif %}
+
+ 
+
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "status": "true",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key }}",
+          "value": "{{ result.value }}",
+          "err": "{{ result.err }}",
+          "level": "{{ result.level }}"
+        }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}

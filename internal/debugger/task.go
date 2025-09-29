@@ -26,7 +26,7 @@ type Task struct {
 // Task constant mapping
 var TaskMap = map[string]Task{
 	// raid
-	"RAID_CARD_STATUS": {Script: "", Args: ""},
+	"RAID_CARD_STATUS": {Script: "/runAt/raid/check_raid.sh", Args: ""},
 
 	// cpu
 	"CPU_MODEL":       {Script: "/runAt/cpu/CPU_Detection.sh", Args: ""},
@@ -43,29 +43,29 @@ var TaskMap = map[string]Task{
 	"UNPLUGGED_AND_DISCONNECTION":  {Script: "/runAt/network-card/unplugged-and-disconnection-detection.sh", Args: ""},
 
 	// memory
-	"MEMORY_FREQUENCY":              {Script: "/runAt/memory/check_memory5.sh", Args: ""},
-	"MEMORY_MANUFACTURER":           {Script: "/runAt/memory/check_memory5.sh", Args: ""},
-	"MEMORY_READ_WRITE_PERFORMANCE": {Script: "/runAt/memory/check_memory5.sh", Args: ""},
-	"MEMORY_LOOSENING_ANOMALY":      {Script: "/runAt/memory/check_memory5.sh", Args: ""},
-	"MEMORY_SIZE_ANOMALY":           {Script: "/runAt/memory/check_memory5.sh", Args: ""},
-	"MEMORY_USAGE_RATE":             {Script: "/runAt/memory/check_memory5.sh", Args: ""},
+	"MEMORY_FREQUENCY":              {Script: "/runAt/memory/memory_frequency.sh", Args: ""},
+	"MEMORY_MANUFACTURER":           {Script: "/runAt/memory/memory_looseness.sh", Args: ""},
+	"MEMORY_READ_WRITE_PERFORMANCE": {Script: "/runAt/memory/memory_rw_perf.sh", Args: ""},
+	// "MEMORY_LOOSENING_ANOMALY":      {Script: "/runAt/memory/memory_looseness.sh", Args: ""},
+	"MEMORY_SIZE_ANOMALY": {Script: "/runAt/memory/memory_size.sh", Args: ""},
+	"MEMORY_USAGE_RATE":   {Script: "/runAt/memory/memory_usage.sh", Args: ""},
 
 	// basic disk function
-	"DISK_STATUS":        {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"DISK_BUSYNESS":      {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"SSD_LIFESPAN":       {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"SSD_INTERFACE_MODE": {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"DISK_PERFORMANCE":   {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
-	"IO_ERROR":           {Script: "/runAt/basic-disk-function/check_disk2.sh", Args: ""},
+	"DISK_STATUS":   {Script: "/runAt/basic-disk-function/disk_status.sh", Args: ""},
+	"DISK_BUSYNESS": {Script: "/runAt/basic-disk-function/disk_busy.sh", Args: ""},
+	// "SSD_LIFESPAN":       {Script: "/runAt/basic-disk-function/disk_ssd_lifetime.sh", Args: ""},
+	"SSD_INTERFACE_MODE": {Script: "/runAt/basic-disk-function/disk_ssd_interface_mode.sh", Args: ""},
+	"DISK_PERFORMANCE":   {Script: "/runAt/basic-disk-function/disk_performance.sh", Args: ""},
+	// "IO_ERROR":           {Script: "/runAt/basic-disk-function/disk_io_errors.sh", Args: ""},
 
 	// system partition
 	"DISK_USAGE": {Script: "/runAt/system-partition/system-partition.sh", Args: ""},
 
 	// control node status
-	"OFFLINE_CONTROL_NODE":                 {Script: "", Args: ""},
-	"CONTROL_NODE_BASIC_COMPONENT":         {Script: "", Args: ""},
-	"CLUSTER_TIME_SYNCHRONIZATION_SERVICE": {Script: "", Args: ""},
-	"CONTROL_NODE_MANAGEMENT_SERVICE":      {Script: "", Args: ""},
+	"OFFLINE_CONTROL_NODE":                 {Script: "/runAt/control-node-status/check_node_status.sh", Args: ""},
+	"CONTROL_NODE_BASIC_COMPONENT":         {Script: "/runAt/control-node-status/check_base_components.sh", Args: ""},
+	"CLUSTER_TIME_SYNCHRONIZATION_SERVICE": {Script: "/runAt/control-node-status/check_time_synchronization.sh", Args: ""},
+	"CONTROL_NODE_MANAGEMENT_SERVICE":      {Script: "/runAt/control-node-status/check_management_services.sh", Args: ""},
 
 	// network configuration
 	"STORAGE_COMMUNICATION_NETWORK_PORT_CONNECTIVITY": {Script: "/runAt/network-configuration/storage-communication-network-port-connectivity.sh", Args: ""},
