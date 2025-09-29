@@ -1,0 +1,72 @@
+{
+  "nodeName": "{{ NodeName }}",
+  "timestamp": "{{ Timestamp }}",
+  "CPU": [
+    {%- set sections = [] %}
+    {%- if cpu_model_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU MODEL",
+        "description": "Displays the specific model of the CPU.",
+        "results": cpu_model_results
+      }) %}
+    {%- endif %}
+    {%- if cpu_usage_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU USAGE RATE (PHYSICAL)",
+        "description": "Monitors the usage rate of physical CPU cores. If the single-core usage rate continuously reaches 90% or higher, it indicates that the CPU load is too high.",
+        "results": cpu_usage_results
+      }) %}
+    {%- endif %}
+    {%- if cpu_temp_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU TEMPERATURE DETECTION (ALARM)",
+        "description": "Real-time monitoring of CPU temperature. The default alarm threshold is continuously exceeding 90°C for 10 minutes.",
+        "results": cpu_temp_results
+      }) %}
+    {%- endif %}
+    {%- if CPUFrequencyHigh_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU FREQUENCY HIGH ALARM",
+        "description": "Monitors whether the CPU core frequency exceeds 90% of the dynamic maximum frequency (alarm triggered if continuous for 10 minutes).",
+        "results": CPUFrequencyHigh_results
+      }) %}
+    {%- endif %}
+    {%- if CPUload1_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU 1-MINUTE LOAD ALARM",
+        "description": "Monitors the 1-minute CPU load of the host. Alarm triggered if it exceeds 1.5 times the core count (continuous for 2 minutes).",
+        "results": CPUload1_results
+      }) %}
+    {%- endif %}
+    {%- if CPUload5_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU 5-MINUTE LOAD ALARM",
+        "description": "Monitors the 5-minute CPU load of the host. Alarm triggered if it exceeds 1.2 times the core count (continuous for 5 minutes).",
+        "results": CPUload5_results
+      }) %}
+    {%- endif %}
+    {%- if CPUload15_results %}
+      {%- set _ = sections.append({
+        "detection": "CPU 15-MINUTE LOAD ALARM",
+        "description": "Monitors the 15-minute CPU load of the host. Alarm triggered if it exceeds 1.0 times the core count (continuous for 15 minutes).",
+        "results": CPUload15_results
+      }) %}
+    {%- endif %}
+    {%- for section in sections %}
+    {
+      "detection": "{{ section.detection }}",
+      "description": "{{ section.description }}",
+      "results": [
+        {%- for result in section.results %}
+        {
+          "key": "{{ result.key | default('Unknown') }}",
+          "value": "{{ result.value | default('N/A') }}",
+          "err": "{{ result.err | default('') }}",
+          "level": "{{ result.level | default('') }}"
+        }{%- if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }{%- if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}
