@@ -6,7 +6,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -46,7 +46,7 @@ else
         else
             value="Normal"
             err="Offset less than or equal to 15 s ($offset_str s)"
-            level="info"
+            level=""
             log_info "Node $current_node time synchronization normal, offset $offset_str seconds"
         fi
     fi
@@ -63,3 +63,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$(echo "$YAML" | jinja2 check_control.j2 -D NodeName="$Hostname" -D Timestamp="$Timestamp")
 log_result "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

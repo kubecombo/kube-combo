@@ -8,7 +8,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -43,3 +43,10 @@ log_debug "$YAML"
 # shellcheck disable=SC2154
 RESULT=$( echo "$YAML" | jinja2 memory.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result  "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

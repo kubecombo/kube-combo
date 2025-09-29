@@ -28,7 +28,7 @@ var TaskMap = map[string]Task{
 	// raid
 	"RAID_CARD_STATUS": {Script: "/runAt/raid/check_raid.sh", Args: ""},
 
-	/* // cpu
+	// cpu
 	"CPU_MODEL":       {Script: "/runAt/cpu/CPU_Detection.sh", Args: ""},
 	"CPU_USAGE_RATE":  {Script: "/runAt/cpu/CPU_Detection.sh", Args: ""},
 	"CPU_TEMPERATURE": {Script: "/runAt/cpu/CPU_Detection.sh", Args: ""},
@@ -41,7 +41,6 @@ var TaskMap = map[string]Task{
 	"NETWORK_PORT_SPEED":           {Script: "/runAt/network-card/network-port-speed-detection.sh", Args: ""},
 	"NETWORK_CARD_CONFLICT":        {Script: "/runAt/network-card/network-card-conflict-detection.sh", Args: ""},
 	"UNPLUGGED_AND_DISCONNECTION":  {Script: "/runAt/network-card/unplugged-and-disconnection-detection.sh", Args: ""},
-	*/
 
 	// memory
 	"MEMORY_FREQUENCY":              {Script: "/runAt/memory/memory_frequency.sh", Args: ""},
@@ -51,9 +50,9 @@ var TaskMap = map[string]Task{
 	"MEMORY_SIZE_ANOMALY": {Script: "/runAt/memory/memory_size.sh", Args: ""},
 	"MEMORY_USAGE_RATE":   {Script: "/runAt/memory/memory_usage.sh", Args: ""},
 
-	/* // basic disk function
-	"DISK_STATUS":        {Script: "/runAt/basic-disk-function/disk_status.sh", Args: ""},
-	"DISK_BUSYNESS":      {Script: "/runAt/basic-disk-function/disk_busy.sh", Args: ""},
+	// basic disk function
+	"DISK_STATUS":   {Script: "/runAt/basic-disk-function/disk_status.sh", Args: ""},
+	"DISK_BUSYNESS": {Script: "/runAt/basic-disk-function/disk_busy.sh", Args: ""},
 	// "SSD_LIFESPAN":       {Script: "/runAt/basic-disk-function/disk_ssd_lifetime.sh", Args: ""},
 	"SSD_INTERFACE_MODE": {Script: "/runAt/basic-disk-function/disk_ssd_interface_mode.sh", Args: ""},
 	"DISK_PERFORMANCE":   {Script: "/runAt/basic-disk-function/disk_performance.sh", Args: ""},
@@ -75,7 +74,7 @@ var TaskMap = map[string]Task{
 	"IP_CONFLICT":                                     {Script: "/runAt/network-configuration/ip-conflict-detection.sh", Args: ""},
 	"NEGOTIATED_RATE":                                 {Script: "/runAt/network-configuration/negotiated-rate.sh", Args: ""},
 	"MTU_CONSISTENCY":                                 {Script: "/runAt/network-configuration/mtu-consistency.sh", Args: ""},
-	"NETWORK_PORT_AGGREGATION_MODE_CONSISTENCY":       {Script: "/runAt/network-configuration/network-port-aggregation-mode-consistency-detection.sh", Args: ""}, */
+	"NETWORK_PORT_AGGREGATION_MODE_CONSISTENCY":       {Script: "/runAt/network-configuration/network-port-aggregation-mode-consistency-detection.sh", Args: ""},
 }
 
 func loadDetection(filePath string) (*Detection, error) {

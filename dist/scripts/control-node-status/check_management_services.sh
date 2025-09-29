@@ -6,7 +6,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -43,14 +43,14 @@ for service in "${!services[@]}"; do
 
     value=""
     err=""
-    level="info"
+    level=""
 
     case $type in
         systemctl)
             if systemctl is-active --quiet "$name"; then
                 value="Normal"
                 err="$service status is Running"
-                level="info"
+                level=""
                 log_info "$service 状态正常"
             else
                 value="Abnormal"
@@ -64,7 +64,7 @@ for service in "${!services[@]}"; do
             if [[ "$output" == *"$expected"* ]]; then
                 value="Normal"
                 err="$service status is normal"
-                level="info"
+                level=""
                 log_info "$service 状态正常"
             else
                 value="Abnormal"
@@ -78,7 +78,7 @@ for service in "${!services[@]}"; do
             if [ "$status" = "$expected" ]; then
                 value="Normal"
                 err="$service status is $expected"
-                level="info"
+                level=""
                 log_info "$service 状态正常"
             else
                 value="Abnormal"
@@ -101,7 +101,7 @@ abnormal_pods_info=$(kubectl get pods -n kube-system --no-headers -o wide 2>/dev
 if [ -z "$abnormal_pods_info" ] || [ "$abnormal_pods_info" = "command failed" ]; then
     value="Normal"
     err="All pods in kube-system namespace are Running"
-    level="info"
+    level=""
 else
     value="Abnormal"
     err="Pods in kube-system namespace with abnormal status: $abnormal_pods_info"
@@ -120,3 +120,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$(echo "$YAML" | jinja2 check_control.j2 -D NodeName="$Hostname" -D Timestamp="$Timestamp")
 log_result "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

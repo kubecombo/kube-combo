@@ -8,7 +8,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -122,7 +122,7 @@ check_with_storcli64() {
     local controller_key="Controller_$c"
     local value="Normal"
     local err=""
-    local level="info"
+    local level=""
 
     log_info "检测控制器 $c 状态"
 
@@ -244,7 +244,7 @@ check_with_megacli64() {
     local adapter_key="Adapter_$a"
     local value="Normal"
     local err=""
-    local level="info"
+    local level=""
 
     log_info "检测适配器 $a 状态"
 
@@ -312,7 +312,7 @@ check_with_arcconf() {
     local controller_key="Adaptec_Controller"
     local value="Normal"
     local err=""
-    local level="info"
+    local level=""
 
     log_info "检测Adaptec控制器状态"
 
@@ -361,7 +361,7 @@ check_with_ssacli() {
     local controller_key="HPE_Controller"
     local value="Normal"
     local err=""
-    local level="info"
+    local level=""
 
     log_info "检测HPE控制器状态"
 
@@ -396,7 +396,7 @@ main_detection() {
         echo "  - key: \"RAID_Detection\"" >> "$tmp_yaml"
         echo "    value: \"Normal\"" >> "$tmp_yaml"
         echo "    err: \"本环境不存在RAID卡\"" >> "$tmp_yaml"
-        echo "    level: \"info\"" >> "$tmp_yaml"
+        echo "    level: \"\"" >> "$tmp_yaml"
         return
     fi
 
@@ -413,7 +413,7 @@ main_detection() {
     echo "  - key: \"RAID_Tool\"" >> "$tmp_yaml"
     echo "    value: \"Normal\"" >> "$tmp_yaml"
     echo "    err: \"使用 $TOOL_NAME 检测到 $CONTROLLER_COUNT 个控制器\"" >> "$tmp_yaml"
-    echo "    level: \"info\"" >> "$tmp_yaml"
+    echo "    level: \"\"" >> "$tmp_yaml"
 
     log_info "使用 $TOOL_NAME 检测RAID健康状态"
 
@@ -439,11 +439,11 @@ main_detection() {
 
     # 添加总体状态
     local overall_value="Normal"
-    local overall_level="info"
+    local overall_level=""
     case $OVERALL_STATUS in
         "HEALTHY")
             overall_value="Normal"
-            overall_level="info"
+            overall_level=""
             ;;
         "WARNING")
             overall_value="Warning"
@@ -470,3 +470,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$(echo "$YAML" | jinja2 check_raid.j2 -D NodeName="$Hostname" -D Timestamp="$Timestamp")
 log_result "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

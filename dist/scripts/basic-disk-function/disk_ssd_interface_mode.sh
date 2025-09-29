@@ -6,7 +6,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -81,7 +81,7 @@ else
         
         # 只关注SATA SSD，不处理NVMe等
         mode="Unknown"
-        level="info"
+        level=""
         err="检测正常"
         interface_type="Unknown"
         sata_version=""
@@ -105,7 +105,7 @@ else
                         # 核心检测逻辑：判断是否为SATA3模式
                         if echo "$sata_version" | grep -qE "3\.|SATA 6.0|6\.0 Gbps|6\.0Gb/s"; then
                             err="$model - SATA3模式（6 Gbps）- 正常"
-                            level="info"
+                            level=""
                             log_info "SATA SSD $disk_name 运行在SATA3模式: $sata_version"
                             
                         elif echo "$sata_version" | grep -qE "2\.|SATA 3.0|3\.0 Gbps|3\.0Gb/s"; then
@@ -133,14 +133,14 @@ else
                     interface_type="NVMe"
                     mode="NVMe"
                     err="NVMe设备（无需SATA模式检测）"
-                    level="info"
+                    level=""
                     log_debug "NVMe SSD $disk_name 跳过SATA模式检测"
                     continue  # 跳过NVMe设备
                     
                 else
                     interface_type="Other"
                     err="非SATA接口设备"
-                    level="info"
+                    level=""
                     log_debug "非SATA设备 $disk_name 跳过检测"
                     continue  # 跳过非SATA设备
                 fi
@@ -165,7 +165,7 @@ if [[ "$found_sata_ssd" != "true" ]]; then
     echo "  - key: \"sata_ssd_detection\"" >> "$tmp_yaml"
     echo "    value: \"no_sata_ssd_found\"" >> "$tmp_yaml"
     echo "    err: \"未检测到SATA SSD设备\"" >> "$tmp_yaml"
-    echo "    level: \"info\"" >> "$tmp_yaml"
+    echo "    level: \"\"" >> "$tmp_yaml"
 fi
 
 YAML+=$(cat "$tmp_yaml")
@@ -174,3 +174,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$(echo "$YAML" | jinja2 check_disk.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

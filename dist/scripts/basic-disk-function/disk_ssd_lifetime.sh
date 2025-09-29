@@ -8,7 +8,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -26,7 +26,7 @@ lsblk -d -o NAME,MODEL | grep -v "^NAME" | while read -r disk; do
     continue
   fi
   remaining="Unknown"
-  level="info"
+  level=""
   err="Normal"
   lifetime_output=$(sudo smartctl -a "/dev/$disk_name" 2>/dev/null)
   if echo "$lifetime_output" | grep -q "Percentage Used"; then
@@ -52,3 +52,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$( echo "$YAML" | jinja2 check_disk.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result  "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret

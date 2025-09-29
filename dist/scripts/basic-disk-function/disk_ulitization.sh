@@ -6,7 +6,7 @@ set -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")"'/../util/util.sh'
-
+source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${DIR}" || exit
 
@@ -22,7 +22,7 @@ df -hT -x tmpfs -x devtmpfs | awk 'NR>1' | while read -r line; do
   avail=$(echo "$line" | awk '{print $5}')
   usep=$(echo "$line" | awk '{print $6}' | tr -d '%')
   mount=$(echo "$line" | awk '{print $7}')
-  level="info"
+  level=""
   err="Normal"
   if [ "$usep" -ge 90 ]; then
     level="error"
@@ -45,3 +45,10 @@ rm -f "$tmp_yaml"
 log_debug "$YAML"
 RESULT=$( echo "$YAML" | jinja2 check_disk.j2 -D NodeName="$NodeName" -D Timestamp="$Timestamp")
 log_result  "$RESULT"
+set +e
+log_debug "Start posting detection result"
+response=$(send_post "$EIS_POST_URL" "$RESULT" admin)
+ret=$?
+log_debug "$(echo "$response" | tr '\n' ' ')"
+set -e
+exit $ret
