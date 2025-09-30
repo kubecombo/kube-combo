@@ -13,8 +13,8 @@ cd "${DIR}" || exit
 log_info "Start memory vendor detection"
 YAML=$(generate_yaml_detection "memory_vendor_results")$'\n'
 
-log_debug "Run: sudo dmidecode -t memory"
-sudo dmidecode -t memory | awk -F: '
+log_debug "Run: dmidecode -t memory"
+dmidecode -t memory | awk -F: '
   /Locator/ {slot=$2; gsub(/^[ \t]+/, "", slot)}
   /Manufacturer/ {
     vendor=$2; gsub(/^[ \t]+/, "", vendor)

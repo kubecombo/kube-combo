@@ -28,7 +28,7 @@ lsblk -d -o NAME,MODEL | grep -v "^NAME" | while read -r disk; do
   remaining="Unknown"
   level=""
   err="Normal"
-  lifetime_output=$(sudo smartctl -a "/dev/$disk_name" 2>/dev/null)
+  lifetime_output=$(smartctl -a "/dev/$disk_name" 2>/dev/null)
   if echo "$lifetime_output" | grep -q "Percentage Used"; then
     used=$(echo "$lifetime_output" | grep "Percentage Used" | awk '{print $3}')
     remaining=$((100 - used))

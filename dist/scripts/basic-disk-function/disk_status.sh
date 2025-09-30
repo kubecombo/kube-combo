@@ -2,9 +2,7 @@
 set -e
 set -o pipefail
 
-# shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/log.sh"
-# shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../util/util.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../util/curl.sh"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,21 +17,21 @@ tmp_yaml=$(mktemp)
 check_disk_status() {
     local disk_name=$1
     local model=$2
-    
+
     # 检查1：设备文件是否存在
-    if [ ! -b "/dev/$disk_name" ]; then
+    if ! nsenter -t 1 -m -u -i -n test -b "/dev/$disk_name"; then
         echo "offline"
         return
     fi
-    
+
     # 检查2：尝试读取设备信息（非破坏性）
-    if smartctl --info "/dev/$disk_name" &>/dev/null; then
+    if nsenter -t 1 -m -u -i -n smartctl --info "/dev/$disk_name" &>/dev/null; then
         echo "online"
-    elif dd if="/dev/$disk_name" of=/dev/null bs=512 count=1 status=none &>/dev/null; then
+    elif nsenter -t 1 -m -u -i -n dd if="/dev/$disk_name" of=/dev/null bs=512 count=1 status=none &>/dev/null; then
         echo "online"
-    elif [ -d "/sys/block/$disk_name" ]; then
+    elif nsenter -t 1 -m -u -i -n test -d "/sys/block/$disk_name"; then
         # 检查3：sysfs状态
-        local removable=$(cat "/sys/block/$disk_name/removable" 2>/dev/null || echo "1")
+        local removable=$(nsenter -t 1 -m -u -i -n cat "/sys/block/$disk_name/removable" 2>/dev/null || echo "1")
         if [ "$removable" = "0" ]; then
             echo "online"
         else
@@ -44,20 +42,21 @@ check_disk_status() {
     fi
 }
 
-lsblk -d -o NAME,MODEL,SIZE | grep -v "^NAME" | while read -r disk; do
+# 使用 nsenter 执行 lsblk 获取磁盘信息
+nsenter -t 1 -m -u -i -n lsblk -d -o NAME,MODEL,SIZE | grep -v "^NAME" | while read -r disk; do
     disk_name=$(echo "$disk" | awk '{print $1}')
-    
+
     # 过滤虚拟磁盘
     if echo "$disk_name" | grep -qE "^nbd|^rbd|^loop|^dm-|^sr"; then
         log_debug "Skip non-physical disk: $disk_name"
         continue
     fi
-    
+
     model=$(echo "$disk" | awk '{$1=""; print $0}' | sed 's/^[ \t]*//')
-    
+
     # 使用更可靠的状态检测
     status=$(check_disk_status "$disk_name" "$model")
-    
+
     case "$status" in
         "online")
             level=""
@@ -75,7 +74,7 @@ lsblk -d -o NAME,MODEL,SIZE | grep -v "^NAME" | while read -r disk; do
             status="unknown"
             ;;
     esac
-    
+
     echo "  - key: \"$disk_name\"" >> "$tmp_yaml"
     echo "    value: \"$model\"" >> "$tmp_yaml"
     echo "    err: \"$status\"" >> "$tmp_yaml"

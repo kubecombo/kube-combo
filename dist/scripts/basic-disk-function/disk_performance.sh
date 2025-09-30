@@ -28,7 +28,7 @@ mkdir -p "$test_dir" || {
   exit 1
 }
 
-fio_cmd="sudo fio --name=disk_perf_test --rw=randrw --direct=1 --bs=4k --numjobs=4 --iodepth=32 --size=100M --runtime=10 --group_reporting --directory=$test_dir"
+fio_cmd="nsenter -t 1 -m -u -i -n fio --name=disk_perf_test --rw=randrw --direct=1 --bs=4k --numjobs=4 --iodepth=32 --size=100M --runtime=10 --group_reporting --directory=$test_dir"
 fio_output=$(eval $fio_cmd 2>&1)
 fio_exit_code=$?
 rm -rf "$test_dir"
